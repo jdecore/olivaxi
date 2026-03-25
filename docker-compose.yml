@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_API_URL: http://api:3000
+        PUBLIC_N8N_URL: http://n8n:5678
+    ports:
+      - "80:4321"
+    depends_on:
+      - api
+      - n8n
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - data:/app/data
+    environment:
+      - PUBLIC_API_URL=http://api:3000
+      - PUBLIC_N8N_URL=http://n8n:5678
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - GROQ_KEY=${GROQ_KEY}
+      - GEMINI_KEY=${GEMINI_KEY}
+      - OPENROUTER_KEY=${OPENROUTER_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - BREVO_API_KEY=${BREVO_API_KEY}
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    volumes:
+      - data:/app/data
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-admin}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    restart: unless-stopped
+
+volumes:
+  data:
