@@ -1,37 +1,43 @@
-# 🫒 olivaξ
+# Astro Starter Kit: Minimal
 
-Olivaξ es una web enfocada para ayudar a los agricultores españoles para proteger el olivar español
-frente al cambio climático, usando mis conocimientos de estudiante de maestria en biologia computacional, articulos cientificos y LLMs opensource.
-
-## Demo
-[URL aquí]
-
-## Qué hace
-Párrafo explicando el problema y la solución.
-
-## Páginas
-- /            Mapa de riesgo climático en tiempo real
-- /consejero   Chat experto en olivicultura con IA
-- /variedades  Comparador científico de variedades
-- /alertas     Registro de alertas de calor por email
-
-## Stack
-Astro 6 · Bun · Hono · N8N · SQLite
-CubePath · Dokploy · Open-Meteo · Groq · Resend
-Se uso ubuntu 22.02 por que es más estable, que versiones recientes.
-
-## Cómo conseguir las API keys
-| Key | Dónde | Uso |
-|-----|-------|-----|
-| GROQ_KEY | console.groq.com | Chat principal (gratis) |
-| GEMINI_KEY | aistudio.google.com | Fallback LLM (gratis) |
-| OPENROUTER_KEY | openrouter.ai | Fallback final (gratis) |
-| RESEND_API_KEY | resend.com | Emails (3000/mes gratis) |
-
-## Cómo usar CubePath en este proyecto
-Explicación de 3 párrafos de cómo se usa
-CubePath y Dokploy para el deploy automático.
-
-## Variables de entorno
-Tabla con las 6 variables y sus valores de ejemplo.
+```sh
+npm create astro@latest -- --template minimal
 ```
+
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+
+## 🚀 Project Structure
+
+Inside of your Astro project, you'll see the following folders and files:
+
+```text
+/
+├── public/
+├── src/
+│   └── pages/
+│       └── index.astro
+└── package.json
+```
+
+Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+
+There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+
+Any static assets, like images, can be placed in the `public/` directory.
+
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

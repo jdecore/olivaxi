@@ -1,0 +1,206 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Alertas - olivaξ">
+  <!-- Hero -->
+  <section class="alertas-hero">
+    <h1>🔔 Alertas de Calor Extremo</h1>
+    <p>Te avisamos cuando tu provincia supere los 38°C</p>
+  </section>
+
+  <!-- Form -->
+  <section class="alertas-section">
+    <form id="form-alerta" class="alertas-form">
+      <div class="form-field">
+        <label for="nombre">Tu nombre</label>
+        <input id="nombre" type="text" required />
+      </div>
+
+      <div class="form-field">
+        <label for="email">Tu email</label>
+        <input id="email" type="email" required />
+      </div>
+
+      <div class="form-field">
+        <label for="provincia">Tu provincia</label>
+        <select id="provincia">
+          <option value="Jaén">Jaén</option>
+          <option value="Córdoba">Córdoba</option>
+          <option value="Sevilla">Sevilla</option>
+          <option value="Granada">Granada</option>
+          <option value="Málaga">Málaga</option>
+          <option value="Badajoz">Badajoz</option>
+          <option value="Toledo">Toledo</option>
+          <option value="Ciudad Real">Ciudad Real</option>
+          <option value="Almería">Almería</option>
+          <option value="Huelva">Huelva</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="tipo">Tipo de alerta</label>
+        <select id="tipo">
+          <option value="calor">🌡️ Ola de calor (>38°C)</option>
+          <option value="helada">❄️ Helada (<0°C)</option>
+          <option value="sequia">💧 Estrés hídrico</option>
+        </select>
+      </div>
+
+      <button id="btn-submit" type="button">Activar alerta 🔔</button>
+
+      <div id="mensaje" hidden></div>
+    </form>
+  </section>
+</Layout>
+
+<style is:global>
+  .alertas-hero {
+    background: var(--color-aceituna);
+    color: var(--color-sal);
+    padding: 3rem 0;
+    text-align: center;
+  }
+
+  .alertas-hero h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    font-family: Georgia, 'Palatino Linotype', serif;
+  }
+
+  .alertas-hero p {
+    color: rgba(247,244,238,0.7);
+    margin-top: 0.5rem;
+  }
+
+  .alertas-section {
+    background-color: var(--color-sal);
+    padding: 3rem 1rem;
+  }
+
+  .alertas-form {
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    padding: 2rem;
+    max-width: 28rem;
+    margin: 0 auto;
+  }
+
+  .form-field { margin-bottom: 1rem; }
+
+  .form-field label {
+    display: block;
+    font-weight: 700;
+    color: var(--color-aceituna);
+    margin-bottom: 0.25rem;
+  }
+
+  .form-field input,
+  .form-field select {
+    width: 100%;
+    background: var(--color-sal);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    color: var(--color-aceituna);
+    font-size: 1rem;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus {
+    outline: none;
+    border-color: var(--color-limon);
+  }
+
+  #btn-submit {
+    width: 100%;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    border: 2px solid var(--color-aceituna);
+    font-size: 1rem;
+  }
+
+  #btn-submit:hover { opacity: 0.9; }
+  #btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  #mensaje {
+    margin-top: 1rem;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  #mensaje.hidden { display: none; }
+
+  #mensaje.warning {
+    background: rgba(212, 232, 73, 0.2);
+    border: 2px solid var(--color-limon);
+    color: var(--color-aceituna);
+  }
+
+  #mensaje.success {
+    background: rgba(34, 197, 94, 0.2);
+    border: 2px solid #22c55e;
+    color: #166534;
+  }
+
+  #mensaje.error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 2px solid #ef4444;
+    color: #991b1b;
+  }
+</style>
+
+<script>
+  const btn = document.getElementById("btn-submit");
+  const msg = document.getElementById("mensaje");
+  const form = document.getElementById("form-alerta");
+
+  btn?.addEventListener("click", async () => {
+    const nombre = (document.getElementById("nombre") as HTMLInputElement).value.trim();
+    const email = (document.getElementById("email") as HTMLInputElement).value.trim();
+    const provincia = (document.getElementById("provincia") as HTMLSelectElement).value;
+    const tipo = (document.getElementById("tipo") as HTMLSelectElement).value;
+
+    if (!nombre || !email) {
+      msg.textContent = "⚠️ Por favor completa todos los campos.";
+      msg.className = "warning";
+      msg.removeAttribute("hidden");
+      return;
+    }
+
+    btn.textContent = "Activando...";
+    btn.disabled = true;
+
+    try {
+      const apiBase = import.meta.env.PUBLIC_API_URL.replace(/\/$/, "");
+      const res = await fetch(`${apiBase}/api/alertas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, email, provincia, tipo }),
+      });
+
+      if (res.ok) {
+        const tipoLabels: Record<string, string> = { calor: "38°C", helada: "0°C", sequia: "sequía" };
+        msg.textContent = `✅ ¡Alerta activada! Te avisaremos cuando ${provincia} baje de ${tipoLabels[tipo]}.`;
+        msg.className = "success";
+        form.reset();
+      } else {
+        throw new Error("Respuesta no OK");
+      }
+    } catch {
+      msg.textContent = "❌ Algo salió mal. Inténtalo de nuevo.";
+      msg.className = "error";
+    } finally {
+      msg.removeAttribute("hidden");
+      btn.textContent = "Activar alerta 🔔";
+      btn.disabled = false;
+    }
+  });
+</script>

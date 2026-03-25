@@ -1,0 +1,10 @@
+{
+  "name": "olivaxi-api",
+  "scripts": {
+    "dev": "bun run index.ts"
+  },
+  "dependencies": {
+    "hono": "^4.0.0",
+    "nodemailer": "^8.0.3"
+  }
+}

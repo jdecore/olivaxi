@@ -1,0 +1,203 @@
+---
+import ThemeToggle from '../components/ThemeToggle.astro';
+interface Props {
+  title?: string;
+}
+
+const { title = "olivaξ" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <script is:inline>
+      // Execute BEFORE any content renders to prevent flash
+      (function() {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = stored || (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch(e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>{title}</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="/" class="logo">🫒 olivaξ</a>
+      </div>
+      <div class="nav-center">
+        <a href="/">Inicio</a>
+        <a href="/consejero">Consejero</a>
+        <a href="/variedades">Variedades</a>
+      </div>
+      <div class="nav-right">
+        <a href="/alertas" class="btn-alerta-pill">🔔 Activar alerta</a>
+      </div>
+    </nav>
+
+    <div class="toggle-wrapper">
+      <ThemeToggle />
+    </div>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <p>🫒 olivaξ — Hackathon CubePath 2026</p>
+    </footer>
+
+    <script>
+      function initScroll() {
+        let lastY = window.scrollY;
+        const nav = document.querySelector('nav');
+        
+        window.addEventListener('scroll', () => {
+          const currentY = window.scrollY;
+          
+          if (currentY > lastY && currentY > 50) {
+            nav.style.transform = 'translateX(-50%) translateY(-150%)';
+          } else {
+            nav.style.transform = 'translateX(-50%)';
+          }
+          
+          lastY = currentY;
+        }, { passive: true });
+      }
+
+      function initThemeEvent() {
+        window.addEventListener('modoOscuroChange', (e) => {
+          document.documentElement.setAttribute('data-theme', e.detail.modoOscuro ? 'dark' : 'light');
+        });
+      }
+
+      // Initialize on page load
+      initScroll();
+      initThemeEvent();
+
+      // Re-initialize after ViewTransition navigation
+      document.addEventListener('astro:after-swap', () => {
+        initScroll();
+        initThemeEvent();
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --color-aceituna: #1C1C1C;
+    --color-sal: #F7F4EE;
+    --color-limon: #D4E849;
+    --color-muted: #4a4a40;
+    --color-white: #FFFFFF;
+    --color-border: #1C1C1C;
+    --color-white-surface: #FFFFFF;
+  }
+
+  [data-theme="dark"] {
+    --color-aceituna: #F7F4EE;
+    --color-sal: #000000;
+    --color-limon: #D4E849;
+    --color-muted: #a0a095;
+    --color-white: #1a1a1a;
+    --color-border: #F7F4EE;
+    --color-white-surface: #1a1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
+    background-color: var(--color-sal);
+    color: var(--color-aceituna);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  .navbar {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    transition: transform 0.2s ease;
+    width: auto;
+    min-width: 600px;
+    max-width: calc(100% - 48px);
+    background-color: var(--color-sal);
+    border: 2px solid var(--color-aceituna);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+  }
+
+  .nav-left .logo {
+    color: var(--color-aceituna);
+    font-weight: bold;
+    font-size: 1.25rem;
+    text-decoration: none;
+    font-family: Georgia, 'Palatino Linotype', serif;
+  }
+
+  .nav-center { display: none; }
+
+  @media (min-width: 768px) {
+    .nav-center { display: flex; gap: 2rem; }
+  }
+
+  .nav-center a {
+    color: var(--color-muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    opacity: 1;
+  }
+
+  .nav-center a:hover { color: var(--color-aceituna); }
+
+  .btn-alerta-pill {
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    border: 2px solid var(--color-aceituna);
+      transition: all 0.2s ease;
+  }
+
+  .btn-alerta-pill:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+
+  .toggle-wrapper {
+    position: fixed;
+    top: 18px;
+    right: 24px;
+    z-index: 101;
+  }
+
+  footer {
+    background-color: var(--color-aceituna);
+    color: var(--color-sal);
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+</style>

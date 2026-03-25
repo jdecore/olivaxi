@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import variedades from '../data/variedades.json';
+import ComparadorVariedades from '../components/ComparadorVariedades.jsx';
+---
+
+<Layout title="Variedades - olivaξ">
+  <!-- Hero -->
+  <section class="var-hero">
+    <h1>🧬 Laboratorio de Variedades</h1>
+    <p>Compara resistencia al calor y sequía con datos de investigación científica real</p>
+  </section>
+
+  <!-- Filtros -->
+  <div id="filter-buttons" class="var-filters">
+    <button data-filter="all" class="filter-btn active">Todas</button>
+    <button data-filter="secano" class="filter-btn">Secano</button>
+    <button data-filter="calor-extremo" class="filter-btn">Calor extremo</button>
+    <button data-filter="alta-produccion" class="filter-btn">Alta producción</button>
+    <button data-filter="aceite-premium" class="filter-btn">Aceite premium</button>
+  </div>
+
+  <!-- Grid con comparador -->
+  <ComparadorVariedades client:load variedades={variedades} />
+</Layout>
+
+<style is:global>
+  .var-hero {
+    background: var(--color-aceituna);
+    color: var(--color-sal);
+    padding: 3rem 0;
+    text-align: center;
+  }
+
+  .var-hero h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    font-family: Georgia, 'Palatino Linotype', serif;
+  }
+
+  .var-hero p {
+    color: rgba(247,244,238,0.7);
+    margin-top: 0.5rem;
+  }
+
+  .var-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 0 1rem;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    color: var(--color-aceituna);
+    font-weight: 700;
+  }
+
+  .filter-btn.active {
+    background: var(--color-limon);
+  }
+
+  .filter-btn:hover:not(.active) {
+    background: var(--color-sal);
+  }
+</style>
+
+<script>
+  // El filtrado se maneja ahora dentro del componente React
+  // Este script se mantiene para compatibilidad pero ya no es necesario
+</script>
