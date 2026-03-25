@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_URL: http://api:3000
+        PUBLIC_API_URL: http://45.90.237.135:3001
         PUBLIC_N8N_URL: http://n8n:5678
     ports:
       - "8080:4321"
