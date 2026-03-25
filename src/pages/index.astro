@@ -1,9 +1,49 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapaCalor from '../components/MapaCalor.jsx';
-import RankingRiesgo from '../components/RankingRiesgo.jsx';
+import AlertasClimaticas from '../components/AlertasClimaticas.jsx';
 import AnalisisOlivar from '../components/AnalisisOlivar.jsx';
 import AlertasPlagas from '../components/AlertasPlagas.jsx';
+
+const API_BASE = 'http://localhost:3000';
+let climaData = [];
+let heroStats = { tempMax: '--', tempMin: '--', avgTemp: '--', totalProvincias: 0 };
+
+try {
+  const res = await fetch(`${API_BASE}/api/clima`);
+  if (res.ok) {
+    climaData = await res.json();
+    
+    const temps = climaData.map((p: any) => p.temperatura).filter((t: number) => typeof t === 'number');
+    if (temps.length > 0) {
+      heroStats = {
+        tempMax: Math.max(...temps).toFixed(1),
+        tempMin: Math.min(...temps).toFixed(1),
+        avgTemp: (temps.reduce((a: number, b: number) => a + b, 0) / temps.length).toFixed(1),
+        totalProvincias: climaData.length
+      };
+    }
+  }
+} catch (e) {
+  console.error('Error fetching clima:', e);
+}
+
+const getRiesgoEmoji = (riesgo: string) => {
+  return riesgo === 'alto' ? '🔴' : riesgo === 'medio' ? '🟡' : '🟢';
+};
+
+const tablaProvinciasHTML = [...climaData]
+  .sort((a: any, b: any) => b.temperatura - a.temperatura)
+  .map((p: any) => `
+    <tr class="riesgo-${p.riesgo}">
+      <td style="font-weight: 600;">${p.provincia}</td>
+      <td class="temp-cell">${p.temperatura}°C</td>
+      <td>${p.humedad}%</td>
+      <td>${p.lluvia}mm</td>
+      <td>${p.estado || ''}</td>
+      <td><span class="badge-riesgo ${p.riesgo}">${getRiesgoEmoji(p.riesgo)} ${p.riesgo}</span></td>
+    </tr>
+  `).join('');
 ---
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
@@ -15,7 +55,7 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
     grid-template-rows: auto auto auto;
     gap: 10px;
     max-width: 1000px;
-    margin: 2rem auto;
+    margin: 80px auto 2rem;
     padding: 0 1rem;
   }
 
@@ -53,7 +93,7 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
       background: var(--color-aceituna);
       border: 2px solid var(--color-aceituna);
       border-radius: 6px;
-      padding: 28px 24px;
+      padding: 20px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -542,36 +582,23 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
           <a href="/variedades" class="btn-secondary" style="background: var(--color-white-surface); color: var(--color-aceituna);">Variedades →</a>
           <a href="/consejero" class="btn-primary">Hablar con el consejeros →</a>
         </div>
-
-        <div class="hero-provincia">
-          <label for="provincia-select">📍 Tu provincia:</label>
-          <select id="provincia-select">
-            <option value="">Selecciona...</option>
-            <option value="Jaén">Jaén</option>
-            <option value="Córdoba">Córdoba</option>
-            <option value="Sevilla">Sevilla</option>
-            <option value="Granada">Granada</option>
-            <option value="Málaga">Málaga</option>
-            <option value="Badajoz">Badajoz</option>
-            <option value="Toledo">Toledo</option>
-            <option value="Ciudad Real">Ciudad Real</option>
-            <option value="Almería">Almería</option>
-            <option value="Huelva">Huelva</option>
-          </select>
-        </div>
-      </div>
-      <div class="hero-stats" id="hero-stats">
-        <div class="hero-stat-item">
-          <span class="hero-stat-num">10</span>
-          <span class="hero-stat-label">provincias</span>
-        </div>
-        <div class="hero-stat-item">
-          <span class="hero-stat-num">38°</span>
-          <span class="hero-stat-label">punto crítico</span>
-        </div>
-        <div class="hero-stat-item">
-          <span class="hero-stat-num">947</span>
-          <span class="hero-stat-label">estudios científicos</span>
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <span class="hero-stat-num">{heroStats.tempMax}°</span>
+            <span class="hero-stat-label">Máx</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="hero-stat-num">{heroStats.tempMin}°</span>
+            <span class="hero-stat-label">Mín</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="hero-stat-num">{heroStats.avgTemp}°</span>
+            <span class="hero-stat-label">Media</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="hero-stat-num">{heroStats.totalProvincias}</span>
+            <span class="hero-stat-label">Provincias</span>
+          </div>
         </div>
       </div>
     </div>
@@ -581,17 +608,9 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
       <MapaCalor client:only="react" id="mapa-calor" />
     </div>
 
-    <!-- Bottom row -->
-    <!-- Card stat: 11M hectáreas -->
-    <div class="bento-card accent">
-      <div class="stat-number">11M</div>
-      <div class="stat-label">hectáreas monitorizadas</div>
-      <a href="/alertas/nueva" class="btn-primary" style="margin-top: 12px; display: inline-block; align-self: flex-start; background: var(--color-white-surface); color: var(--color-aceituna);">Activar alerta 🔔</a>
-    </div>
-
-    <!-- Card ranking riesgo -->
-    <div class="bento-card">
-      <RankingRiesgo client:load />
+    <!-- Bottom row - Alertas Climáticas -->
+    <div class="bento-card accent" style="grid-column: 1 / -1;">
+      <AlertasClimaticas client:load />
     </div>
 
     <!-- Card análisis olivar -->
@@ -623,7 +642,11 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
           </tr>
         </thead>
         <tbody id="tabla-provincias-body">
-          <tr><td colspan="6" style="text-align: center; padding: 2rem;">Cargando datos...</td></tr>
+          {climaData.length > 0 ? (
+            <Fragment set:html={tablaProvinciasHTML} />
+          ) : (
+            <tr><td colspan="6" style="text-align: center; padding: 2rem;">Cargando datos...</td></tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -720,90 +743,41 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
 </Layout>
 
 <script>
-  const provinciaSelect = document.getElementById('provincia-select');
   const decisionesGrid = document.getElementById('decisiones-grid');
-  const tablaBody = document.getElementById('tabla-provincias-body');
-  const heroStats = document.getElementById('hero-stats');
   const analisisOlivar = document.getElementById('analisis-olivar');
   const alertasPlagas = document.getElementById('alertas-plagas');
 
-  const getRiesgoEmoji = (riesgo) => {
-    return riesgo === 'alto' ? '🔴' : riesgo === 'medio' ? '🟡' : '🟢';
-  };
-
-  function renderTablaProvincias(datos) {
-    const sorted = [...datos].sort((a, b) => b.temperatura - a.temperatura);
-    
-    tablaBody.innerHTML = sorted.map(p => `
-      <tr class="riesgo-${p.riesgo}">
-        <td style="font-weight: 600;">${p.provincia}</td>
-        <td class="temp-cell">${p.temperatura}°C</td>
-        <td>${p.humedad}%</td>
-        <td>${p.lluvia}mm</td>
-        <td>${p.estado}</td>
-        <td><span class="badge-riesgo ${p.riesgo}">${getRiesgoEmoji(p.riesgo)} ${p.riesgo}</span></td>
-      </tr>
-    `).join('');
-  }
-
-  function renderHeroStats(datos) {
-    const maxTemp = datos.reduce((max, p) => p.temperatura > max.temperatura ? p : max, datos[0]);
-    const maxHumedad = datos.reduce((max, p) => p.humedad > max.humedad ? p : max, datos[0]);
-    const sinLluvia = datos.filter(p => p.lluvia === 0).length;
-    const peorRiesgo = datos.reduce((worst, p) => {
-      const order = { alto: 3, medio: 2, bajo: 1 };
-      return order[p.riesgo] > order[worst.riesgo] ? p : worst;
-    }, datos[0]);
-
-    const riesgoLabel = peorRiesgo.riesgo === 'alto' ? '🔴 ALERTA' : peorRiesgo.riesgo === 'medio' ? '🟡 Precaución' : '🟢 OK';
-
-    heroStats.innerHTML = `
-      <div class="hero-stat-item">
-        <span class="hero-stat-num">${maxTemp.provincia}</span>
-        <span class="hero-stat-label">🌡️ Más calor</span>
-      </div>
-      <div class="hero-stat-item">
-        <span class="hero-stat-num">${maxHumedad.provincia}</span>
-        <span class="hero-stat-label">💧 Más húmeda</span>
-      </div>
-      <div class="hero-stat-item">
-        <span class="hero-stat-num">${sinLluvia}</span>
-        <span class="hero-stat-label">🌵 Sin lluvia</span>
-      </div>
-      <div class="hero-stat-item" style="flex: 1.5;">
-        <span class="hero-stat-num" style="font-size: 18px;">${riesgoLabel}</span>
-        <span class="hero-stat-label">nivel general</span>
-      </div>
-    `;
-  }
-
-  // Cargar datos al inicio
-  async function cargarDatos() {
+  async function fetchAnalisisProvincia(provincia) {
     try {
       const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
-      const res = await fetch(`${apiBase}/api/clima`);
-      const datos = await res.json();
+      const [climaRes, analisisRes] = await Promise.all([
+        fetch(`${apiBase}/api/clima`),
+        fetch(`${apiBase}/api/analisis/${encodeURIComponent(provincia)}`)
+      ]);
       
-      renderTablaProvincias(datos);
-      renderHeroStats(datos);
+      const datos = await climaRes.json();
+      const analisis = analisisRes.ok ? await analisisRes.json() : null;
+      
+      const provData = datos.find((p) => p.provincia === provincia);
+      if (provData) {
+        renderDecisiones(provincia, analisis, provData);
+        window.dispatchEvent(new CustomEvent('datos-provincia', {
+          detail: {
+            provincia: provData.provincia,
+            temperatura: provData.temperatura,
+            humedad: provData.humedad,
+            lluvia: provData.lluvia,
+            riesgos_plaga: provData.riesgos_plaga
+          }
+        }));
+      } else {
+        decisionesGrid.innerHTML = '<div class="decisiones-placeholder"><p>No hay datos para esta provincia.</p></div>';
+      }
     } catch (err) {
       console.error('Error cargando datos:', err);
+      decisionesGrid.innerHTML = '<div class="decisiones-placeholder"><p>Error al cargar datos.</p></div>';
     }
   }
-
-  cargarDatos();
-
-  // Listener for map clicks
-  window.addEventListener('provincia-seleccionada', (e) => {
-    const provincia = e.detail.provincia;
-    if (provinciaSelect) {
-      provinciaSelect.value = provincia;
-    }
-    // Trigger the change event to load data
-    if (provinciaSelect) {
-      provinciaSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
 
   function renderDecisiones(provincia, analisis, climaData) {
     const tempDisplay = climaData?.temperatura ? `${climaData.temperatura}°C` : '--';
@@ -838,43 +812,9 @@ import AlertasPlagas from '../components/AlertasPlagas.jsx';
     `;
   }
 
-  provinciaSelect?.addEventListener('change', async (e) => {
-    const provincia = e.target.value;
-    if (!provincia) {
-      decisionesGrid.innerHTML = '<div class="decisiones-placeholder"><p>Selecciona tu provincia arriba para ver las recomendaciones.</p></div>';
-      return;
-    }
-
-    try {
-      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
-      
-      const [climaRes, analisisRes] = await Promise.all([
-        fetch(`${apiBase}/api/clima`),
-        fetch(`${apiBase}/api/analisis/${encodeURIComponent(provincia)}`)
-      ]);
-      
-      const datos = await climaRes.json();
-      const analisis = analisisRes.ok ? await analisisRes.json() : null;
-      
-      const provData = datos.find((p) => p.provincia === provincia);
-      if (provData) {
-        renderDecisiones(provincia, analisis, provData);
-        // Dispatch event for AlertasPlagas component
-        window.dispatchEvent(new CustomEvent('datos-provincia', {
-          detail: {
-            provincia: provData.provincia,
-            temperatura: provData.temperatura,
-            humedad: provData.humedad,
-            lluvia: provData.lluvia,
-            riesgos_plaga: provData.riesgos_plaga
-          }
-        }));
-      } else {
-        decisionesGrid.innerHTML = '<div class="decisiones-placeholder"><p>No hay datos para esta provincia.</p></div>';
-      }
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-      decisionesGrid.innerHTML = '<div class="decisiones-placeholder"><p>Error al cargar datos.</p></div>';
-    }
+  // Listen for province selection from map
+  window.addEventListener('provincia-seleccionada', (e) => {
+    const provincia = e.detail.provincia;
+    fetchAnalisisProvincia(provincia);
   });
 </script>
