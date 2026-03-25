@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapaCalor from '../components/MapaCalor.jsx';
-import AlertasClimaticas from '../components/AlertasClimaticas.jsx';
-import AnalisisOlivar from '../components/AnalisisOlivar.jsx';
-import AlertasPlagas from '../components/AlertasPlagas.jsx';
+import AlertasClimaticas from '../components/AlertasClimaticas.astro';
+import AnalisisOlivar from '../components/AnalisisOlivar.astro';
+import AlertasPlagas from '../components/AlertasPlagas.astro';
 
 const API_BASE = 'http://localhost:3000';
 let climaData = [];
@@ -32,6 +32,25 @@ const getRiesgoEmoji = (riesgo: string) => {
   return riesgo === 'alto' ? '🔴' : riesgo === 'medio' ? '🟡' : '🟢';
 };
 
+const getRiesgoLabel = (riesgo: string) => {
+  return riesgo === 'alto' ? 'Alto' : riesgo === 'medio' ? 'Medio' : 'Bajo';
+};
+
+const top3Riesgos = [...climaData]
+  .filter((p: any) => p.riesgo === 'alto' || p.riesgo === 'medio')
+  .sort((a: any, b: any) => {
+    const order = { alto: 0, medio: 1, bajo: 2 };
+    return order[a.riesgo] - order[b.riesgo];
+  })
+  .slice(0, 3)
+  .map((p: any) => ({
+    provincia: p.provincia,
+    riesgo: p.riesgo,
+    emoji: getRiesgoEmoji(p.riesgo),
+    label: getRiesgoLabel(p.riesgo),
+    temperatura: p.temperatura
+  }));
+
 const tablaProvinciasHTML = [...climaData]
   .sort((a: any, b: any) => b.temperatura - a.temperatura)
   .map((p: any) => `
@@ -48,15 +67,87 @@ const tablaProvinciasHTML = [...climaData]
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
   <style is:global>
+  /* HERO MODERNO */
+  .hero-moderno {
+    padding: 30px 20px 10px;
+    max-width: 800px;
+    margin: 60px auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+  }
+
+  .hero-titulo {
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1C1C1C;
+    margin: 0;
+    letter-spacing: -0.5px;
+    font-style: italic;
+  }
+
+  .hero-titulo .highlight-verde {
+    color: #E6B426;
+  }
+
+  [data-theme="dark"] .hero-titulo {
+    color: #F7F4EE;
+  }
+
+  [data-theme="dark"] .hero-titulo .highlight-verde {
+    color: #E6B426;
+  }
+
+  .hero-pildora {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-limon);
+    color: #1C1C1C;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 3px solid #1C1C1C;
+    box-shadow: 4px 4px 0 #1C1C1C;
+    transition: all 0.15s ease;
+  }
+
+  .hero-pildora:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #1C1C1C;
+  }
+
+  .hero-pildora .olivo-text {
+    color: #000000;
+  }
+
+  .hero-pildora .ai-text {
+    color: #000000;
+  }
+
+  .hero-pildora:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+  }
+
   /* BENTO GRID */
   .bento-grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 50fr 50fr;
     grid-template-rows: auto auto auto;
     gap: 10px;
-    max-width: 1000px;
-    margin: 80px auto 2rem;
+    max-width: 1200px;
+    margin: 10px auto 2rem;
     padding: 0 1rem;
+    align-items: start;
+  }
+
+  .mapa-card {
+    grid-column: 1;
   }
 
   @media (max-width: 767px) {
@@ -72,7 +163,7 @@ const tablaProvinciasHTML = [...climaData]
     }
 
     .bento-card.accent {
-      background: var(--color-limon);
+      background: #E6B426;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -230,9 +321,9 @@ const tablaProvinciasHTML = [...climaData]
       padding: 0; 
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      min-height: 380px;
-      height: 380px;
+      min-height: 300px;
+      height: 300px;
+      overflow: visible;
     }
 
     /* SECTION VALUES */
@@ -420,7 +511,7 @@ const tablaProvinciasHTML = [...climaData]
     @keyframes spin { to { transform: rotate(360deg); } }
     .mapa-loading p { color: var(--color-muted); font-size: 12px; }
     .mapa-error { text-align: center; padding: 2rem 0; color: #ef4444; font-size: 12px; }
-    .mapa-container { border-radius: 6px; overflow: hidden; height: 100%; }
+    .mapa-container { border-radius: 6px; height: 100%; }
 
     /* DECISIONES RÁPIDAS */
     .decisiones-rapidas { background: var(--color-aceituna); padding: 3rem 1rem; }
@@ -554,6 +645,56 @@ const tablaProvinciasHTML = [...climaData]
       color: #15803d;
     }
 
+    /* TOP 3 RIESGOS */
+    .top3-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 600px) {
+      .top3-grid { grid-template-columns: 1fr; }
+    }
+    .top3-card {
+      background: var(--color-white-surface);
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .top3-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .top3-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .top3-emoji {
+      font-size: 20px;
+    }
+    .top3-provincia {
+      font-weight: 700;
+      color: var(--color-aceituna);
+      font-size: 14px;
+    }
+    .top3-risk {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .top3-risk.alto { color: #dc2626; }
+    .top3-risk.medio { color: #b45309; }
+    .top3-temp {
+      font-size: 11px;
+      color: var(--color-muted);
+    }
+
     /* ANALISIS CARD */
     .analisis-card {
       grid-column: 2;
@@ -565,92 +706,60 @@ const tablaProvinciasHTML = [...climaData]
     }
   </style>
 
+  <!-- HERO MODERNO -->
+  <section class="hero-moderno">
+    <h1 class="hero-titulo">
+      Web potenciada<br/>
+      con <span class="highlight-verde">AI</span> para mejorar<br/>
+      el cuidado del <span class="highlight-verde">olivo</span><br/>
+      contra el cambio climático
+    </h1>
+    <a href="/consejero" class="hero-pildora"><span class="olivo-text">Olivo</span> <span class="ai-text">AI</span></a>
+  </section>
+
   <!-- BENTO GRID HERO -->
   <div class="bento-grid">
-    <!-- Hero card principal - left side -->
-    <div class="bento-card hero-card">
-      <div>
-        <h1 class="hero-title">
-          Protege tu <em>olivar</em><br />
-          del cambio climático
-        </h1>
-        <p class="hero-subtitle">
-          Alertas climáticas, consejero experto y análisis de 
-          variedades para el agricultor español.
-        </p>
-        <div class="hero-buttons">
-          <a href="/variedades" class="btn-secondary" style="background: var(--color-white-surface); color: var(--color-aceituna);">Variedades →</a>
-          <a href="/consejero" class="btn-primary">Hablar con el consejeros →</a>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat-item">
-            <span class="hero-stat-num">{heroStats.tempMax}°</span>
-            <span class="hero-stat-label">Máx</span>
-          </div>
-          <div class="hero-stat-item">
-            <span class="hero-stat-num">{heroStats.tempMin}°</span>
-            <span class="hero-stat-label">Mín</span>
-          </div>
-          <div class="hero-stat-item">
-            <span class="hero-stat-num">{heroStats.avgTemp}°</span>
-            <span class="hero-stat-label">Media</span>
-          </div>
-          <div class="hero-stat-item">
-            <span class="hero-stat-num">{heroStats.totalProvincias}</span>
-            <span class="hero-stat-label">Provincias</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Map - right side (large) -->
     <div class="bento-card mapa-card">
       <MapaCalor client:only="react" id="mapa-calor" />
     </div>
 
     <!-- Bottom row - Alertas Climáticas -->
-    <div class="bento-card accent" style="grid-column: 1 / -1;">
-      <AlertasClimaticas client:load />
+    <div class="bento-card accent" id="alertas-card" style="grid-column: 1 / -1;">
+      <AlertasClimaticas />
     </div>
 
     <!-- Card análisis olivar -->
     <div class="bento-card" id="analisis-card">
-      <AnalisisOlivar client:load id="analisis-olivar" />
+      <AnalisisOlivar id="analisis-olivar" />
     </div>
 
     <!-- Card alertas plagas -->
     <div class="bento-card" id="plagas-card">
-      <AlertasPlagas client:load id="alertas-plagas" />
+      <AlertasPlagas id="alertas-plagas" />
     </div>
   </div>
 
-  <!-- TABLA DE PROVINCIAS -->
-  <div style="max-width: 1000px; margin: 1rem auto; padding: 0 1rem;">
-    <h3 style="font-family: Georgia, serif; color: var(--color-aceituna); margin-bottom: 0.5rem;">
-      📊 Todas las provincias
-    </h3>
-    <div class="bento-card" style="padding: 0;">
-      <table class="tabla-provincias" id="tabla-provincias">
-        <thead>
-          <tr>
-            <th>Provincia</th>
-            <th>Temp</th>
-            <th>Humedad</th>
-            <th>Lluvia</th>
-            <th>Estado</th>
-            <th>Riesgo</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-provincias-body">
-          {climaData.length > 0 ? (
-            <Fragment set:html={tablaProvinciasHTML} />
-          ) : (
-            <tr><td colspan="6" style="text-align: center; padding: 2rem;">Cargando datos...</td></tr>
-          )}
-        </tbody>
-      </table>
+  <!-- TOP 3 RIESGOS -->
+  {top3Riesgos.length > 0 && (
+    <div style="max-width: 1000px; margin: 1rem auto; padding: 0 1rem;">
+      <h3 style="font-family: Georgia, serif; color: var(--color-aceituna); margin-bottom: 0.5rem;">
+        🔴 Provincias en Riesgo
+      </h3>
+      <div class="top3-grid">
+        {top3Riesgos.map((p) => (
+          <div class="top3-card" data-provincia={p.provincia}>
+            <div class="top3-header">
+              <span class="top3-emoji">{p.emoji}</span>
+              <span class="top3-provincia">{p.provincia}</span>
+            </div>
+            <div class="top3-risk">{p.label}</div>
+            <div class="top3-temp">{p.temperatura}°C</div>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
+  )}
 
   <!-- DECISIONES RÁPIDAS -->
   <section class="decisiones-rapidas">
@@ -767,7 +876,8 @@ const tablaProvinciasHTML = [...climaData]
             temperatura: provData.temperatura,
             humedad: provData.humedad,
             lluvia: provData.lluvia,
-            riesgos_plaga: provData.riesgos_plaga
+            riesgos_plaga: provData.riesgos_plaga,
+            riesgos_olivar: provData.riesgos_olivar
           }
         }));
       } else {
@@ -816,5 +926,29 @@ const tablaProvinciasHTML = [...climaData]
   window.addEventListener('provincia-seleccionada', (e) => {
     const provincia = e.detail.provincia;
     fetchAnalisisProvincia(provincia);
+    
+    // Scroll to alertas card
+    const alertasCard = document.getElementById('alertas-card');
+    if (alertasCard) {
+      alertasCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+  // Click on Top 3 cards
+  document.querySelectorAll('.top3-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const provincia = card.dataset.provincia;
+      if (provincia) {
+        window.dispatchEvent(new CustomEvent('provincia-seleccionada', {
+          detail: { provincia }
+        }));
+        
+        // Scroll to alertas card
+        const alertasCard = document.getElementById('alertas-card');
+        if (alertasCard) {
+          alertasCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
   });
 </script>

@@ -107,3 +107,23 @@ const getNivelLabel = (nivel) => {
   margin-top: 16px;
 }
 </style>
+
+<script>
+  const panel = document.querySelector('.analisis-panel');
+  if (panel) {
+    window.addEventListener('datos-provincia', (e) => {
+      const datos = e.detail;
+      if (!datos.provincia) return;
+      
+      const header = panel.querySelector('h3');
+      if (header) {
+        header.textContent = `📊 Análisis: ${datos.provincia}`;
+      }
+      
+      const placeholder = panel.querySelector('p');
+      if (placeholder && placeholder.textContent.includes('Selecciona')) {
+        panel.innerHTML = '<p style="color: var(--color-muted); text-align: center; padding: 2rem;">Cargando análisis...</p>';
+      }
+    });
+  }
+</script>

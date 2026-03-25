@@ -13,6 +13,11 @@ const { varietyData = [] } = Astro.props;
       data-prod={v.productividad}
       data-estudios={v.estudios}
       data-origen={v.origen}
+      data-xylella={v.plagas?.xylella || ''}
+      data-mosca={v.plagas?.mosca || ''}
+      data-prays={v.plagas?.prays || ''}
+      data-antracnosis={v.enfermedades?.antracnosis || ''}
+      data-repilo={v.enfermedades?.repilo || ''}
     >
       <span class="var-badge">{v.etiqueta}</span>
       <h3>🫒 {v.nombre}</h3>
@@ -45,6 +50,24 @@ const { varietyData = [] } = Astro.props;
       <p class="var-studies">📄 {v.estudios} estudios</p>
       <p class="var-desc">{v.descripcion}</p>
       <div class="var-notes">🌡️ {v.notas_climaticas}</div>
+      
+      <div class="var-resistencias">
+        <div class="resistencia-section">
+          <span class="resistencia-title">🦟 Plagas:</span>
+          <div class="resistencia-items">
+            {v.plagas?.xylella && <span class={`res-tag tag-${v.plagas.xylella.toLowerCase().replace(' ', '-')}`}>Xylella: {v.plagas.xylella}</span>}
+            {v.plagas?.mosca && <span class={`res-tag tag-${v.plagas.mosca.toLowerCase().replace(' ', '-')}`}>Mosca: {v.plagas.mosca}</span>}
+            {v.plagas?.prays && <span class={`res-tag tag-${v.plagas.prays.toLowerCase().replace(' ', '-')}`}>Prays: {v.plagas.prays}</span>}
+          </div>
+        </div>
+        <div class="resistencia-section">
+          <span class="resistencia-title">🍄 Hongos:</span>
+          <div class="resistencia-items">
+            {v.enfermedades?.antracnosis && <span class={`res-tag tag-${v.enfermedades.antracnosis.toLowerCase().replace(' ', '-')}`}>Antracnosis: {v.enfermedades.antracnosis}</span>}
+            {v.enfermedades?.repilo && <span class={`res-tag tag-${v.enfermedades.repilo.toLowerCase().replace(' ', '-')}`}>Repilo: {v.enfermedades.repilo}</span>}
+          </div>
+        </div>
+      </div>
       
       <button class="var-btn" data-nombre={v.nombre}>
         Comparar
@@ -84,7 +107,12 @@ const { varietyData = [] } = Astro.props;
       tolerancia_calor: parseInt(card.dataset.calor),
       productividad: parseInt(card.dataset.prod),
       estudios: parseInt(card.dataset.estudios),
-      origen: card.dataset.origen
+      origen: card.dataset.origen,
+      xylella: card.dataset.xylella,
+      mosca: card.dataset.mosca,
+      prays: card.dataset.prays,
+      antracnosis: card.dataset.antracnosis,
+      repilo: card.dataset.repilo
     };
   }
 
@@ -157,7 +185,12 @@ const { varietyData = [] } = Astro.props;
       { key: 'tolerancia_calor', label: 'Calor', type: 'bar', color: 'calor' },
       { key: 'productividad', label: 'Producción', type: 'bar', color: 'prod' },
       { key: 'estudios', label: 'Estudios', type: 'number' },
-      { key: 'origen', label: 'Origen', type: 'text' }
+      { key: 'origen', label: 'Origen', type: 'text' },
+      { key: 'xylella', label: 'Xylella', type: 'tag' },
+      { key: 'mosca', label: 'Mosca', type: 'tag' },
+      { key: 'prays', label: 'Prays', type: 'tag' },
+      { key: 'antracnosis', label: 'Antracnosis', type: 'tag' },
+      { key: 'repilo', label: 'Repilo', type: 'tag' }
     ];
 
     const tbody = document.getElementById('compare-tbody');
@@ -178,6 +211,9 @@ const { varietyData = [] } = Astro.props;
       } else if (m.type === 'number') {
         contentA = valA;
         contentB = valB;
+      } else if (m.type === 'tag') {
+        contentA = `<span class="tag-${valA?.toLowerCase().replace(' ', '-')}">${valA || '-'}</span>`;
+        contentB = `<span class="tag-${valB?.toLowerCase().replace(' ', '-')}">${valB || '-'}</span>`;
       } else {
         contentA = valA;
         contentB = valB;
@@ -402,4 +438,47 @@ const { varietyData = [] } = Astro.props;
   .sequia-fill { background: #D4E849; }
   .calor-fill { background: #F59E0B; }
   .prod-fill { background: #3B82F6; }
+
+  .var-resistencias {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .resistencia-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .resistencia-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+  }
+
+  .resistencia-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .res-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .tag-alta-resistencia { background: #10B981; color: #000; }
+  .tag-resistencia-media { background: #F59E0B; color: #000; }
+  .tag-susceptible { background: #EF4444; color: #fff; }
+  .tag--- { background: var(--color-sal); color: var(--color-muted); }
+
+  .compare-table td .tag-alta-resistencia { background: #10B981; color: #000; padding: 3px 8px; border-radius: 3px; font-size: 10px; display: inline-block; }
+  .compare-table td .tag-resistencia-media { background: #F59E0B; color: #000; padding: 3px 8px; border-radius: 3px; font-size: 10px; display: inline-block; }
+  .compare-table td .tag-susceptible { background: #EF4444; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 10px; display: inline-block; }
+  .compare-table td .tag---- { background: var(--color-sal); color: var(--color-muted); padding: 3px 8px; border-radius: 3px; font-size: 10px; display: inline-block; }
 </style>

@@ -1,0 +1,389 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const plagas = [
+  {
+    id: 'mosca',
+    nombre: 'Mosca del olivo',
+    icono: '🪰',
+    condiciones: ['Altas Temperaturas', 'Baja Lluvia (Sequía)'],
+    tratamiento: 'Trampas masivas McPhail (70-100/ha); cebo proteico parcheo; insecticidas si >7% frutos picados. Con +3°C alarga actividad hasta noviembre.',
+    severidad: 'alta'
+  },
+  {
+    id: 'prays',
+    nombre: 'Prays',
+    icono: '🦋',
+    condiciones: ['Bajas Temperaturas', 'Altas Temperaturas', 'Baja Humedad', 'Baja Lluvia'],
+    tratamiento: 'Bacillus thuringiensis en floración; aceites minerales; monitoreo con trampas. Más ciclos por temperaturas cálidas.',
+    severidad: 'media'
+  },
+  {
+    id: 'tuberculosis',
+    nombre: 'Tuberculosis',
+    icono: '🦠',
+    condiciones: ['Bajas Temperaturas', 'Alta Humedad'],
+    tratamiento: 'Aplicar cobre en heridas; mejorar drenaje y poda sanitaria. Tratar inmediatamente después de heladas.',
+    severidad: 'media'
+  },
+  {
+    id: 'repilo',
+    nombre: 'Repilo (Fusarium)',
+    icono: '🍂',
+    condiciones: ['Alta Humedad'],
+    tratamiento: 'Cobre (máx 4kg/ha/año); bicarbonatos (500-1000g/hl); tratamientos preventivos post-invierno.',
+    severidad: 'alta'
+  },
+  {
+    id: 'cochinilla',
+    nombre: 'Cochinilla',
+    icono: '🐛',
+    condiciones: ['Altas Temperaturas', 'Baja Humedad'],
+    tratamiento: 'Aceites minerales; insecticidas sistémicos; mejorar ventilación. Por estrés hídrico aumenta.',
+    severidad: 'baja'
+  },
+  {
+    id: 'phytophthora',
+    nombre: 'Phytophthora',
+    icono: '🍄',
+    condiciones: ['Alta Humedad', 'Alta Lluvia'],
+    tratamiento: 'Mejorar drenaje; fungicidas específicos (metalaxyl, fosetil-Al); evitar encharcamiento.',
+    severidad: 'alta'
+  },
+  {
+    id: 'lepra',
+    nombre: 'Lepra',
+    icono: '🤕',
+    condiciones: ['Bajas Temperaturas', 'Alta Humedad'],
+    tratamiento: 'Cobre en heridas; poda sanitaria; eliminar restos vegetales afectados.',
+    severidad: 'media'
+  },
+  {
+    id: 'verticillium',
+    nombre: 'Verticillium',
+    icono: '🥀',
+    condiciones: ['Alta Lluvia'],
+    tratamiento: 'Rotación de cultivos; suelo solarizado; evitar heridas en raíces; variedades resistentes.',
+    severidad: 'alta'
+  }
+];
+
+const cambioClimatico = [
+  { plaga: 'Mosca del olivo', cambio: '+3°C alarga actividad hasta noviembre', severidad: 'alta' },
+  { plaga: 'Xylella fastidiosa', cambio: 'Expansión norteña, transmitida por Philaenus spumarius', severidad: 'critica' },
+  { plaga: 'Hongos oportunistas', cambio: '+60% pérdidas proyectadas con +2°C', severidad: 'alta' }
+];
+---
+
+<Layout title="Plagas del Olivar | olivaξ">
+  <div class="page-header">
+    <h1>🦠 Plagas del Olivar</h1>
+    <p class="subtitle">Identifica las condiciones que favorecen cada plaga y aprende a tratarla</p>
+  </div>
+
+  <div class="tabs-container">
+    <button class="tab active" data-tab="todas">Todas</button>
+    <button class="tab" data-tab="temperatura">Temperatura</button>
+    <button class="tab" data-tab="humedad">Humedad</button>
+    <button class="tab" data-tab="lluvia">Lluvia</button>
+    <button class="tab" data-tab="clima">Cambio climático</button>
+  </div>
+
+  <section class="plagas-section" id="plagas-grid">
+    {plagas.map((p, idx) => (
+      <div 
+        class="plaga-card" 
+        data-condiciones={p.condiciones.join(",")}
+        data-nombre={p.nombre}
+        data-severidad={p.severidad}
+      >
+        <div class="plaga-inner">
+          <div class="plaga-front">
+            <span class="plaga-icon">{p.icono}</span>
+            <h3>{p.nombre}</h3>
+            <div class="condiciones-box">
+              <span class="condiciones-label">Condiciones que la favorecen:</span>
+              <div class="condiciones-tags">
+                {p.condiciones.map(c => (
+                  <span class="condicion-tag">{c}</span>
+                ))}
+              </div>
+            </div>
+            <span class="flip-hint">Click para ver tratamiento →</span>
+          </div>
+          <div class="plaga-back">
+            <span class="plaga-icon">{p.icono}</span>
+            <h3>💊 Tratamiento</h3>
+            <p class="tratamiento-text">{p.tratamiento}</p>
+            <div class="condiciones-footer">
+              <span class="footer-label">Afectada por:</span>
+              <div class="condiciones-tags">
+                {p.condiciones.map(c => (
+                  <span class="condicion-tag">{c}</span>
+                ))}
+              </div>
+            </div>
+            <span class="flip-hint">← Volver</span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <section class="clima-section" id="clima-section" style="display: none;">
+    <div class="clima-hero">
+      <h2>🌡️ Plagas Aumentadas por el Cambio Climático</h2>
+      <p>El calentamiento global está modificando la distribución y frecuencia de las plagas del olivar</p>
+    </div>
+    <div class="clima-grid">
+      {cambioClimatico.map((item) => (
+        <div class={`clima-card severidad-${item.severidad}`}>
+          <h3>{item.plaga}</h3>
+          <p class="cambio">{item.cambio}</p>
+          <span class={`badge-severidad ${item.severidad}`}>{item.severidad}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const condicionesMap = {
+    'temperatura': ['Bajas Temperaturas', 'Altas Temperaturas'],
+    'humedad': ['Baja Humedad', 'Alta Humedad'],
+    'lluvia': ['Baja Lluvia', 'Alta Lluvia']
+  };
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      const tabName = tab.dataset.tab;
+      const grid = document.getElementById('plagas-grid');
+      const climaSection = document.getElementById('clima-section');
+      
+      if (tabName === 'clima') {
+        grid.style.display = 'none';
+        climaSection.style.display = 'block';
+      } else {
+        grid.style.display = 'grid';
+        climaSection.style.display = 'none';
+        
+        const filtro = condicionesMap[tabName] || [];
+        
+        document.querySelectorAll('.plaga-card').forEach(card => {
+          const condiciones = card.dataset.condiciones.split(',');
+          const matches = filtro.length === 0 || filtro.some(f => condiciones.includes(f));
+          card.style.display = matches ? 'block' : 'none';
+        });
+      }
+    });
+  });
+
+  document.querySelectorAll('.plaga-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+    });
+  });
+</script>
+
+<style is:global>
+  .page-header {
+    text-align: center;
+    padding: 3rem 1rem 1rem;
+    background: var(--color-sal);
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+    color: var(--color-aceituna);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--color-muted);
+    font-size: 1rem;
+  }
+
+  .tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    flex-wrap: wrap;
+    background: var(--color-sal);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-muted);
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--color-aceituna); }
+  .tab.active { background: var(--color-limon); color: var(--color-aceituna); border-color: var(--color-limon); }
+
+  .plagas-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    background: var(--color-sal);
+  }
+
+  @media (min-width: 768px) { .plagas-section { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .plagas-section { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .plaga-card {
+    perspective: 1000px;
+    cursor: pointer;
+    height: 320px;
+  }
+
+  .plaga-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .plaga-card.flipped .plaga-inner { transform: rotateY(180deg); }
+
+  .plaga-front, .plaga-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 6px;
+    padding: 1.25rem;
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .plaga-back {
+    transform: rotateY(180deg);
+    background: var(--color-white-surface);
+  }
+
+  .plaga-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .plaga-card h3 { font-size: 1.1rem; color: var(--color-aceituna); margin-bottom: 0.75rem; }
+
+  .condiciones-box {
+    background: var(--color-sal);
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .condiciones-label {
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .condiciones-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .condicion-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .flip-hint {
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    text-align: center;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
+  .tratamiento-text {
+    font-size: 0.85rem;
+    color: var(--color-aceituna);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    flex: 1;
+  }
+
+  .condiciones-footer {
+    background: var(--color-sal);
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-label {
+    font-size: 0.65rem;
+    color: var(--color-muted);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .clima-section {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    background: var(--color-sal);
+  }
+
+  .clima-hero {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .clima-hero h2 { font-size: 1.5rem; color: var(--color-aceituna); margin-bottom: 0.5rem; }
+  .clima-hero p { color: var(--color-muted); }
+
+  .clima-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) { .clima-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .clima-card {
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    padding: 1.25rem;
+  }
+
+  .clima-card.severidad-alta { border-left: 4px solid #F59E0B; }
+  .clima-card.severidad-critica { border-left: 4px solid #EF4444; }
+
+  .clima-card h3 { font-size: 1rem; color: var(--color-aceituna); margin-bottom: 0.5rem; }
+  .clima-card .cambio { font-size: 0.85rem; color: var(--color-muted); margin-bottom: 0.75rem; }
+
+  .badge-severidad {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-severidad.alta { background: #FEF3C7; color: #92400E; }
+  .badge-severidad.critica { background: #FEE2E2; color: #991B1B; }
+</style>

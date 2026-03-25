@@ -21,6 +21,14 @@ export interface DatosClima {
     xylella: { nivel: string; descripcion: string; consejo: string };
     repilo: { nivel: string; descripcion: string; consejo: string };
   };
+  riesgos_olivar?: {
+    frio: { nivel: string; descripcion: string; impacto: string };
+    calor: { nivel: string; descripcion: string; impacto: string };
+    baja_humedad: { nivel: string; descripcion: string; impacto: string };
+    alta_humedad: { nivel: string; descripcion: string; impacto: string };
+    baja_lluvia: { nivel: string; descripcion: string; impacto: string };
+    alta_lluvia: { nivel: string; descripcion: string; impacto: string };
+  };
 }
 
 const CACHE_TTL = 6 * 60 * 60 * 1000;
@@ -106,6 +114,64 @@ function calcularRiesgosPlaga(temp: number, humedad: number, lluvia: number) {
   return { mosca, polilla, xylella, repilo };
 }
 
+function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
+  const frio = (() => {
+    if (temp < 0) {
+      return { nivel: 'alto', descripcion: 'Helada - riesgo de daño en flores y frutos', impacto: 'Daño en floración, pérdida de cosecha' };
+    } else if (temp < 5) {
+      return { nivel: 'medio', descripcion: 'Temperatura muy baja - riesgo de helada', impacto: 'Vigilar состояние del olivo' };
+    }
+    return { nivel: 'bajo', descripcion: 'Temperatura adecuada para olivo', impacto: 'Sin riesgo de heladas' };
+  })();
+
+  const calor = (() => {
+    if (temp > 40) {
+      return { nivel: 'alto', descripcion: 'Calor extremo - cierre estomático', impacto: 'Estrés hídrico severo, reducción fotosíntesis' };
+    } else if (temp > 35) {
+      return { nivel: 'medio', descripcion: 'Temperatura alta - estrés térmico', impacto: 'Mayor demanda de agua' };
+    }
+    return { nivel: 'bajo', descripcion: 'Temperatura normal para olivo', impacto: 'Condiciones óptimas' };
+  })();
+
+  const baja_humedad = (() => {
+    if (humedad < 20) {
+      return { nivel: 'alto', descripcion: 'Humedad muy baja - estrés hídrico severo', impacto: 'Sequía, limitación de crecimiento' };
+    } else if (humedad < 35) {
+      return { nivel: 'medio', descripcion: 'Humedad baja - precaución', impacto: 'Aumentar riego' };
+    }
+    return { nivel: 'bajo', descripcion: 'Humedad adecuada', impacto: 'Sin riesgo' };
+  })();
+
+  const alta_humedad = (() => {
+    if (humedad > 85) {
+      return { nivel: 'alto', descripcion: 'Humedad muy alta - riesgo de enfermedades', impacto: 'Fungal: repilo, verticilosis' };
+    } else if (humedad > 75) {
+      return { nivel: 'medio', descripcion: 'Humedad elevada - vigilancia', impacto: 'Monitorear enfermedades' };
+    }
+    return { nivel: 'bajo', descripcion: 'Humedad normal', impacto: 'Sin riesgo' };
+  })();
+
+  const baja_lluvia = (() => {
+    if (lluvia < 0.5) {
+      return { nivel: 'alto', descripcion: 'Sequía severa - reducción producción hasta 20%', impacto: 'Reducción rendimiento aceituna' };
+    } else if (lluvia < 2) {
+      return { nivel: 'medio', descripcion: 'Lluvia baja - monitorear riego', impacto: 'Posible déficit hídrico' };
+    }
+    return { nivel: 'bajo', descripcion: 'Precipitación adecuada', impacto: 'Sin riesgo' };
+  })();
+
+  const alta_lluvia = (() => {
+    if (lluvia > 20) {
+      return { nivel: 'alto', descripcion: 'Lluvia intensa - riesgo de inundación', impacto: 'Asfixia radicular, erosión suelo' };
+    } else if (lluvia > 10) {
+      return { nivel: 'medio', descripcion: 'Lluvia moderada - vigilancia', impacto: 'Posible encharcamiento' };
+    }
+    return { nivel: 'bajo', descripcion: 'Precipitación normal', impacto: 'Sin riesgo' };
+  })();
+
+  return { frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia };
+}
+
 export async function getClimaData() {
   const now = Date.now();
   const cacheRow = db.query("SELECT datos, cached_at FROM clima_cache WHERE id = 1").get() as { datos: string; cached_at: number } | undefined;
@@ -143,6 +209,7 @@ export async function getClimaData() {
     const riesgo = calcularRiesgo(temp, item.humedad, item.lluvia);
     const estado = getEstado(temp);
     const riesgos_plaga = calcularRiesgosPlaga(temp, item.humedad, item.lluvia);
+    const riesgos_olivar = calcularRiesgosOlivar(temp, item.humedad, item.lluvia);
     return {
       provincia: item.provincia.nombre,
       lat: item.provincia.lat,
@@ -157,6 +224,7 @@ export async function getClimaData() {
       suelo_humedad: item.suelo_humedad,
       evapotranspiracion: item.evapotranspiracion,
       riesgos_plaga,
+      riesgos_olivar,
     };
   });
 

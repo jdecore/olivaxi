@@ -275,7 +275,8 @@ export default function MapaCalor({ onProvinciaClick }) {
       style={{ 
         height: '380px', 
         width: '100%', 
-        borderRadius: '4px'
+        borderRadius: '4px',
+        zIndex: 0
       }}
       className="mapa-container"
     >
@@ -311,7 +312,7 @@ export default function MapaCalor({ onProvinciaClick }) {
           position: absolute;
           top: 10px;
           right: 10px;
-          z-index: 1000;
+          z-index: 99;
           display: flex;
           gap: 4px;
           background: ${modoOscuro ? 'rgba(0,0,0,0.85)' : 'rgba(247,244,238,0.85)'};
@@ -399,12 +400,13 @@ export default function MapaCalor({ onProvinciaClick }) {
         }
       `}</style>
       <MapResizer />
-      <div className="mapa-filters">
+      <div className="mapa-filters" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 999, display: 'flex', gap: '4px' }}>
         {['temperatura', 'humedad', 'precipitacion'].map((filtro) => (
           <button
             key={filtro}
             className={filtroActivo === filtro ? 'active' : ''}
             onClick={() => setFiltroActivo(filtro)}
+            style={{ padding: '4px 8px', fontSize: '11px', fontWeight: '600', border: '1px solid #F7F4EE', borderRadius: '3px', background: '#D4E849', color: '#1C1C1C', cursor: 'pointer' }}
           >
             {filterIcons[filtro]} {filterLabels[filtro]}
           </button>
@@ -487,7 +489,7 @@ export default function MapaCalor({ onProvinciaClick }) {
         padding: '6px 8px',
         fontSize: '9px',
         fontFamily: '-apple-system, sans-serif',
-        zIndex: 1000,
+        zIndex: 999,
         display: 'flex',
         flexWrap: 'wrap',
         gap: '4px',

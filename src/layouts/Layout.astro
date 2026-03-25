@@ -36,6 +36,7 @@ const { title = "olivaξ" } = Astro.props;
         <a href="/">Inicio</a>
         <a href="/consejero">Consejero</a>
         <a href="/variedades">Variedades</a>
+        <a href="/plagas">Plagas</a>
       </div>
       <div class="nav-right">
         <a href="/alertas" class="btn-alerta-pill">🔔 Activar alerta</a>
@@ -134,21 +135,21 @@ const { title = "olivaξ" } = Astro.props;
     z-index: 100;
     transition: transform 0.2s ease;
     width: auto;
-    min-width: 600px;
+    min-width: 700px;
     max-width: calc(100% - 48px);
-    background-color: var(--color-sal);
+    background-color: #FFFFFF;
     border: 2px solid var(--color-aceituna);
     border-radius: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 24px;
+    padding: 14px 32px;
   }
 
   .nav-left .logo {
     color: var(--color-aceituna);
     font-weight: bold;
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     text-decoration: none;
     font-family: Georgia, 'Palatino Linotype', serif;
   }
@@ -162,7 +163,7 @@ const { title = "olivaξ" } = Astro.props;
   .nav-center a {
     color: var(--color-muted);
     text-decoration: none;
-    font-size: 12px;
+    font-size: 13px;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     transition: color 0.2s ease, opacity 0.2s ease;
     opacity: 1;
@@ -173,10 +174,10 @@ const { title = "olivaξ" } = Astro.props;
   .btn-alerta-pill {
     background: var(--color-limon);
     color: var(--color-aceituna);
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     border: 2px solid var(--color-aceituna);
       transition: all 0.2s ease;
@@ -189,7 +190,7 @@ const { title = "olivaξ" } = Astro.props;
 
   .toggle-wrapper {
     position: fixed;
-    top: 18px;
+    top: 20px;
     right: 24px;
     z-index: 101;
   }
