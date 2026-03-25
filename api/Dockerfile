@@ -6,7 +6,12 @@ COPY api/package.json ./
 COPY api/bun.lock ./
 RUN bun install
 
-COPY api/ .
+COPY api/data ./data
+COPY api/routes ./routes
+COPY api/services ./services
+COPY api/db ./db
+COPY api/index.ts ./
+COPY api/.env ./
 
 EXPOSE 3000
 
