@@ -3,7 +3,6 @@
 node_modules
 dist
 .astro
-api/node_modules
 .env
 .env.*
 !.env.example
@@ -12,5 +11,3 @@ README.md
 tests
 .vscode
 .DS_Store
-!api/.env
-!api/data
