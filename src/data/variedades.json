@@ -1,0 +1,134 @@
+[
+  {
+    "id": "leccino",
+    "nombre": "Leccino",
+    "origen": "Italia",
+    "resistencia_sequia": 75,
+    "tolerancia_calor": 72,
+    "productividad": 80,
+    "estudios": 312,
+    "etiqueta": "Resistencia Xylella",
+    "descripcion": "Variedad italiana ampliamente cultivada. Reconocida por su alta resistencia a Xylella fastidiosa, la bacteria quedevasta olivos en el sur de Italia.",
+    "tags": ["resistencia-xylella", "aceite-delicado"],
+    "notas_climaticas": "Buena adaptación a climas templados. Moderadamente resistente a sequía.",
+    "plagas": {
+      "xylella": "Alta resistencia",
+      "mosca": "Resistencia media",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Resistencia media",
+      "repilo": "Resistencia media"
+    }
+  },
+  {
+    "id": "favolosa",
+    "nombre": "Favolosa (FS-17)",
+    "origen": "Italia",
+    "resistencia_sequia": 78,
+    "tolerancia_calor": 75,
+    "productividad": 82,
+    "estudios": 156,
+    "etiqueta": "Mutante alto rendimiento",
+    "descripcion": "Mutante natural de Leccino seleccionado por su mayor rendimiento. Alta resistencia a Xylella y excelente vigor.",
+    "tags": ["resistencia-xylella", "alta-produccion"],
+    "notas_climaticas": "Mejor vigor que Leccino original. Buena tolerancia al calor.",
+    "plagas": {
+      "xylella": "Alta resistencia",
+      "mosca": "Resistencia media",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Resistencia media",
+      "repilo": "Resistencia media"
+    }
+  },
+  {
+    "id": "picual",
+    "nombre": "Picual",
+    "origen": "Jaén, España",
+    "resistencia_sequia": 55,
+    "tolerancia_calor": 78,
+    "productividad": 95,
+    "estudios": 947,
+    "etiqueta": "Resistencia Mosca",
+    "descripcion": "Domina el 50% del olivar español y el 20% mundial. Máxima productividad pero necesita agua disponible. Resistente a la mosca del olivo.",
+    "tags": ["alta-produccion", "aceite-premium", "resistencia-mosca"],
+    "notas_climaticas": "Tolera heladas pero resiste poco a la sequía. Con calor extremo sin riego su producción cae significativamente.",
+    "plagas": {
+      "xylella": "Susceptible",
+      "mosca": "Alta resistencia",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Susceptible",
+      "repilo": "Resistencia media"
+    }
+  },
+  {
+    "id": "cornicabra",
+    "nombre": "Cornicabra",
+    "origen": "Castilla-La Mancha",
+    "resistencia_sequia": 70,
+    "tolerancia_calor": 80,
+    "productividad": 75,
+    "estudios": 234,
+    "etiqueta": "Resistencia Mosca",
+    "descripcion": "Segunda variedad más cultivada en España. Notable resistencia a la mosca del olivo y buena tolerancia al calor.",
+    "tags": ["resistencia-mosca", "secano"],
+    "notas_climaticas": "Excelente adaptación a climas continentales con inviernos fríos y veranos calurosos.",
+    "plagas": {
+      "xylella": "Resistencia media",
+      "mosca": "Alta resistencia",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Resistencia media",
+      "repilo": "Resistencia media"
+    }
+  },
+  {
+    "id": "arbequina",
+    "nombre": "Arbequina",
+    "origen": "Lleida, Cataluña",
+    "resistencia_sequia": 60,
+    "tolerancia_calor": 62,
+    "productividad": 88,
+    "estudios": 634,
+    "etiqueta": "Resistencia Prays/Hongos",
+    "descripcion": "Ideal para plantaciones superintensivas. Resistente a Prays y hongos. Maduración precoz y aceite suave.",
+    "tags": ["alta-produccion", "resistencia-prays"],
+    "notas_climaticas": "Más sensible al calor seco que otras variedades. El tamaño del fruto se ve afectado en sequías severas.",
+    "plagas": {
+      "xylella": "Resistencia media",
+      "mosca": "Resistencia media",
+      "prays": "Alta resistencia"
+    },
+    "enfermedades": {
+      "antracnosis": "Alta resistencia",
+      "repilo": "Alta resistencia"
+    }
+  },
+  {
+    "id": "lechin-granada",
+    "nombre": "Lechín de Granada",
+    "origen": "Granada, España",
+    "resistencia_sequia": 72,
+    "tolerancia_calor": 74,
+    "productividad": 70,
+    "estudios": 189,
+    "etiqueta": "Resistencia Prays",
+    "descripcion": "Variedad tradicional granadina con alta resistencia a Prays. Aceite rico en polifenoles.",
+    "tags": ["resistencia-prays", "secano"],
+    "notas_climaticas": "Bien adaptada a la dryness del sur de España. Tolera calor moderado.",
+    "plagas": {
+      "xylella": "Resistencia media",
+      "mosca": "Resistencia media",
+      "prays": "Alta resistencia"
+    },
+    "enfermedades": {
+      "antracnosis": "Resistencia media",
+      "repilo": "Resistencia media"
+    }
+  }
+]
