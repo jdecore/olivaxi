@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
+import { ViewTransitions } from 'astro:transitions';
 interface Props {
   title?: string;
 }
@@ -26,6 +27,7 @@ const { title = "olivaξ" } = Astro.props;
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <title>{title}</title>
     <slot name="head" />
+    <ViewTransitions />
   </head>
   <body>
     <nav class="navbar">
