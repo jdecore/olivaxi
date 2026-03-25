@@ -1,19 +1,8 @@
 import { Hono } from "hono";
 import { getClimaData, type DatosClima } from "../routes/clima";
-import { analizarTodas } from "../services/analisisAgricola";
+import { analizarProvincia } from "../services/analisisAgricola";
 
 const analisis = new Hono();
-
-analisis.get("/", async (c) => {
-  try {
-    const data = await getClimaData();
-    const resultados = analizarTodas(data as DatosClima[]);
-    return c.json(resultados);
-  } catch (error) {
-    console.error("ERROR ANALISIS:", error);
-    return c.json({ error: String(error) }, 500);
-  }
-});
 
 analisis.get("/:provincia", async (c) => {
   try {
@@ -34,7 +23,5 @@ analisis.get("/:provincia", async (c) => {
     return c.json({ error: String(error) }, 500);
   }
 });
-
-import { analizarProvincia } from "../services/analisisAgricola";
 
 export default analisis;

@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import variedades from '../data/variedades.json';
-import ComparadorVariedades from '../components/ComparadorVariedades.jsx';
+import ComparadorVariedades from '../components/ComparadorVariedades.astro';
 ---
 
 <Layout title="Variedades - olivaξ">
@@ -21,7 +21,7 @@ import ComparadorVariedades from '../components/ComparadorVariedades.jsx';
   </div>
 
   <!-- Grid con comparador -->
-  <ComparadorVariedades client:load variedades={variedades} />
+  <ComparadorVariedades varietyData={variedades} />
 </Layout>
 
 <style is:global>
@@ -71,8 +71,3 @@ import ComparadorVariedades from '../components/ComparadorVariedades.jsx';
     background: var(--color-sal);
   }
 </style>
-
-<script>
-  // El filtrado se maneja ahora dentro del componente React
-  // Este script se mantiene para compatibilidad pero ya no es necesario
-</script>

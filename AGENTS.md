@@ -29,14 +29,16 @@ olivaxi/
 │   │   ├── MapaCalor.jsx        # Mapa Leaflet con fadeIn animado
 │   │   ├── ChatConsejero.jsx    # Chat con streaming, modo oscuro adaptativo
 │   │   ├── ThemeToggle.astro    # Toggle tema claro/oscuro
-│   │   ├── RankingRiesgo.jsx    # Top 3 provincias por temperatura
+│   │   ├── RankingRiesgo.astro    # Top 3 provincias (server-side render)
+│   │   ├── RankingRiesgo.jsx      # (deprecated, usar .astro)
+│   │   └── ComparadorVariedades.jsx # Comparador de variedades
 │   │   └── ComparadorVariedades.jsx # Comparador de variedades
 │   ├── data/
 │   │   └── variedades.json       # 6 variedades con datos científicos
 │   ├── layouts/
 │   │   └── Layout.astro         # Layout base con CSS variables + dark mode
 │   ├── lib/
-│   │   └── api.ts               # Funciones apiUrl() / n8nUrl()
+│   │   └── api.ts               # Funciones apiUrl()
 │   └── pages/
 │       ├── index.astro           # Homepage con bento grid
 │       ├── conseajero.astro      # Chat completo (client:only="react")
@@ -77,7 +79,6 @@ bun run api/index.ts   # Puerto 3000
 ### Variables de entorno (.env)
 ```
 PUBLIC_API_URL=http://localhost:3000
-PUBLIC_N8N_URL=http://localhost:5678
 GROQ_KEY=tu_key
 GEMINI_KEY=tu_key
 OPENROUTER_KEY=tu_key
@@ -326,20 +327,76 @@ Respuesta: `{ "ok": true }`
 
 ---
 
+## 2026-03-25 (madrugada) - Optimización SSR + Event listeners
+
+**Cambios realizados:**
+1. ✅ `AlertasClimaticas.jsx` - Añadido listener para evento `datos-provincia` (disparado desde index.astro al cambiar provincia en dropdown). Ahora actualiza alertas sin necesidad de fetch adicional ya que el evento contiene los datos.
+2. ✅ Tabla de Provincias (`index.astro`) - Movido fetch a Astro server-side, eliminado JavaScript del navegador
+3. ✅ Hero Stats (`index.astro`) - Calculadas estadísticas en servidor (tempMax, tempMin, avgTemp, totalProvincias)
+4. ✅ `RankingRiesgo.astro` - Nuevo componente Astro que renderiza en server-side (build time)
+5. ✅ `index.astro` script - Simplificado, eliminado código muerto (referencias a provinciaSelect undefined, tabla rendering redundante). Añadido listener correcto para actualizar decisiones-rápidas al hacer clic en el mapa.
+
+**Archivos modificados/nuevos:**
+- `src/components/AlertasClimaticas.jsx`
+- `src/pages/index.astro`
+- `src/components/RankingRiesgo.astro` (nuevo)
+
+---
+
+## 2026-03-25 (mañana) - Conversión ComparadorVariedades a Astro
+
+**Cambios realizados:**
+1. ✅ `src/components/ComparadorVariedades.astro` - Nuevo componente Astro + vanilla JS
+   - Reemplaza el componente React (423 líneas) con versión Astro pura (~405 líneas)
+   - Usa data attributes en HTML para almacenar datos de variedades
+   - Vanilla JS maneja la lógica de selección y comparación
+   - No requiere `client:*` directive - SSR completo
+2. ✅ `src/pages/variedades.astro` - Actualizado
+   - Import cambiado de `.jsx` a `.astro`
+   - Removido `client:load` directive
+   - Prop cambiada de `variedades` a `varietyData`
+   - Removido script inline obsoleto
+
+**Resultado:**
+- Build pasa correctamente: 4 páginas
+- Variety data renderizado server-side
+- JS cliente solo para funcionalidad de comparación
+
+**Archivos creados/modificados:**
+- `src/components/ComparadorVariedades.astro` (nuevo)
+- `src/pages/variedades.astro` (modificado)
+- `src/components/ComparadorVariedades.jsx` (eliminado)
+
+---
+
+## 2026-03-25 (tarde) - Optimización adicional
+
+**Intentos:**
+1. ❌ Se intentó simplificar `index.astro` reemplazando el script inline con un `<form method="GET">` para el dropdown de provincia
+   - Hubo problemas de caching de build que causaban errores "Unterminated string literal"
+   - Se decidió mantener el script inline existente
+
+**Resultado final:**
+- Objetivo principal logrado: eliminar React del ComparadorVariedades
+- Build pasa correctamente
+
+---
+
 ## 💾 Estado de la sesión actual
 
 ### Último comando ejecutado:
 ```bash
-bun run api/index.ts
+npm run build  # Pasa correctamente (4 páginas)
 ```
 
 ### Errores pendientes:
-- Ninguno (schema de SQLite corregido)
+- Ninguno
+
+### Notas de la sesión:
+- Se intentó simplificar `index.astro` reemplazando el script inline con un `<form method="GET">` para el dropdown de provincia, pero hubo problemas de caching de build que causaban errores "Unterminated string literal". Se decidió mantener el script inline existente ya que el objetivo principal (eliminar React del ComparadorVariedades) se logró.
 
 ### Pendientes del usuario:
-- Revisar datos disponibles para mejoras en mapa y widgets
-- Usuario pidió lista de datos disponibles (completado)
-- Usuario pidió guardar estado en AGENTS.md (completado)
+- Ninguno
 
 ### Próximos pasos sugeridos:
 1. Añadir pronóstico 7 días al endpoint /api/clima

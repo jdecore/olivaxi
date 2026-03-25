@@ -1,0 +1,405 @@
+---
+const { varietyData = [] } = Astro.props;
+---
+
+<section class="var-grid" id="var-grid">
+  {varietyData.map((v, idx) => (
+    <div 
+      class="var-card" 
+      data-tags={v.tags.join(",")} 
+      data-nombre={v.nombre}
+      data-sequía={v.resistencia_sequia}
+      data-calor={v.tolerancia_calor}
+      data-prod={v.productividad}
+      data-estudios={v.estudios}
+      data-origen={v.origen}
+    >
+      <span class="var-badge">{v.etiqueta}</span>
+      <h3>🫒 {v.nombre}</h3>
+      <p class="var-origen">📍 {v.origen}</p>
+      
+      <div class="var-bars">
+        <div class="var-bar-row">
+          <span class="var-bar-label">Sequía</span>
+          <div class="var-bar-bg">
+            <div class="var-bar-fill var-bar-sequía" style={`width: ${v.resistencia_sequia}%`}></div>
+          </div>
+          <span class="var-bar-value">{v.resistencia_sequia}%</span>
+        </div>
+        <div class="var-bar-row">
+          <span class="var-bar-label">Calor</span>
+          <div class="var-bar-bg">
+            <div class="var-bar-fill var-bar-calor" style={`width: ${v.tolerancia_calor}%`}></div>
+          </div>
+          <span class="var-bar-value">{v.tolerancia_calor}%</span>
+        </div>
+        <div class="var-bar-row">
+          <span class="var-bar-label">Prod.</span>
+          <div class="var-bar-bg">
+            <div class="var-bar-fill var-bar-prod" style={`width: ${v.productividad}%`}></div>
+          </div>
+          <span class="var-bar-value">{v.productividad}%</span>
+        </div>
+      </div>
+      
+      <p class="var-studies">📄 {v.estudios} estudios</p>
+      <p class="var-desc">{v.descripcion}</p>
+      <div class="var-notes">🌡️ {v.notas_climaticas}</div>
+      
+      <button class="var-btn" data-nombre={v.nombre}>
+        Comparar
+      </button>
+    </div>
+  ))}
+</section>
+
+<div class="sticky-bar" id="sticky-bar" style="display: none;">
+  Selecciona una segunda variedad para comparar
+</div>
+
+<div class="compare-panel" id="compare-panel" style="display: none;">
+  <button class="clear-btn" id="clear-btn">× Limpiar comparación</button>
+  <h3 class="compare-title" id="compare-title"></h3>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Métrica</th>
+        <th id="th-a"></th>
+        <th id="th-b"></th>
+      </tr>
+    </thead>
+    <tbody id="compare-tbody"></tbody>
+  </table>
+</div>
+
+<script>
+  const seleccionadas = [];
+
+  function getCardData(nombre) {
+    const card = document.querySelector(`.var-card[data-nombre="${nombre}"]`);
+    if (!card) return null;
+    return {
+      nombre: card.dataset.nombre,
+      resistencia_sequia: parseInt(card.dataset.sequía),
+      tolerancia_calor: parseInt(card.dataset.calor),
+      productividad: parseInt(card.dataset.prod),
+      estudios: parseInt(card.dataset.estudios),
+      origen: card.dataset.origen
+    };
+  }
+
+  document.querySelectorAll('.var-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nombre = btn.dataset.nombre;
+      const idx = seleccionadas.indexOf(nombre);
+      
+      if (idx > -1) {
+        seleccionadas.splice(idx, 1);
+        btn.textContent = 'Comparar';
+        btn.classList.remove('selected');
+      } else if (seleccionadas.length < 2) {
+        seleccionadas.push(nombre);
+        btn.textContent = 'Seleccionada ✓';
+        btn.classList.add('selected');
+      } else {
+        seleccionadas[1] = nombre;
+        document.querySelectorAll('.var-btn').forEach(b => {
+          if (seleccionadas.includes(b.dataset.nombre)) {
+            b.textContent = 'Seleccionada ✓';
+            b.classList.add('selected');
+          } else {
+            b.textContent = 'Comparar';
+            b.classList.remove('selected');
+          }
+        });
+      }
+      
+      actualizarUI();
+    });
+  });
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    seleccionadas.length = 0;
+    document.querySelectorAll('.var-btn').forEach(b => {
+      b.textContent = 'Comparar';
+      b.classList.remove('selected');
+    });
+    actualizarUI();
+  });
+
+  function actualizarUI() {
+    const stickyBar = document.getElementById('sticky-bar');
+    const comparePanel = document.getElementById('compare-panel');
+
+    if (seleccionadas.length === 1) {
+      stickyBar.style.display = 'block';
+      comparePanel.style.display = 'none';
+    } else if (seleccionadas.length === 2) {
+      stickyBar.style.display = 'none';
+      comparePanel.style.display = 'block';
+      renderComparacion();
+    } else {
+      stickyBar.style.display = 'none';
+      comparePanel.style.display = 'none';
+    }
+  }
+
+  function renderComparacion() {
+    const a = getCardData(seleccionadas[0]);
+    const b = getCardData(seleccionadas[1]);
+
+    document.getElementById('compare-title').textContent = `Comparación: ${a.nombre} vs ${b.nombre}`;
+    document.getElementById('th-a').textContent = a.nombre;
+    document.getElementById('th-b').textContent = b.nombre;
+
+    const metrics = [
+      { key: 'resistencia_sequia', label: 'Sequía', type: 'bar', color: 'sequia' },
+      { key: 'tolerancia_calor', label: 'Calor', type: 'bar', color: 'calor' },
+      { key: 'productividad', label: 'Producción', type: 'bar', color: 'prod' },
+      { key: 'estudios', label: 'Estudios', type: 'number' },
+      { key: 'origen', label: 'Origen', type: 'text' }
+    ];
+
+    const tbody = document.getElementById('compare-tbody');
+    tbody.innerHTML = metrics.map(m => {
+      const valA = a[m.key];
+      const valB = b[m.key];
+      
+      let winnerA = '', winnerB = '';
+      if (m.type === 'bar' || m.type === 'number') {
+        if (valA > valB) winnerA = 'winner';
+        if (valB > valA) winnerB = 'winner';
+      }
+
+      let contentA, contentB;
+      if (m.type === 'bar') {
+        contentA = `<div class="bar-container"><div class="bar-bg"><div class="bar-fill ${winnerA ? 'winner-fill' : m.color + '-fill'}" style="width: ${valA}%"></div></div><span>${valA}%</span></div>`;
+        contentB = `<div class="bar-container"><div class="bar-bg"><div class="bar-fill ${winnerB ? 'winner-fill' : m.color + '-fill'}" style="width: ${valB}%"></div></div><span>${valB}%</span></div>`;
+      } else if (m.type === 'number') {
+        contentA = valA;
+        contentB = valB;
+      } else {
+        contentA = valA;
+        contentB = valB;
+      }
+
+      return `<tr><td>${m.label}</td><td class="${winnerA}">${contentA}</td><td class="${winnerB}">${contentB}</td></tr>`;
+    }).join('');
+  }
+</script>
+
+<style is:global>
+  .var-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+    background: var(--color-sal);
+  }
+
+  @media (min-width: 768px) { .var-grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .var-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .var-card {
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    border-top: 3px solid var(--color-border);
+    transition: border-color 0.2s;
+  }
+
+  .var-card:hover {
+    border-top-color: var(--color-limon);
+  }
+
+  .var-badge {
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .var-card h3 {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-top: 0.75rem;
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
+    color: var(--color-aceituna);
+  }
+
+  .var-origen {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    margin-top: 0.25rem;
+  }
+
+  .var-bars { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .var-bar-row { display: flex; align-items: center; gap: 0.5rem; }
+
+  .var-bar-label { font-size: 11px; color: var(--color-muted); width: 3rem; }
+
+  .var-bar-bg {
+    flex: 1;
+    background: var(--color-sal);
+    border-radius: 4px;
+    height: 6px;
+  }
+
+  .var-bar-fill { height: 6px; border-radius: 4px; }
+  .var-bar-sequía { background: #D4E849; }
+  .var-bar-calor { background: #F59E0B; }
+  .var-bar-prod { background: #3B82F6; }
+
+  .var-bar-value { font-size: 11px; color: var(--color-muted); width: 2rem; text-align: right; }
+
+  .var-studies { font-size: 0.875rem; color: var(--color-muted); margin-top: 0.75rem; }
+  .var-desc { font-size: 0.875rem; color: var(--color-aceituna); margin-top: 0.5rem; }
+
+  .var-notes {
+    margin-top: 0.75rem;
+    background: var(--color-sal);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+
+  .var-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--color-white-surface);
+    color: var(--color-aceituna);
+    transition: all 0.2s;
+  }
+
+  .var-btn:hover {
+    background: var(--color-limon);
+  }
+
+  .var-btn.selected {
+    background: var(--color-limon);
+  }
+
+  .sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-aceituna);
+    color: var(--color-sal);
+    padding: 10px 20px;
+    font-size: 12px;
+    text-align: center;
+    z-index: 100;
+  }
+
+  .compare-panel {
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-white-surface);
+    padding: 20px;
+    margin: 24px auto 0;
+    max-width: 64rem;
+  }
+
+  .clear-btn {
+    background: transparent;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    float: right;
+    color: var(--color-aceituna);
+  }
+
+  .compare-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+    margin-top: 0;
+    color: var(--color-aceituna);
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .compare-table th {
+    text-align: left;
+    padding: 8px;
+    font-size: 12px;
+    color: var(--color-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    width: 25%;
+  }
+
+  .compare-table th:nth-child(2),
+  .compare-table th:nth-child(3) {
+    text-align: center;
+    font-weight: 700;
+    color: var(--color-aceituna);
+    width: 37.5%;
+  }
+
+  .compare-table td {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--color-muted);
+    text-align: center;
+  }
+
+  .compare-table td:first-child {
+    text-align: left;
+    color: var(--color-muted);
+  }
+
+  .compare-table td.winner {
+    background: var(--color-limon);
+  }
+
+  .bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .bar-bg {
+    width: 60px;
+    height: 8px;
+    background: var(--color-sal);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .winner-fill {
+    background: var(--color-aceituna) !important;
+  }
+
+  .sequia-fill { background: #D4E849; }
+  .calor-fill { background: #F59E0B; }
+  .prod-fill { background: #3B82F6; }
+</style>

@@ -1,0 +1,72 @@
+---
+const API_BASE = 'http://localhost:3000';
+let provincia = Astro.props.provincia || null;
+let analisis = null;
+let climaData = null;
+
+if (provincia) {
+  try {
+    const [climaRes, analisisRes] = await Promise.all([
+      fetch(`${API_BASE}/api/clima`),
+      fetch(`${API_BASE}/api/analisis/${encodeURIComponent(provincia)}`).catch(() => ({ ok: false }))
+    ]);
+    
+    if (climaRes.ok) {
+      const datos = await climaRes.json();
+      climaData = datos.find((p) => p.provincia === provincia);
+    }
+    if (analisisRes.ok) {
+      analisis = await analisisRes.json();
+    }
+  } catch (e) {
+    console.error('Error fetching:', e);
+  }
+}
+
+const tempDisplay = climaData?.temperatura ? `${climaData.temperatura}°C` : '--';
+const humedadDisplay = climaData?.humedad ? `${climaData.humedad}%` : '--';
+const lluviaDisplay = climaData?.lluvia ? `${climaData.lluvia}mm` : '--';
+const riesgo = climaData?.riesgo || 'bajo';
+const recomendaciones = analisis?.recomendaciones || [];
+const alertas = analisis?.alertas || [];
+---
+
+{!provincia ? (
+  <div class="decisiones-placeholder">
+    <p>Selecciona tu provincia arriba para ver las recomendaciones.</p>
+  </div>
+) : (
+  <>
+    <div class="decision-card temp">
+      <div class="decision-label">Temperatura actual</div>
+      <div class="decision-value">{tempDisplay}</div>
+      <div style="font-size: 10px; color: var(--color-muted); margin-top: 4px;">
+        💧 {humedadDisplay} · 🌧️ {lluviaDisplay}
+      </div>
+    </div>
+    <div class={`decision-card riesgo ${riesgo}`}>
+      <div class="decision-label">Nivel de riesgo</div>
+      <div class={`decision-value ${riesgo}`}>
+        {riesgo === 'alto' ? 'Alto' : riesgo === 'medio' ? 'Medio' : 'Bajo'}
+      </div>
+      {alertas.length > 0 && (
+        <div style="font-size: 10px; color: #ef4444; margin-top: 4px;">
+          ⚠️ {alertas[0]}
+        </div>
+      )}
+    </div>
+    <div class="decision-card acciones">
+      <div class="decision-label">Recomendaciones</div>
+      <ul class="decision-actions">
+        {recomendaciones.length > 0 ? (
+          recomendaciones.map((r) => <li set:html={r} />)
+        ) : (
+          <>
+            <li>✅ Condiciones óptimas</li>
+            <li>🌱 Buenas condiciones para tratamientos</li>
+          </>
+        )}
+      </ul>
+    </div>
+  </>
+)}
