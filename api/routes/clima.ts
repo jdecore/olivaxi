@@ -178,12 +178,60 @@ function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
 }
 
 const VARIEDADES_RESISTENCIAS: Record<string, any> = {
-  cornicabra: { nombre: "Cornicabra", clima: { frio: "muy-alta", calor: "muy-alta", sequia: "muy-alta", humedad_alta: "media" } },
-  picual: { nombre: "Picual", clima: { frio: "alta", calor: "muy-alta", sequia: "media", humedad_alta: "baja" } },
-  arbequina: { nombre: "Arbequina", clima: { frio: "muy-alta", calor: "media", sequia: "baja", humedad_alta: "baja" } },
-  hojiblanca: { nombre: "Hojiblanca", clima: { frio: "media", calor: "alta", sequia: "media-alta", humedad_alta: "media" } },
-  manzanilla: { nombre: "Manzanilla", clima: { frio: "media", calor: "media-alta", sequia: "baja", humedad_alta: "baja" } },
-  empeltre: { nombre: "Empeltre", clima: { frio: "alta", calor: "media-alta", sequia: "muy-alta", humedad_alta: "media" } }
+  cornicabra: { 
+    nombre: "Cornicabra", 
+    clima: { 
+      frio: { nivel: "muy-alta", rango: -10 },
+      calor: { nivel: "muy-alta", rango: 40 },
+      sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
+      humedad_alta: { nivel: "media", rango: 80 }
+    } 
+  },
+  picual: { 
+    nombre: "Picual", 
+    clima: { 
+      frio: { nivel: "alta", rango: -7 },
+      calor: { nivel: "muy-alta", rango: 40 },
+      sequia: { nivel: "media", rangoHumedad: 30, rangoLluvia: 2 },
+      humedad_alta: { nivel: "baja", rango: 75 }
+    } 
+  },
+  arbequina: { 
+    nombre: "Arbequina", 
+    clima: { 
+      frio: { nivel: "muy-alta", rango: -5 },
+      calor: { nivel: "media", rango: 35 },
+      sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
+      humedad_alta: { nivel: "baja", rango: 70 }
+    } 
+  },
+  hojiblanca: { 
+    nombre: "Hojiblanca", 
+    clima: { 
+      frio: { nivel: "media", rango: -3 },
+      calor: { nivel: "alta", rango: 38 },
+      sequia: { nivel: "media-alta", rangoHumedad: 35, rangoLluvia: 2 },
+      humedad_alta: { nivel: "media", rango: 75 }
+    } 
+  },
+  manzanilla: { 
+    nombre: "Manzanilla", 
+    clima: { 
+      frio: { nivel: "media", rango: -3 },
+      calor: { nivel: "media-alta", rango: 38 },
+      sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
+      humedad_alta: { nivel: "baja", rango: 70 }
+    } 
+  },
+  empeltre: { 
+    nombre: "Empeltre", 
+    clima: { 
+      frio: { nivel: "media", rango: -5 },
+      calor: { nivel: "media-alta", rango: 38 },
+      sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
+      humedad_alta: { nivel: "media", rango: 75 }
+    } 
+  }
 };
 
 function calcularScoreRiesgo(temp: number, humedad: number, lluvia: number, variedadClima: any): { score: number; nivel: string; detalle: string[] } {
@@ -194,47 +242,120 @@ function calcularScoreRiesgo(temp: number, humedad: number, lluvia: number, vari
   let score = 0;
   const detalle: string[] = [];
 
-  const mapNivel: Record<string, number> = { 'muy-alta': 0, 'alta': 1, 'media-alta': 1, 'media': 2, 'baja': 3 };
-
-  // Calor
-  const nivelCalor = variedadClima.calor || 'media';
-  const pesoCalor = mapNivel[nivelCalor] || 2;
-  if (pesoCalor >= 2 && temp > 28) {
-    score += pesoCalor;
-    detalle.push(`🔥 Calor sensible (${temp}°C)`);
+  // Calor: estrés desde 30°C si coincide con floración/cuajado, daño seria > 35°C
+  const rangoCalor = variedadClima.calor?.rango || 38;
+  const nivelCalor = variedadClima.calor?.nivel || 'media';
+  
+  if (temp > rangoCalor + 2) {
+    score += 3;
+    detalle.push(`🔥 Calor crítico (${temp}°C)`);
+  } else if (temp > rangoCalor) {
+    if (nivelCalor === 'baja') {
+      score += 3;
+      detalle.push(`🔥 Calor sensible (${temp}°C)`);
+    } else if (nivelCalor === 'media') {
+      score += 2;
+      detalle.push(`🔥 Calor moderado (${temp}°C)`);
+    } else {
+      score += 1;
+      detalle.push(`🌡️ Calor alto (${temp}°C)`);
+    }
+  } else if (temp > 35) {
+    score += 1;
+    detalle.push(`🌡️ Estrés térmico (${temp}°C)`);
   }
-  if (temp > 35) score += 1;
-  if (temp > 38) score += 1;
 
-  // Frío
-  const nivelFrio = variedadClima.frio || 'media';
-  const pesoFrio = mapNivel[nivelFrio] || 2;
-  if (pesoFrio >= 2 && temp < 10) {
-    score += pesoFrio;
-    detalle.push(`❄️ Frío sensible (${temp}°C)`);
-  }
-  if (temp < 5) score += 1;
-  if (temp < 0) score += 1;
+  // Frío: daño serio entre -3°C y -7°C, riesgo muy alto < -7°C
+  const rangoFrio = variedadClima.frio?.rango ?? -7;
+  const nivelFrio = variedadClima.frio?.nivel || 'media';
 
-  // Sequía
-  const nivelSequia = variedadClima.sequia || 'media';
-  const pesoSequia = mapNivel[nivelSequia] || 2;
-  if (pesoSequia >= 2 && humedad < 50) {
-    score += pesoSequia;
-    detalle.push(`🏜️ Sequía sensible (${humedad}%)`);
+  if (temp < rangoFrio - 3) {
+    score += 3;
+    detalle.push(`❄️ Helada severa (${temp}°C)`);
+  } else if (temp < rangoFrio) {
+    if (nivelFrio === 'baja') {
+      score += 3;
+      detalle.push(`❄️ Helada sensible (${temp}°C)`);
+    } else if (nivelFrio === 'media') {
+      score += 2;
+      detalle.push(`❄️ Frío moderado (${temp}°C)`);
+    } else {
+      score += 1;
+      detalle.push(`🌡️ Temperatura baja (${temp}°C)`);
+    }
+  } else if (temp < 5) {
+    score += 1;
+    detalle.push(`🌡️ Temperatura fresca (${temp}°C)`);
   }
-  if (humedad < 30) score += 1;
-  if (humedad < 20) score += 1;
 
-  // Humedad alta
-  const nivelHumedad = variedadClima.humedad_alta || 'media';
-  const pesoHumedad = mapNivel[nivelHumedad] || 2;
-  if (pesoHumedad >= 2 && humedad > 60) {
-    score += pesoHumedad;
-    detalle.push(`🦠 Humedad sensible (${humedad}%)`);
+  // Sequía/Baja humedad: estrés cuando sequia prolongada + temp > 30°C
+  const rangoHumedad = variedadClima.sequia?.rangoHumedad ?? 30;
+  const nivelSequia = variedadClima.sequia?.nivel || 'media';
+
+  if (humedad < rangoHumedad - 10) {
+    if (nivelSequia === 'baja') {
+      score += 3;
+      detalle.push(`🏜️ Sequía severa (${humedad}%)`);
+    } else if (nivelSequia === 'media' || nivelSequia === 'media-alta') {
+      score += 2;
+      detalle.push(`🏜️ Sequía moderada (${humedad}%)`);
+    } else {
+      score += 1;
+      detalle.push(`🏜️ Baja humedad (${humedad}%)`);
+    }
+  } else if (humedad < rangoHumedad) {
+    if (nivelSequia === 'baja') {
+      score += 2;
+      detalle.push(`🏜️ Estrés hídrico (${humedad}%)`);
+    } else {
+      score += 1;
+      detalle.push(`💧 Humedad baja (${humedad}%)`);
+    }
+  } else if (temp > 30 && humedad < 40) {
+    score += 1;
+    detalle.push(`🌡️+🏜️ Calor + Sequía`);
   }
-  if (humedad > 80) score += 1;
-  if (humedad > 90) score += 1;
+
+  // Lluvia baja
+  const rangoLluvia = variedadClima.sequia?.rangoLluvia ?? 2;
+  if (lluvia < 0.5 && lluvia > 0) {
+    score += 1;
+    detalle.push(`🌧️ Lluvia mínima (${lluvia}mm)`);
+  }
+
+  // Alta humedad/fungicas: problema con humedad persistente
+  const rangoHumedadAlta = variedadClima.humedad_alta?.rango ?? 80;
+  const nivelHumedadAlta = variedadClima.humedad_alta?.nivel || 'media';
+
+  if (humedad > rangoHumedadAlta + 10) {
+    if (nivelHumedadAlta === 'baja') {
+      score += 3;
+      detalle.push(`🦠 Hongos riesgo alto (${humedad}%)`);
+    } else if (nivelHumedadAlta === 'media') {
+      score += 2;
+      detalle.push(`🦠 Humedad muy alta (${humedad}%)`);
+    } else {
+      score += 1;
+      detalle.push(`💧 Humedad elevada (${humedad}%)`);
+    }
+  } else if (humedad > rangoHumedadAlta) {
+    if (nivelHumedadAlta === 'baja') {
+      score += 2;
+      detalle.push(`🦠 Riesgo hongos (${humedad}%)`);
+    } else {
+      score += 1;
+      detalle.push(`💧 Alta humedad (${humedad}%)`);
+    }
+  }
+
+  // Lluvia alta
+  if (lluvia > 20) {
+    score += 2;
+    detalle.push(`🌊 Lluvia intensa (${lluvia}mm)`);
+  } else if (lluvia > 10) {
+    score += 1;
+    detalle.push(`🌧️ Lluvia moderada (${lluvia}mm)`);
+  }
 
   score = Math.min(score, 10);
 

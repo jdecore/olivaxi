@@ -310,12 +310,54 @@ const variedadSeleccionada = Astro.props.variedad || '';
   };
 
   const VARIEDADES: Record<string, any> = {
-    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
-    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
-    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
-    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
+    cornicabra: { 
+      clima: { 
+        frio: { nivel: "muy-alta", rango: -10 },
+        calor: { nivel: "muy-alta", rango: 40 },
+        sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
+        humedad_alta: { nivel: "media", rango: 80 }
+      } 
+    },
+    picual: { 
+      clima: { 
+        frio: { nivel: "alta", rango: -7 },
+        calor: { nivel: "muy-alta", rango: 40 },
+        sequia: { nivel: "media", rangoHumedad: 30, rangoLluvia: 2 },
+        humedad_alta: { nivel: "baja", rango: 75 }
+      } 
+    },
+    arbequina: { 
+      clima: { 
+        frio: { nivel: "muy-alta", rango: -5 },
+        calor: { nivel: "media", rango: 35 },
+        sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
+        humedad_alta: { nivel: "baja", rango: 70 }
+      } 
+    },
+    hojiblanca: { 
+      clima: { 
+        frio: { nivel: "media", rango: -3 },
+        calor: { nivel: "alta", rango: 38 },
+        sequia: { nivel: "media-alta", rangoHumedad: 35, rangoLluvia: 2 },
+        humedad_alta: { nivel: "media", rango: 75 }
+      } 
+    },
+    manzanilla: { 
+      clima: { 
+        frio: { nivel: "media", rango: -3 },
+        calor: { nivel: "media-alta", rango: 38 },
+        sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
+        humedad_alta: { nivel: "baja", rango: 70 }
+      } 
+    },
+    empeltre: { 
+      clima: { 
+        frio: { nivel: "media", rango: -5 },
+        calor: { nivel: "media-alta", rango: 38 },
+        sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
+        humedad_alta: { nivel: "media", rango: 75 }
+      } 
+    }
   };
 
   function calcularRiesgosVariedad(provincia, variedad) {
@@ -327,28 +369,46 @@ const variedadSeleccionada = Astro.props.variedad || '';
     const humedad = provincia.humedad || 0;
     const lluvia = provincia.lluvia || 0;
 
-    if (variedadData.clima.calor.nivel === "baja" && temp > 35) {
+    const rangoCalor = variedadData.clima.calor.rango || 38;
+    const nivelCalor = variedadData.clima.calor.nivel;
+    if (temp > rangoCalor + 2) {
       riesgos.push({ nivel: "alto", icon: "🔥", texto: "Calor crítico" });
-    } else if (variedadData.clima.calor.nivel === "media" && temp > 38) {
-      riesgos.push({ nivel: "medio", icon: "🔥", texto: "Calor alto" });
+    } else if (temp > rangoCalor && nivelCalor === "baja") {
+      riesgos.push({ nivel: "alto", icon: "🔥", texto: "Calor sensible" });
+    } else if (temp > rangoCalor) {
+      riesgos.push({ nivel: "medio", icon: "🔥", texto: "Calor moderado" });
     }
 
-    if (variedadData.clima.frio.nivel === "baja" && temp < 5) {
-      riesgos.push({ nivel: "alto", icon: "❄️", texto: "Helada crítica" });
-    } else if (variedadData.clima.frio.nivel === "media" && temp < 0) {
-      riesgos.push({ nivel: "medio", icon: "❄️", texto: "Helada" });
+    const rangoFrio = variedadData.clima.frio.rango ?? -7;
+    const nivelFrio = variedadData.clima.frio.nivel;
+    if (temp < rangoFrio - 3) {
+      riesgos.push({ nivel: "alto", icon: "❄️", texto: "Helada severa" });
+    } else if (temp < rangoFrio && nivelFrio === "baja") {
+      riesgos.push({ nivel: "alto", icon: "❄️", texto: "Helada sensible" });
+    } else if (temp < rangoFrio) {
+      riesgos.push({ nivel: "medio", icon: "❄️", texto: "Frío moderado" });
     }
 
-    if (variedadData.clima.sequia.nivel === "baja" && humedad < 30) {
+    const rangoHumedad = variedadData.clima.sequia.rangoHumedad || 30;
+    const nivelSequia = variedadData.clima.sequia.nivel;
+    if (humedad < rangoHumedad - 10 && nivelSequia === "baja") {
       riesgos.push({ nivel: "alto", icon: "🏜️", texto: "Sequía severa" });
-    } else if (variedadData.clima.sequia.nivel === "media" && humedad < 20) {
+    } else if (humedad < rangoHumedad - 10) {
+      riesgos.push({ nivel: "medio", icon: "🏜️", texto: "Sequía moderada" });
+    } else if (humedad < rangoHumedad && nivelSequia === "baja") {
       riesgos.push({ nivel: "medio", icon: "🏜️", texto: "Estrés hídrico" });
     }
 
-    if (variedadData.clima.humedad_alta.nivel === "baja" && humedad > 80) {
+    const rangoHumedadAlta = variedadData.clima.humedad_alta.rango || 80;
+    const nivelHumedadAlta = variedadData.clima.humedad_alta.nivel;
+    if (humedad > rangoHumedadAlta + 10 && nivelHumedadAlta === "baja") {
       riesgos.push({ nivel: "alto", icon: "🦠", texto: "Riesgo hongos" });
-    } else if (variedadData.clima.humedad_alta.nivel === "media" && humedad > 85) {
+    } else if (humedad > rangoHumedadAlta) {
       riesgos.push({ nivel: "medio", icon: "🦠", texto: "Alta humedad" });
+    }
+
+    if (lluvia > 20) {
+      riesgos.push({ nivel: "medio", icon: "🌊", texto: "Lluvia intensa" });
     }
 
     if (provincia.riesgos_plaga) {
