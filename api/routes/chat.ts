@@ -32,10 +32,20 @@ chat.post("/", async (c) => {
     return c.json({ error: "Demasiadas peticiones. Intenta más tarde." }, 429);
   }
 
-  const { mensaje, provincia } = await c.req.json();
+  const bodyRaw = await c.req.json().catch(() => ({}));
+  const mensajeRaw = bodyRaw.mensaje || '';
+  const provinciaRaw = bodyRaw.provincia || '';
 
-  if (!mensaje) {
+  // Validación de inputs
+  if (!mensajeRaw || typeof mensajeRaw !== 'string') {
     return c.json({ error: "Falta mensaje" }, 400);
+  }
+
+  const mensaje = mensajeRaw.replace(/[<>'";]/g, '').trim().slice(0, 1000);
+  const provincia = provinciaRaw.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, '').trim().slice(0, 50);
+
+  if (mensaje.length < 2) {
+    return c.json({ error: "Mensaje demasiado corto" }, 400);
   }
 
   const hasApiKey = process.env.GROQ_KEY || process.env.GEMINI_KEY || process.env.OPENROUTER_KEY;

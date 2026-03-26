@@ -9,6 +9,33 @@ Proyecto Astro para monitoreo climático de olivares españoles. Combina datos c
 - Chatbot Consejero con IA (streaming SSE)
 - Catálogo de 6 variedades de olivo con análisis climático
 - Sistema de alertas personalizado por provincia y variedad
+- Comparador visual de variedades
+
+---
+
+## 🛠️ Tecnologías del Proyecto
+
+### Backend
+
+| Tecnología | Descripción |
+|------------|-------------|
+| **Bun** | Runtime de JavaScript ultrarrápido (escrito en Zig) - 3x más rápido que Node.js |
+| **Hono** | Framework web minimalista y ultrarrápido para Bun/Cloudflare Workers |
+| **SQLite (bun:sqlite)** | Base de datos embebida, sin servidor, ideal para proyectos pequeños |
+| **Open-Meteo API** | API gratuita de datos climáticos (no requiere API key) |
+| **Groq/Gemini/OpenRouter** | LLMs para el chatbot con sistema de fallback automático |
+| **Nodemailer** | Librería para envío de emails (Gmail SMTP) |
+
+### Frontend
+
+| Tecnología | Descripción |
+|------------|-------------|
+| **Astro** | Framework moderno que genera HTML estático, hydrate solo componentes interactivos |
+| **React** | Librería UI para el chatbot y componentes dinámicos |
+| **Leaflet** | Librería de mapas open-source (ligera vs Google Maps) |
+| **CartoDB** | Tiles de mapas (Light/Dark) gratuitos para Leaflet |
+| **CSS Variables** | Theme system para modo claro/oscuro |
+| **ClientRouter** | Navegación SPA de Astro (transiciones suaves) |
 
 ---
 
@@ -30,7 +57,7 @@ olivaxi/
 │       └── provincias.ts        # 10 provincias olivareras españolas
 ├── src/
 │   ├── components/
-│   │   ├── MapaCalor.astro      # Mapa Leaflet con filtros + riesgo variedad
+│   │   ├── MapaCalor.astro      # Mapa Leaflet con riesgo automático por variedad
 │   │   ├── ChatConsejero.jsx    # Chat con streaming SSE
 │   │   ├── ThemeToggle.astro    # Toggle tema claro/oscuro
 │   │   ├── AlertasClimaticas.astro  # Panel de alertas
@@ -41,32 +68,18 @@ olivaxi/
 │   ├── data/
 │   │   └── variedades.json      # 6 variedades con datos climáticos
 │   ├── layouts/
-│   │   └── Layout.astro         # Layout base con CSS variables
+│   │   └── Layout.astro         # Layout base con CSS variables + navbar redondeada
 │   ├── lib/
 │   │   └── api.ts               # Funciones helper
 │   └── pages/
-│       ├── index.astro           # Homepage (bento grid)
+│       ├── index.astro           # Homepage (bento grid + mapa destacado)
 │       ├── conseajero.astro      # Chat (client:only="react")
-│       ├── variedades.astro       # Catálogo variedades
+│       ├── variedades.astro       # Catálogo variedades (estilo neobrutalista)
 │       ├── alertas.astro         # Formulario alertas
 │       └── plagas.astro          # Página de plagas
 ├── .env                          # Variables de entorno
 └── astro.config.mjs              # Config Astro
 ```
-
----
-
-## 🛠️ Tecnologías
-
-| Capa | Tecnología |
-|------|-------------|
-| Frontend | Astro, React, SolidJS (solo Chat) |
-| Backend | Bun, Hono |
-| Base de datos | SQLite (bun:sqlite) |
-| Mapas | Leaflet + CartoDB tiles |
-| AI/LLM | Groq, Gemini, OpenRouter (streaming SSE) |
-| Emails | Nodemailer + Gmail |
-| Datos climáticos | Open-Meteo API |
 
 ---
 
@@ -93,23 +106,24 @@ olivaxi/
 | `riesgos_plaga` | 4 plagas: mosca, polilla, xylella, repilo |
 | `riesgos_variedad` | Score de riesgo (0-10) por cada una de las 6 variedades |
 
-### Datos de variedades (variedades.json)
+### Rangos agronómicos por variedad (actualizado 2026-03-26)
 
-6 variedades con datos de resistencia climática:
-- **Cornicabra**: muy-alta calor/sequía, media humedad
-- **Picual**: muy-alta calor, media sequia, baja humedad
-- **Arbequina**: media calor, baja sequia/humedad
-- **Hojiblanca**: alta calor, media-alta sequia, media humedad
-- **Manzanilla**: media-alta calor, baja sequia/humedad
-- **Empeltre**: media-alta calor, muy-alta sequia, media humedad
+| Variedad | Frío | Calor | Humedad alta | Sequía |
+|----------|------|-------|--------------|--------|
+| **Cornicabra** | -10°C | 40°C | <80% | Muy alta |
+| **Picual** | -7°C | 40°C | <75% | Buena |
+| **Arbequina** | -5°C | 35°C | <70% | Baja |
+| **Hojiblanca** | -3°C | 38°C | <75% | Media-alta |
+| **Manzanilla** | -3°C | 38°C | <70% | Baja |
+| **Empeltre** | -5°C | 38°C | <75% | Muy alta |
 
 ### Base de datos SQLite
 
 ```sql
--- clima_cache: datos climáticos cacheados
+-- clima_cache: datos climáticos cacheados (TTL 6 horas)
 clima_cache(id, datos JSON, cached_at)
 
--- alertas: usuarios registrados
+-- alertas: usuarios registrados para alertas
 alertas(id, nombre, email, provincia, variedad, tipo, activa, last_notified_at, created_at)
 ```
 
@@ -201,9 +215,9 @@ Body:
 
 | Ruta | Descripción |
 |------|-------------|
-| `/` | Homepage con mapa + selectores provincia/variedad + alertas en tiempo real |
+| `/` | Homepage con bento grid, mapa (60%) + sidebar (40%), mapa destacado, top 3 riesgos |
 | `/consejero` | Chat con IA (streaming SSE) |
-| `/variedades` | Catálogo con comparador visual de variedades |
+| `/variedades` | Catálogo neobrutalista con comparador visual y filtros climáticos |
 | `/alertas` | Formulario de alertas personalizado |
 | `/plagas` | Información sobre plagas |
 
@@ -211,50 +225,55 @@ Body:
 
 ## 📝 Historial de Cambios Recientes
 
-### 2026-03-26 - Sistema de riesgo por variedad
+### 2026-03-26 - Sistema de riesgo automático + Mejoras UI
 
-**Implementación completa:**
+**Cambios implementados:**
 
-1. ✅ **Backend (api/routes/clima.ts)**
-   - Nueva función `calcularScoreRiesgo()` que calcula score 0-10 basado en 4 condiciones climáticas
-   - Variable `VARIEDADES_RESISTENCIAS` con resistencias de cada variedad
-   - Cálculo de riesgo para las 6 variedades en cada provincia
-   - Campo `riesgos_variedad` incluido en respuesta del endpoint
+1. ✅ **Mapa interactivo (MapaCalor.astro)**
+   - Eliminado botón manual ⚠️ de riesgo
+   - Colores cambian automáticamente según variedad seleccionada
+   - Zoom automático a provincia cuando se selecciona en sidebar
+   - Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia
+   - Tooltip muestra riesgo específico por variedad
 
-2. ✅ **Frontend (MapaCalor.astro)**
-   - Nuevo filtro "⚠️" para mostrar riesgo por variedad
-   - Función `getColorByRiesgoVariedad()` usa datos del backend directamente
-   - Función `getTooltipRiesgoVariedad()` muestra score, nivel y detalle
-   - Leyenda actualizada con escala de riesgo
+2. ✅ **Backend (api/routes/clima.ts)**
+   - Rangos agronámicos actualizados por variedad (basados en investigación)
+   - Funciones con umbrales exactos: frío (-10°C a -3°C), calor (35°C a 40°C), humedad (70-80%)
+   - Score de riesgo mejorado considerando múltiples factores
 
-3. ✅ **Formulario alertas (alertas.astro)**
-   - Auto-relleno desde localStorage (provincia + variedad)
-   - Cálculo de tipo de alerta dinámico basado en clima + variedad
-   - Nuevo campo de variedad
-   - Mensaje mejorado
+3. ✅ **Página Variedades (variedades.astro)**
+   - Estilo neobrutalista con bordes negros y sombras offset
+   - Filtros por 6 condiciones climáticas: 🔥 CALOR ALTO, ❄️ FRÍO, 💧 HUMEDAD ALTA, 🏜️ HUMEDAD BAJA, 🌧️ POCA LLUVIA, 📈 PRODUCCIÓN
+   - Tarjetas con datos agronómicos: rangos de temperatura, resistencias, riesgos
+   - Comparador visual entre variedades
 
-4. ✅ **Base de datos (sqlite.ts)**
-   - Añadida columna `variedad` a tabla alertas
+4. ✅ **Navbar (Layout.astro)**
+   - Estilo redondeado (border-radius: 50px)
+   - Fondo blanco, borde sutil
+   - Distribución simétrica con gap uniforme
+   - Botón de alertas con hover suave
+   - Mayor longitud (min-width: 800px)
 
-5. ✅ **ComparadorVariedades.astro**
-   - 5 barras horizontales (❄️ Frío, 🔥 Calor, 🏜️ Sequía, 💧 Humedad, 📊 Producción)
-   - Comparación entre variedades
+5. ✅ **Homepage (index.astro)**
+   - Nuevo mapa destacado (450px) debajo del top 3 riesgos
+   - Espacios reducidos (~5% menos entre secciones)
+   - Hero compactado (50vh, padding reducido)
+   - Mapa en bento grid: 60% mapa + 40% sidebar
 
 **Resultado visual:**
-- Sin variedad: colores por temperatura/humedad/lluvia
-- Con variedad + filtro ⚠️: colores según riesgo específico para esa variedad
-  - 🟢 Verde (óptimo/bajo): score 0-3
-  - 🟡 Ámbar (medio): score 4-6
-  - 🔴 Rojo (crítico): score 7+
+- Mapa cambia de colores automáticamente al seleccionar variedad
+- Zoom smooth a provincia seleccionada
+- UI más compacta y acercada al navbar
+- Neobrutalismo en página de variedades
 
 ---
 
 ### Estados anteriores
 
-- ✅ Build pasa correctamente
+- ✅ Build pasa correctamente (5 páginas)
 - ✅ UI responsive con dark mode completo
 - ✅ Sistema de alertas personalizado
-- ✅ Mapa con riesgo por variedad
+- ✅ Mapa con riesgo automático por variedad
 - ⚠️ Chatbot necesita API keys reales (Groq/Gemini/OpenRouter)
 - ⚠️ Alertas necesitan GMAIL_APP_PASSWORD configurado
 
@@ -281,17 +300,25 @@ npm run build  # Pasa correctamente (5 páginas)
 ## 🔧 Componentes del Mapa
 
 ### MapaCalor.astro
-- Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia, ⚠️ riesgo-variedad
+- Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia
+- Colores automáticos según variedad (sin botón manual)
 - Leaflet con CartoDB dark/light tiles dinámico
 - CircleMarkers con animación fadeIn
 - Tooltip muestra datos climáticos + riesgo por variedad
-- Listener para evento `variedad-seleccionada` que actualiza el mapa en tiempo real
+- Zoom a provincia en evento `provincia-seleccionada`
 
 ### index.astro (Homepage)
-- Hero minimalista estilo Arc
+- Hero minimalista (50vh, padding compactado)
 - Bento grid: mapa (60%) + sidebar (40%)
 - Sidebar: selector provincia, selector variedad, alertas en tiempo real
+- Mapa destacado (450px) después del top 3
 - localStorage para persistir selección de provincia/variedad
+
+### variedades.astro
+- Header neobrutalista con borde limón
+- Grid de tarjetas con shadow offset
+- Filtros por condiciones climáticas
+- Comparador visual entre 2 variedades
 
 ---
 

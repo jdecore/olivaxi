@@ -106,7 +106,7 @@ let top3Riesgos = [];
     grid-template-rows: auto auto;
     gap: 12px;
     max-width: 1200px;
-    margin: 10px auto 2rem;
+    margin: 5px auto 2rem;
     padding: 0 1rem;
     align-items: start;
   }
@@ -758,7 +758,7 @@ let top3Riesgos = [];
 
     .mapa-destacado {
       max-width: 1200px;
-      margin: 0 auto 2rem;
+      margin: 0 auto 1.5rem;
       padding: 0 1rem;
     }
 
@@ -770,9 +770,9 @@ let top3Riesgos = [];
   </style>
 
   <!-- HERO MINIMALISTA -->
-  <section class="hero-section" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 120px 24px 60px; gap: 24px;">
-    <h1 class="hero-title" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(36px, 6vw, 56px); font-weight: 700; color: #1C1C1C; margin: 0; letter-spacing: -0.02em; line-height: 1.1; max-width: 700px;">Ciencia aplicada al cultivo</h1>
-    <p class="hero-subtitle" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(16px, 2vw, 20px); font-weight: 400; color: #6b6b60; margin: 0; max-width: 600px; line-height: 1.5;">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
+  <section class="hero-section" style="min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 80px 24px 40px; gap: 20px;">
+    <h1 class="hero-title" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; color: #1C1C1C; margin: 0; letter-spacing: -0.02em; line-height: 1.1; max-width: 700px;">Ciencia aplicada al cultivo</h1>
+    <p class="hero-subtitle" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(14px, 1.8vw, 18px); font-weight: 400; color: #6b6b60; margin: 0; max-width: 600px; line-height: 1.5;">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
   </section>
 
   <!-- BENTO GRID HERO -->
@@ -945,15 +945,6 @@ let top3Riesgos = [];
   const selectVariedad = document.getElementById('select-variedad');
   const alertasPanel = document.getElementById('alertas-panel');
 
-  const VARIEDADES: Record<string, any> = {
-    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
-    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
-    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
-    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
-  };
-
   function guardarSeleccion(tipo: string, valor: string) {
     localStorage.setItem('olivaxi_' + tipo, valor);
   }
@@ -961,62 +952,28 @@ let top3Riesgos = [];
   function renderAlertasPanel(datos: any, variedad: string) {
     if (!alertasPanel) return;
     
-    const variedadData = VARIEDADES[variedad];
-    const alertas: string[] = [];
+    const alertas: {icon: string, text: string, level: string}[] = [];
     
     const temp = datos?.temperatura || 0;
     const humedad = datos?.humedad || 0;
     const lluvia = datos?.lluvia || 0;
     const riesgos_olivar = datos?.riesgos_olivar || {};
     const riesgos_plaga = datos?.riesgos_plaga || {};
+    const riesgos_variedad = datos?.riesgos_variedad || {};
 
-    if (variedadData?.clima?.calor?.nivel === "baja" && temp > 35) {
-      alertas.push({ icon: '🔥', text: `Calor crítico para tu variedad (${temp}°C)`, level: 'high' });
-    } else if (temp > 38) {
-      alertas.push({ icon: '🔥', text: `Ola de calor extrema (${temp}°C)`, level: 'high' });
-    } else if (temp > 35) {
-      alertas.push({ icon: '🌡️', text: `Temperatura alta (${temp}°C)`, level: 'medium' });
-    }
-
-    if (variedadData?.clima?.frio?.nivel === "baja" && temp < 5) {
-      alertas.push({ icon: '❄️', text: `Helada crítica para tu variedad (${temp}°C)`, level: 'high' });
-    } else if (temp < 0) {
-      alertas.push({ icon: '❄️', text: `Helada (${temp}°C)`, level: 'high' });
-    }
-
-    if (variedadData?.clima?.sequia?.nivel === "baja" && humedad < 30) {
-      alertas.push({ icon: '🏜️', text: `Sequía severa para tu variedad (${humedad}%)`, level: 'high' });
-    } else if (humedad < 20) {
-      alertas.push({ icon: '🏜️', text: `Estrés hídrico (${humedad}%)`, level: 'medium' });
+    // Usar datos del backend directamente
+    if (riesgos_variedad[variedad]) {
+      const rv = riesgos_variedad[variedad];
+      if (rv.nivel === 'crítico') {
+        alertas.push({ icon: '🔴', text: `Riesgo crítico para ${variedad}`, level: 'high' });
+        rv.detalle?.forEach((d: string) => alertas.push({ icon: '⚠️', text: d, level: 'high' }));
+      } else if (rv.nivel === 'medio') {
+        alertas.push({ icon: '🟡', text: `Riesgo medio para ${variedad}`, level: 'medium' });
+        rv.detalle?.forEach((d: string) => alertas.push({ icon: '⚠️', text: d, level: 'medium' }));
+      }
     }
 
-    if (variedadData?.clima?.humedad_alta?.nivel === "baja" && humedad > 80) {
-      alertas.push({ icon: '🦠', text: `Riesgo hongos para tu variedad`, level: 'high' });
-    } else if (humedad > 85) {
-      alertas.push({ icon: '🦠', text: `Alta humedad - vigilancia`, level: 'medium' });
-    }
-
-    if (lluvia < 0.5 && humedad < 30) {
-      alertas.push({ icon: '🏜️', text: `Sequía extrema (${lluvia}mm)`, level: 'high' });
-    }
-
-    if (lluvia > 20) {
-      alertas.push({ icon: '🌊', text: `Lluvia intensa (${lluvia}mm)`, level: 'high' });
-    }
-
-    if (riesgos_plaga?.mosca?.nivel === 'alto') {
-      alertas.push({ icon: '🦟', text: `Mosca del olivo activa`, level: 'high' });
-    }
-    if (riesgos_plaga?.polilla?.nivel === 'alto') {
-      alertas.push({ icon: '🦋', text: `Polilla del olivo activa`, level: 'high' });
-    }
-    if (riesgos_plaga?.xylella?.nivel === 'alto') {
-      alertas.push({ icon: '🦠', text: `Xylella fastidiosa - Riesgo crítico`, level: 'high' });
-    }
-    if (riesgos_plaga?.repilo?.nivel === 'alto') {
-      alertas.push({ icon: '🍄', text: `Repilo activo`, level: 'high' });
-    }
-
+    // Riesgos del olivar (del backend)
     if (riesgos_olivar?.calor?.nivel === 'alto') {
       alertas.push({ icon: '🔥', text: riesgos_olivar.calor.descripcion, level: 'high' });
     }
@@ -1031,6 +988,35 @@ let top3Riesgos = [];
     }
     if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') {
       alertas.push({ icon: '🌊', text: riesgos_olivar.alta_lluvia.descripcion, level: 'high' });
+    }
+
+    // Riesgos de plagas (del backend)
+    if (riesgos_plaga?.mosca?.nivel === 'alto') {
+      alertas.push({ icon: '🦟', text: `Mosca del olivo activa`, level: 'high' });
+    }
+    if (riesgos_plaga?.polilla?.nivel === 'alto') {
+      alertas.push({ icon: '🦋', text: `Polilla del olivo activa`, level: 'high' });
+    }
+    if (riesgos_plaga?.xylella?.nivel === 'alto') {
+      alertas.push({ icon: '🦠', text: `Xylella fastidiosa - Riesgo crítico`, level: 'high' });
+    }
+    if (riesgos_plaga?.repilo?.nivel === 'alto') {
+      alertas.push({ icon: '🍄', text: `Repilo activo`, level: 'high' });
+    }
+
+    // Alertas genéricas extremas
+    if (temp > 38) {
+      alertas.push({ icon: '🔥', text: `Ola de calor extrema (${temp}°C)`, level: 'high' });
+    } else if (temp > 35 && !alertas.find(a => a.text.includes('calor'))) {
+      alertas.push({ icon: '🌡️', text: `Temperatura alta (${temp}°C)`, level: 'medium' });
+    }
+
+    if (temp < 0) {
+      alertas.push({ icon: '❄️', text: `Helada (${temp}°C)`, level: 'high' });
+    }
+
+    if (lluvia > 20) {
+      alertas.push({ icon: '🌊', text: `Lluvia intensa (${lluvia}mm)`, level: 'high' });
     }
 
     if (alertas.length === 0) {

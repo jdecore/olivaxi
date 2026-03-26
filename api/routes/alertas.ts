@@ -40,19 +40,81 @@ const CONSEJOS: Record<string, string[]> = {
   condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
 };
 
+const VALID_PROVINCIAS = PROVINCIAS.map(p => p.nombre);
+const VALID_VARIEDADES = Object.keys(VARIEDADES_INFO);
+const VALID_TIPOS = Object.keys(CONSEJOS);
+
+// Sanitización
+const sanitizeStr = (str: string, maxLen = 100): string => {
+  return str.replace(/[<>'";]/g, '').trim().slice(0, maxLen);
+};
+
+const isValidEmail = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 const alertas = new Hono();
 
 alertas.post("/", async (c) => {
-  const { nombre, email, provincia, variedad = "", tipo = "condiciones_optimas" } = await c.req.json();
+  const body = await c.req.json().catch(() => ({}));
+  
+  const nombreRaw = body.nombre || '';
+  const emailRaw = body.email || '';
+  const provinciaRaw = body.provincia || '';
+  const variedadRaw = body.variedad || '';
+  const tipoRaw = body.tipo || 'condiciones_optimas';
 
-  if (!nombre || !email || !provincia) {
-    return c.json({ error: "Faltan datos" }, 400);
+  // Validación
+  if (!nombreRaw || !emailRaw || !provinciaRaw) {
+    return c.json({ error: "Faltan datos requeridos" }, 400);
+  }
+
+  const nombre = sanitizeStr(nombreRaw, 50);
+  const email = sanitizeStr(emailRaw, 100);
+  const provincia = sanitizeStr(provinciaRaw, 50);
+  const variedad = sanitizeStr(variedadRaw, 30);
+  const tipo = VALID_TIPOS.includes(tipoRaw) ? sanitizeStr(tipoRaw, 30) : 'condiciones_optimas';
+
+  if (!isValidEmail(email)) {
+    return c.json({ error: "Email inválido" }, 400);
+  }
+
+  if (!VALID_PROVINCIAS.includes(provincia)) {
+    return c.json({ error: "Provincia inválida" }, 400);
+  }
+
+  if (variedad && !VALID_VARIEDADES.includes(variedad)) {
+    return c.json({ error: "Variedad inválida" }, 400);
+  }
+
+  // LIMITACIONES PARA EVITAR ABUSO
+  // 1. Máximo 3 alertas por email
+  const alertasExistentes = db.query("SELECT COUNT(*) as count FROM alertas WHERE email = ? AND activa = 1").get(email) as { count: number };
+  if (alertasExistentes.count >= 3) {
+    return c.json({ error: "Máximo 3 alertas por email. Gestiona tus alertas desde el correo recibido." }, 400);
+  }
+
+  // 2. Verificar alerta duplicada (misma provincia + variedad)
+  const alertaDuplicada = db.query(
+    "SELECT id FROM alertas WHERE email = ? AND provincia = ? AND variedad = ? AND activa = 1"
+  ).get(email, provincia, variedad || '') as { id: number } | undefined;
+
+  if (alertaDuplicada) {
+    return c.json({ error: "Ya tienes una alerta activa para esta combinación" }, 400);
+  }
+
+  // 3. Limitar a 2 alertas por provincia (distintas variedades)
+  const alertasProvincia = db.query(
+    "SELECT COUNT(*) as count FROM alertas WHERE email = ? AND provincia = ? AND activa = 1"
+  ).get(email, provincia) as { count: number };
+  if (alertasProvincia.count >= 2) {
+    return c.json({ error: "Máximo 2 alertas por provincia. Gestiona tus alertas desde el correo recibido." }, 400);
   }
 
   const insert = db.query(
     "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, activa, created_at) VALUES (?, ?, ?, ?, ?, 1, ?)"
   );
-  insert.run(nombre, email, provincia, variedad, tipo, Date.now());
+  insert.run(nombre, email, provincia, variedad || '', tipo, Date.now());
 
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   console.log("[ALERTAS] GMAIL_PASS presente:", !!gmailPass);
@@ -91,11 +153,14 @@ alertas.post("/check", async (c) => {
     .query("SELECT * FROM alertas WHERE activa = 1")
     .all() as any[];
 
+  // Limitar a 50 alertas por ejecución para evitar saturación
+  const alertasLimit = alertasActivas.slice(0, 50);
+  
   const now = Date.now();
   const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
-  const provincesToCheck = [...new Set(alertasActivas.map((a) => a.provincia))];
-  console.log("[ALERTAS] Provincias a verificar:", provincesToCheck);
+  const provincesToCheck = [...new Set(alertasLimit.map((a) => a.provincia))].slice(0, 10);
+  console.log("[ALERTAS] Provincias a verificar (max 10):", provincesToCheck);
 
   const PROVINCIAS_COORDS: Record<string, { lat: number; lon: number }> = {};
   for (const p of PROVINCIAS) {
