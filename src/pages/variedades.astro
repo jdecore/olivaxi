@@ -1,73 +1,752 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import variedades from '../data/variedades.json';
 import ComparadorVariedades from '../components/ComparadorVariedades.astro';
+
+const varieties = [
+  {
+    id: "cornicabra",
+    nombre: "Cornicabra",
+    origen: "Castilla-La Mancha",
+    etiqueta: "RÚSTICA",
+    descripcion: "La más resistente al frío y sequía. Tolera hasta -10°C y 40°C. Ideal para clima continental.",
+    notas_climaticas: "Tolera frío intenso (-10°C), calor extremo (40°C), y sequía severa. Sensible a humedad alta.",
+    clima: { frio: 95, calor: 90, sequia: 95, humedad: 40, productividad: 75 },
+    resistencia: { seca: "Muy alta", calor: "Muy alta", frio: "Muy alta", humedad: "Media" },
+    rango: { frio: "-10°C", calor: "40°C", humedad: "<80%" },
+    riesgos: "Vulnerable a enfermedades fúngicas con humedad persistente."
+  },
+  {
+    id: "picual",
+    nombre: "Picual",
+    origen: "Jaén, Andalucía",
+    etiqueta: "REINA",
+    descripcion: "50% del olivar español. Máxima productividad y resistente a mosca. Tolera hasta 40°C.",
+    notas_climaticas: "Tolera frío hasta -7°C y calor hasta 40°C. Sensible a humedad alta y repilo.",
+    clima: { frio: 80, calor: 85, sequia: 70, humedad: 35, productividad: 95 },
+    resistencia: { seca: "Buena", calor: "Muy alta", frio: "Alta", humedad: "Baja" },
+    rango: { frio: "-7°C", calor: "40°C", humedad: "<75%" },
+    riesgos: "Sensible a Xylella, repilo y antracnosis en ambientes húmedos."
+  },
+  {
+    id: "arbequina",
+    nombre: "Arbequina",
+    origen: "Lleida, Cataluña",
+    etiqueta: "SUPERINTENSIVA",
+    descripcion: "Ideal para riego y plantaciones intensivas. Resistente a Prays y hongos. Sensible al frío intenso.",
+    notas_climaticas: "Tolera frío hasta -5°C, pero calor limitado a 35°C. Sensible a sequía y humedad alta.",
+    clima: { frio: 70, calor: 50, sequia: 40, humedad: 35, productividad: 90 },
+    resistencia: { seca: "Baja", calor: "Media", frio: "Muy alta", humedad: "Baja" },
+    rango: { frio: "-5°C", calor: "35°C", humedad: "<70%" },
+    riesgos: "Alta vulnerabilidad a hongos y estrés hídrico. Requiere manejo sanitario."
+  },
+  {
+    id: "hojiblanca",
+    nombre: "Hojiblanca",
+    origen: "Málaga, Andalucía",
+    etiqueta: "DOBLE APTITUD",
+    descripcion: "Aceite y mesa. Resistente al calor del sur. Tolera hasta 38°C con buena productividad.",
+    notas_climaticas: "Tolera calor hasta 38°C. Resfriamiento medio (-3°C). Sensible a frío intenso y humedad.",
+    clima: { frio: 55, calor: 80, sequia: 65, humedad: 50, productividad: 72 },
+    resistencia: { seca: "Media-alta", calor: "Alta", frio: "Media", humedad: "Media" },
+    rango: { frio: "-3°C", calor: "38°C", humedad: "<75%" },
+    riesgos: "Sensibilidad media a heladas y enfermedades fúngicas."
+  },
+  {
+    id: "manzanilla",
+    nombre: "Manzanilla",
+    origen: "Sevilla, Andalucía",
+    etiqueta: "MESA",
+    descripcion: "La variedad de mesa por excelencia. Gran calibre. Necesita agua y sensible a condiciones extremas.",
+    notas_climaticas: "Tolera calor hasta 38°C pero sensible a sequía (-30% productividad). Sensible a humedad.",
+    clima: { frio: 45, calor: 65, sequia: 35, humedad: 25, productividad: 70 },
+    resistencia: { seca: "Baja", calor: "Media-alta", frio: "Media", humedad: "Baja" },
+    rango: { frio: "-3°C", calor: "38°C", humedad: "<70%" },
+    riesgos: "Muy sensible a repilo, antracnosis y Xylella. Requiere clima seco."
+  },
+  {
+    id: "empeltre",
+    nombre: "Empeltre",
+    origen: "Aragón",
+    etiqueta: "CONTINENTAL",
+    descripcion: "Tradicional del Valle del Ebro. Resistente a sequía y condiciones adversas. Tolera -5°C.",
+    notas_climaticas: "Tolera frío hasta -5°C y calor hasta 38°C. Muy resistente a sequía (secano).",
+    clima: { frio: 70, calor: 75, sequia: 85, humedad: 45, productividad: 65 },
+    resistencia: { seca: "Muy alta", calor: "Media-alta", frio: "Media", humedad: "Media" },
+    rango: { frio: "-5°C", calor: "38°C", humedad: "<75%" },
+    riesgos: "Media sensibilidad a hongos en ambientes húmedos persistentes."
+  }
+];
 ---
 
-<Layout title="Variedades - olivaξ">
-  <!-- Hero -->
-  <section class="var-hero">
-    <h1>🧬 Laboratorio de Variedades</h1>
-    <p>Compara resistencia al calor y sequía con datos de investigación científica real</p>
-  </section>
+<Layout title="Variedades de Olivo - olivaξ">
+  <div class="var-container">
+    <header class="var-header">
+      <div class="var-header-content">
+        <span class="var-label">🧬 LABORATORIO</span>
+        <h1 class="var-title">Variedades de Olivo</h1>
+        <p class="var-subtitle">Compara resistencia climática, plagas y enfermedades para elegir la mejor opción para tu zona</p>
+      </div>
+    </header>
 
-  <!-- Filtros -->
-  <div id="filter-buttons" class="var-filters">
-    <button data-filter="all" class="filter-btn active">Todas</button>
-    <button data-filter="secano" class="filter-btn">Secano</button>
-    <button data-filter="calor-extremo" class="filter-btn">Calor extremo</button>
-    <button data-filter="alta-produccion" class="filter-btn">Alta producción</button>
-    <button data-filter="aceite-premium" class="filter-btn">Aceite premium</button>
+    <div class="var-filters">
+      <button data-filter="all" class="filter-btn active">TODAS</button>
+      <button data-filter="secano" class="filter-btn">SECANO</button>
+      <button data-filter="calor" class="filter-btn">CALOR</button>
+      <button data-filter="frio" class="filter-btn">FRÍO</button>
+      <button data-filter="premium" class="filter-btn">PREMIUM</button>
+    </div>
+
+    <div class="var-grid">
+      {varieties.map((v) => (
+        <div class="var-card" data-tags={v.etiqueta.toLowerCase()}>
+          <div class="var-card-header">
+            <span class="var-badge">{v.etiqueta}</span>
+          </div>
+          
+          <h2 class="var-name">🫒 {v.nombre}</h2>
+          <p class="var-origen">📍 {v.origen}</p>
+          <p class="var-desc">{v.descripcion}</p>
+          
+          <div class="var-rangos">
+            <div class="rango-item">
+              <span class="rango-icon">❄️</span>
+              <span class="rango-label">Frío</span>
+              <span class="rango-value">{v.rango.frio}</span>
+            </div>
+            <div class="rango-item">
+              <span class="rango-icon">🔥</span>
+              <span class="rango-label">Calor</span>
+              <span class="rango-value">{v.rango.calor}</span>
+            </div>
+            <div class="rango-item">
+              <span class="rango-icon">💧</span>
+              <span class="rango-label">Humedad</span>
+              <span class="rango-value">{v.rango.humedad}</span>
+            </div>
+          </div>
+
+          <div class="var-bars">
+            <div class="var-bar-row">
+              <span class="var-bar-label">❄️ FRÍO</span>
+              <div class="var-bar-bg"><div class="var-bar-fill" style={`width: ${v.clima.frio}%`}></div></div>
+              <span class="var-bar-pct">{v.clima.frio}%</span>
+            </div>
+            <div class="var-bar-row">
+              <span class="var-bar-label">🔥 CALOR</span>
+              <div class="var-bar-bg"><div class="var-bar-fill calor" style={`width: ${v.clima.calor}%`}></div></div>
+              <span class="var-bar-pct">{v.clima.calor}%</span>
+            </div>
+            <div class="var-bar-row">
+              <span class="var-bar-label">🏜️ SEQUÍA</span>
+              <div class="var-bar-bg"><div class="var-bar-fill sequia" style={`width: ${v.clima.sequia}%`}></div></div>
+              <span class="var-bar-pct">{v.clima.sequia}%</span>
+            </div>
+            <div class="var-bar-row">
+              <span class="var-bar-label">💧 HUMEDAD</span>
+              <div class="var-bar-bg"><div class="var-bar-fill humedad" style={`width: ${v.clima.humedad}%`}></div></div>
+              <span class="var-bar-pct">{v.clima.humedad}%</span>
+            </div>
+            <div class="var-bar-row">
+              <span class="var-bar-label">📊 PROD.</span>
+              <div class="var-bar-bg"><div class="var-bar-fill prod" style={`width: ${v.clima.productividad}%`}></div></div>
+              <span class="var-bar-pct">{v.clima.productividad}%</span>
+            </div>
+          </div>
+
+          <div class="var-resist">
+            <h4>RESISTENCIAS</h4>
+            <div class="res-grid">
+              <span class="res-tag">{v.resistencia.frio} ❄️</span>
+              <span class="res-tag">{v.resistencia.calor} 🔥</span>
+              <span class="res-tag">{v.resistencia.seca} 🏜️</span>
+              <span class="res-tag">{v.resistencia.humedad} 💧</span>
+            </div>
+          </div>
+
+          <div class="var-riesgos">
+            <h4>⚠️ RIESGOS</h4>
+            <p>{v.riesgos}</p>
+          </div>
+
+          <button class="var-btn" data-nombre={v.nombre}>COMPARAR</button>
+        </div>
+      ))}
+    </div>
+
+    <div class="sticky-bar" id="sticky-bar" style="display: none;">
+      Selecciona otra variedad para comparar
+    </div>
+
+    <div class="compare-panel" id="compare-panel" style="display: none;">
+      <button class="clear-btn" id="clear-btn">× LIMPIAR</button>
+      <h3 class="compare-title" id="compare-title"></h3>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>MÉTRICA</th>
+            <th id="th-a"></th>
+            <th id="th-b"></th>
+          </tr>
+        </thead>
+        <tbody id="compare-tbody"></tbody>
+      </table>
+    </div>
   </div>
-
-  <!-- Grid con comparador -->
-  <ComparadorVariedades varietyData={variedades} />
 </Layout>
 
 <style is:global>
-  .var-hero {
-    background: var(--color-aceituna);
-    color: var(--color-sal);
-    padding: 3rem 0;
-    text-align: center;
+  :global(body) {
+    overflow-x: hidden;
   }
 
-  .var-hero h1 {
-    font-size: 1.875rem;
-    font-weight: 700;
-    font-family: 'Literata', Georgia, serif;
+  .var-container {
+    background: var(--color-sal, #F7F4EE);
+    min-height: 100vh;
+    padding-top: 20px;
   }
 
-  .var-hero p {
-    color: rgba(247,244,238,0.7);
-    margin-top: 0.5rem;
+  .var-header {
+    background: #1C1C1C;
+    padding: 3rem 1.5rem 2.5rem;
+    border-bottom: 4px solid #D4E849;
+    position: relative;
+    overflow: hidden;
+    margin-top: 60px;
+  }
+
+  .var-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 232, 73, 0.1));
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+  }
+
+  .var-header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .var-label {
+    display: inline-block;
+    background: #D4E849;
+    color: #1C1C1C;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+
+  .var-title {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    color: #F7F4EE;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .var-subtitle {
+    color: rgba(247, 244, 238, 0.7);
+    font-size: 14px;
+    margin: 1rem 0 0;
+    max-width: 500px;
+    line-height: 1.5;
   }
 
   .var-filters {
     display: flex;
-    gap: 0.75rem;
+    gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 2rem;
-    padding: 0 1rem;
+    padding: 1.5rem 1rem;
+    background: #1C1C1C;
+    border-bottom: 2px solid #D4E849;
   }
 
   .filter-btn {
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    background: var(--color-white-surface);
-    border: 2px solid var(--color-border);
-    color: var(--color-aceituna);
+    padding: 8px 16px;
+    border: 2px solid #D4E849;
+    border-radius: 0;
+    font-size: 11px;
     font-weight: 700;
+    cursor: pointer;
+    background: transparent;
+    color: #F7F4EE;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover {
+    background: rgba(212, 232, 73, 0.2);
   }
 
   .filter-btn.active {
-    background: var(--color-limon);
+    background: #D4E849;
+    color: #1C1C1C;
   }
 
-  .filter-btn:hover:not(.active) {
-    background: var(--color-sal);
+  .var-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding: 24px 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .var-card {
+    background: #FFFFFF;
+    border: 3px solid #1C1C1C;
+    border-radius: 0;
+    padding: 20px;
+    box-shadow: 6px 6px 0 #1C1C1C;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .var-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 #1C1C1C;
+  }
+
+  .var-card-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+
+  .var-badge {
+    background: #1C1C1C;
+    color: #D4E849;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 0;
+    letter-spacing: 0.5px;
+  }
+
+  .var-name {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1C1C1C;
+    margin: 8px 0 4px;
+  }
+
+  .var-origen {
+    font-size: 12px;
+    color: #6b6b60;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  .var-desc {
+    font-size: 13px;
+    color: #1C1C1C;
+    line-height: 1.5;
+    margin: 0 0 16px;
+  }
+
+  .var-rangos {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #F7F4EE;
+    border: 2px solid #1C1C1C;
+  }
+
+  .rango-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .rango-icon {
+    font-size: 16px;
+  }
+
+  .rango-label {
+    font-size: 9px;
+    color: #6b6b60;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .rango-value {
+    font-size: 11px;
+    color: #1C1C1C;
+    font-weight: 800;
+  }
+
+  .var-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .var-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .var-bar-label {
+    font-size: 10px;
+    color: #6b6b60;
+    font-weight: 700;
+    width: 70px;
+    flex-shrink: 0;
+  }
+
+  .var-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #F7F4EE;
+    border: 1px solid #1C1C1C;
+  }
+
+  .var-bar-fill {
+    height: 100%;
+    background: #06B6D4;
+    transition: width 0.3s;
+  }
+
+  .var-bar-fill.calor { background: #F59E0B; }
+  .var-bar-fill.sequia { background: #D4E849; }
+  .var-bar-fill.humedad { background: #8B5CF6; }
+  .var-bar-fill.prod { background: #3B82F6; }
+
+  .var-bar-pct {
+    font-size: 11px;
+    font-weight: 800;
+    color: #1C1C1C;
+    width: 35px;
+    text-align: right;
+  }
+
+  .var-resist {
+    margin-bottom: 12px;
+  }
+
+  .var-resist h4 {
+    font-size: 10px;
+    font-weight: 800;
+    color: #6b6b60;
+    margin: 0 0 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .res-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .res-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    background: #F7F4EE;
+    border: 1px solid #1C1C1C;
+    color: #1C1C1C;
+  }
+
+  .var-riesgos {
+    margin-bottom: 16px;
+    padding: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid #EF4444;
+  }
+
+  .var-riesgos h4 {
+    font-size: 10px;
+    font-weight: 800;
+    color: #EF4444;
+    margin: 0 0 4px;
+  }
+
+  .var-riesgos p {
+    font-size: 11px;
+    color: #1C1C1C;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .var-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1C1C1C;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+
+  .var-btn:hover {
+    background: #D4E849;
+    color: #1C1C1C;
+  }
+
+  .var-btn.selected {
+    background: #D4E849;
+    color: #1C1C1C;
+  }
+
+  .sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C1C1C;
+    color: #D4E849;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    z-index: 1000;
+    border-top: 2px solid #D4E849;
+  }
+
+  .compare-panel {
+    border: 3px solid #1C1C1C;
+    border-radius: 0;
+    background: #FFFFFF;
+    padding: 24px;
+    margin: 32px auto;
+    max-width: 900px;
+    box-shadow: 8px 8px 0 #1C1C1C;
+  }
+
+  .clear-btn {
+    background: #EF4444;
+    color: #FFFFFF;
+    border: none;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 8px 16px;
+    cursor: pointer;
+    float: right;
+    text-transform: uppercase;
+  }
+
+  .clear-btn:hover {
+    background: #DC2626;
+  }
+
+  .compare-title {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1C1C1C;
+    margin: 0 0 20px;
+    padding-right: 100px;
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .compare-table th {
+    text-align: left;
+    padding: 12px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #6b6b60;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #1C1C1C;
+  }
+
+  .compare-table th:nth-child(2),
+  .compare-table th:nth-child(3) {
+    text-align: center;
+    color: #1C1C1C;
+    font-size: 13px;
+  }
+
+  .compare-table td {
+    padding: 12px 8px;
+    font-size: 12px;
+    color: #6b6b60;
+    border-bottom: 1px solid #F7F4EE;
+    text-align: center;
+  }
+
+  .compare-table td:first-child {
+    text-align: left;
+    font-weight: 700;
+    color: #1C1C1C;
+  }
+
+  .compare-table td.winner {
+    background: #D4E849;
+  }
+
+  .compare-table .tag-resalta { 
+    background: #D4E849; 
+    color: #1C1C1C;
+    padding: 4px 8px;
+    font-weight: 700;
+    font-size: 10px;
   }
 </style>
+
+<script>
+  const seleccionadas = [];
+
+  function getCardData(nombre) {
+    const card = document.querySelector(`.var-card:has([data-nombre="${nombre}"])`);
+    if (!card) return null;
+    
+    const btn = card.querySelector('.var-btn');
+    const name = btn?.dataset.nombre;
+    
+    return {
+      nombre: name,
+      frio: parseInt(card.querySelector('.var-bar-row:nth-child(1) .var-bar-pct')?.textContent || '0'),
+      calor: parseInt(card.querySelector('.var-bar-row:nth-child(2) .var-bar-pct')?.textContent || '0'),
+      sequia: parseInt(card.querySelector('.var-bar-row:nth-child(3) .var-bar-pct')?.textContent || '0'),
+      humedad: parseInt(card.querySelector('.var-bar-row:nth-child(4) .var-bar-pct')?.textContent || '0'),
+      productividad: parseInt(card.querySelector('.var-bar-row:nth-child(5) .var-bar-pct')?.textContent || '0'),
+    };
+  }
+
+  document.querySelectorAll('.var-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nombre = btn.dataset.nombre;
+      const idx = seleccionadas.indexOf(nombre);
+      
+      if (idx > -1) {
+        seleccionadas.splice(idx, 1);
+        btn.textContent = 'COMPARAR';
+        btn.classList.remove('selected');
+      } else if (seleccionadas.length < 2) {
+        seleccionadas.push(nombre);
+        btn.textContent = '✓ SELECCIONADA';
+        btn.classList.add('selected');
+      } else {
+        seleccionadas[1] = nombre;
+        document.querySelectorAll('.var-btn').forEach(b => {
+          if (seleccionadas.includes(b.dataset.nombre)) {
+            b.textContent = '✓ SELECCIONADA';
+            b.classList.add('selected');
+          } else {
+            b.textContent = 'COMPARAR';
+            b.classList.remove('selected');
+          }
+        });
+      }
+      
+      actualizarUI();
+    });
+  });
+
+  document.getElementById('clear-btn')?.addEventListener('click', () => {
+    seleccionadas.length = 0;
+    document.querySelectorAll('.var-btn').forEach(b => {
+      b.textContent = 'COMPARAR';
+      b.classList.remove('selected');
+    });
+    actualizarUI();
+  });
+
+  function actualizarUI() {
+    const stickyBar = document.getElementById('sticky-bar');
+    const comparePanel = document.getElementById('compare-panel');
+
+    if (seleccionadas.length === 1) {
+      stickyBar.style.display = 'block';
+      comparePanel.style.display = 'none';
+    } else if (seleccionadas.length === 2) {
+      stickyBar.style.display = 'none';
+      comparePanel.style.display = 'block';
+      renderComparacion();
+    } else {
+      stickyBar.style.display = 'none';
+      comparePanel.style.display = 'none';
+    }
+  }
+
+  function renderComparacion() {
+    const a = getCardData(seleccionadas[0]);
+    const b = getCardData(seleccionadas[1]);
+
+    document.getElementById('compare-title').textContent = `COMPARACIÓN: ${a.nombre} vs ${b.nombre}`;
+    document.getElementById('th-a').textContent = a.nombre;
+    document.getElementById('th-b').textContent = b.nombre;
+
+    const metrics = [
+      { key: 'frio', label: '❄️ FRÍO', type: 'bar' },
+      { key: 'calor', label: '🔥 CALOR', type: 'bar' },
+      { key: 'sequia', label: '🏜️ SEQUÍA', type: 'bar' },
+      { key: 'humedad', label: '💧 HUMEDAD', type: 'bar' },
+      { key: 'productividad', label: '📊 PRODUCCIÓN', type: 'bar' }
+    ];
+
+    const tbody = document.getElementById('compare-tbody');
+    tbody.innerHTML = metrics.map(m => {
+      const valA = a[m.key];
+      const valB = b[m.key];
+      
+      let winnerA = '', winnerB = '';
+      if (valA > valB) winnerA = 'winner';
+      if (valB > valA) winnerB = 'winner';
+
+      const colorClass = m.key === 'frio' ? '' : m.key;
+
+      return `<tr>
+        <td>${m.label}</td>
+        <td class="${winnerA}">
+          <div class="bar-container"><div class="bar-bg" style="width:80px;height:8px;background:#F7F4EE;border:1px solid #1C1C1C;"><div class="${winnerA ? 'winner-fill' : colorClass + '-fill'}" style="width:${valA}%;height:100%;background:${getColor(m.key, valA)}"></div></div><span style="margin-left:8px;font-weight:700;">${valA}%</span></div>
+        </td>
+        <td class="${winnerB}">
+          <div class="bar-container"><div class="bar-bg" style="width:80px;height:8px;background:#F7F4EE;border:1px solid #1C1C1C;"><div class="${winnerB ? 'winner-fill' : colorClass + '-fill'}" style="width:${valB}%;height:100%;background:${getColor(m.key, valB)}"></div></div><span style="margin-left:8px;font-weight:700;">${valB}%</span></div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function getColor(key, val) {
+    if (key === 'frio') return val > 70 ? '#06B6D4' : val > 50 ? '#06B6D4' : '#06B6D4';
+    if (key === 'calor') return val > 70 ? '#F59E0B' : val > 50 ? '#F59E0B' : '#F59E0B';
+    if (key === 'sequia') return val > 70 ? '#D4E849' : val > 50 ? '#D4E849' : '#D4E849';
+    if (key === 'humedad') return val > 50 ? '#8B5CF6' : '#8B5CF6';
+    if (key === 'productividad') return val > 80 ? '#3B82F6' : '#3B82F6';
+    return '#1C1C1C';
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.var-card').forEach(card => {
+        if (filter === 'all') {
+          card.style.display = 'block';
+        } else {
+          const tags = card.dataset.tags || '';
+          card.style.display = tags.includes(filter) ? 'block' : 'none';
+        }
+      });
+    });
+  });
+</script>
