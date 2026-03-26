@@ -19,8 +19,6 @@ services:
       - "3001:3000"
     volumes:
       - ./api/olivaxi.db:/app/olivaxi.db
-    env_file:
-      - ./api/.env
     environment:
       - GROQ_KEY=${GROQ_KEY}
       - GEMINI_KEY=${GEMINI_KEY}
