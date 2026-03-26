@@ -156,7 +156,7 @@ export default function ChatConsejero() {
   return (
     <div class="chat-wrapper-optimized">
       <style>{`
-        .chat-wrapper-optimized { display: flex; flex-direction: column; height: 100%; width: 100%; background: ${() => t().bg}; border: 2px solid ${() => t().border}; border-radius: 8px; overflow: hidden; }
+        .chat-wrapper-optimized { display: flex; flex-direction: column; min-height: 70vh; height: 100%; width: 100%; background: ${() => t().bg}; border: 2px solid ${() => t().border}; border-radius: 8px; overflow: hidden; }
         .chat-header { display: flex; align-items: center; gap: 12px; padding: 14px 24px; background: ${() => t().bg}; border-bottom: 2px solid ${() => t().border}; flex-shrink: 0; }
         .chat-avatar { width: 40px; height: 40px; background: ${() => t().text}; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: ${() => t().sal}; }
         .chat-header-info { flex: 1; }
