@@ -100,6 +100,10 @@ const { title = "olivaξ" } = Astro.props;
     --color-white: #FFFFFF;
     --color-border: #1C1C1C;
     --color-white-surface: #FFFFFF;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --font-base: clamp(14px, 0.9rem + 0.5vw, 17px);
+    --font-lg: clamp(18px, 1.2rem + 0.8vw, 28px);
+    --font-xl: clamp(24px, 1.5rem + 1.2vw, 42px);
   }
 
   [data-theme="dark"] {
@@ -112,12 +116,14 @@ const { title = "olivaξ" } = Astro.props;
     --color-white: #1a1a1a;
     --color-border: #F7F4EE;
     --color-white-surface: #1a1a1a;
+    --color-shadow: rgba(0, 0, 0, 0.3);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
+    font-size: var(--font-base);
     background-color: var(--color-sal);
     color: var(--color-aceituna);
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -126,7 +132,10 @@ const { title = "olivaξ" } = Astro.props;
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', system-ui, sans-serif;
     font-weight: 600;
+    font-size: var(--font-lg);
   }
+
+  h1 { font-size: var(--font-xl); }
 
   .navbar {
     position: fixed;
