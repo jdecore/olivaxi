@@ -5,10 +5,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 <div id="mapa-container" class="mapa-wrapper" data-api-url={apiUrl}>
   <div id="mapa-filters" class="mapa-filters">
     <div class="filter-group">
-      <span class="filter-label">Ver:</span>
-      <button class="filter-btn active" data-filtro="temperatura">🌡️ Temperatura</button>
-      <button class="filter-btn" data-filtro="humedad">💧 Humedad</button>
-      <button class="filter-btn" data-filtro="precipitacion">🌧️ Lluvia</button>
+      <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
+      <button class="filter-btn" data-filtro="humedad">💧</button>
+      <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
     </div>
   </div>
   <div id="mapa"></div>
@@ -45,39 +44,31 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   .mapa-filters {
     position: absolute;
     top: 10px;
-    right: 10px;
     left: 10px;
     z-index: 99;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     background: var(--color-muted-bg);
-    padding: 8px 12px;
+    padding: 6px 8px;
     border-radius: 4px;
     border: 2px solid var(--color-sal);
   }
   .filter-group {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--color-aceituna);
-    margin-right: 4px;
+    flex-direction: column;
+    gap: 4px;
   }
   .filter-btn {
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 4px 8px;
+    font-size: 12px;
     font-weight: 600;
     border: 1.5px solid var(--color-sal);
-    border-radius: 20px;
+    border-radius: 6px;
     background: var(--color-limon);
     color: var(--color-aceituna);
     cursor: pointer;
     transition: all 0.2s;
+    min-width: 36px;
   }
   .filter-btn:hover { background: #c5d93e; }
   .filter-btn.active { background: #FFFFFF; color: var(--color-aceituna); border-color: var(--color-aceituna); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -130,22 +121,22 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   .mapa-legend {
     position: absolute;
     bottom: 10px;
-    left: 10px;
-    right: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     background: var(--color-muted-bg);
     border: 2px solid var(--color-sal);
     border-radius: 4px;
-    padding: 6px 8px;
-    font-size: 9px;
+    padding: 4px 10px;
+    font-size: 10px;
     font-family: -apple-system, sans-serif;
     z-index: 99;
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    gap: 8px;
     justify-content: center;
+    max-width: 90%;
   }
-  .legend-item { display: flex; align-items: center; gap: 3px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--color-sal); flex-shrink: 0; }
+  .legend-item { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .legend-label { color: var(--color-aceituna); white-space: nowrap; }
   :global(.leaflet-container) { background: var(--color-bg); }
   @media (prefers-reduced-motion: reduce) {
