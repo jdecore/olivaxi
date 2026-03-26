@@ -11,6 +11,7 @@ COPY routes ./routes
 COPY services ./services
 COPY db ./db
 COPY index.ts ./
+COPY .env ./
 
 EXPOSE 3000
 
