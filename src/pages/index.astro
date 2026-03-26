@@ -1124,6 +1124,9 @@ let top3Riesgos = [];
     const variedad = e.target.value;
     if (variedad) {
       guardarSeleccion('variedad', variedad);
+      // Update map with variety
+      window.dispatchEvent(new CustomEvent('variedad-seleccionada', { detail: { variedad } }));
+      
       const provincia = selectProvincia?.value;
       if (provincia) {
         const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';

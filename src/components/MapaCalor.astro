@@ -1,8 +1,9 @@
 ---
 const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+const variedadSeleccionada = Astro.props.variedad || '';
 ---
 
-<div id="mapa-container" class="mapa-wrapper" data-api-url={apiUrl}>
+<div id="mapa-container" class="mapa-wrapper" data-api-url={apiUrl} data-variedad={variedadSeleccionada}>
   <div id="mapa-filters" class="mapa-filters">
     <div class="filter-group">
       <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
@@ -262,23 +263,122 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     return legends[filtro] || [];
   };
 
-  const getTooltipContent = (provincia, color, filtro) => {
+  const getTooltipContent = (provincia, color, filtro, variedad, riesgosVariedad) => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
     const mutedColor = isDark ? '#a0a095' : '#4a4a40';
     const bg = isDark ? '#000' : '#F7F4EE';
-    const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 100px;`;
+    const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 120px;`;
 
     const contenido = {
-      temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
-      humedad: `<div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>${provincia.suelo_humedad !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">🌱 Suelo: ${(provincia.suelo_humedad * 100).toFixed(0)}%</div>` : ''}`,
-      precipitacion: `<div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>${provincia.evapotranspiracion !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">💨 ET0: ${provincia.evapotranspiracion.toFixed(1)}mm</div>` : ''}`,
+      temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
+      humedad: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>${provincia.suelo_humedad !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">🌱 Suelo: ${(provincia.suelo_humedad * 100).toFixed(0)}%</div>` : ''}`,
+      precipitacion: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>${provincia.evapotranspiracion !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">💨 ET0: ${provincia.evapotranspiracion.toFixed(1)}mm</div>` : ''}`,
     };
 
-    return `<div style="${base}">${contenido[filtro] || ''}</div>`;
+    let tooltipContent = `<div style="${base}">${contenido[filtro] || ''}</div>`;
+
+    if (variedad && riesgosVariedad && riesgosVariedad.length > 0) {
+      const riesgoColors = { alto: '#ef4444', medio: '#f59e0b', bajo: '#22c55e' };
+      const alertsHtml = riesgosVariedad.slice(0, 2).map(r => {
+        const nivelColor = riesgoColors[r.nivel] || '#f59e0b';
+        return `<div style="font-size: 10px; color: ${nivelColor}; margin-top: 4px;">⚠️ ${r.icon} ${r.texto}</div>`;
+      }).join('');
+      
+      tooltipContent = `<div style="${base}">${contenido[filtro] || ''}<div style="margin-top: 6px; border-top: 1px solid ${mutedColor}; padding-top: 4px;">${alertsHtml}</div></div>`;
+    }
+
+    return tooltipContent;
   };
 
-  let map, markersLayer, datos = [], filtroActual = 'temperatura';
+  const VARIEDADES: Record<string, any> = {
+    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
+    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
+    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
+    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
+  };
+
+  function calcularRiesgosVariedad(provincia, variedad) {
+    const variedadData = VARIEDADES[variedad];
+    if (!variedadData) return [];
+    
+    const riesgos = [];
+    const temp = provincia.temperatura || 0;
+    const humedad = provincia.humedad || 0;
+    const lluvia = provincia.lluvia || 0;
+
+    if (variedadData.clima.calor.nivel === "baja" && temp > 35) {
+      riesgos.push({ nivel: "alto", icon: "🔥", texto: "Calor crítico" });
+    } else if (variedadData.clima.calor.nivel === "media" && temp > 38) {
+      riesgos.push({ nivel: "medio", icon: "🔥", texto: "Calor alto" });
+    }
+
+    if (variedadData.clima.frio.nivel === "baja" && temp < 5) {
+      riesgos.push({ nivel: "alto", icon: "❄️", texto: "Helada crítica" });
+    } else if (variedadData.clima.frio.nivel === "media" && temp < 0) {
+      riesgos.push({ nivel: "medio", icon: "❄️", texto: "Helada" });
+    }
+
+    if (variedadData.clima.sequia.nivel === "baja" && humedad < 30) {
+      riesgos.push({ nivel: "alto", icon: "🏜️", texto: "Sequía severa" });
+    } else if (variedadData.clima.sequia.nivel === "media" && humedad < 20) {
+      riesgos.push({ nivel: "medio", icon: "🏜️", texto: "Estrés hídrico" });
+    }
+
+    if (variedadData.clima.humedad_alta.nivel === "baja" && humedad > 80) {
+      riesgos.push({ nivel: "alto", icon: "🦠", texto: "Riesgo hongos" });
+    } else if (variedadData.clima.humedad_alta.nivel === "media" && humedad > 85) {
+      riesgos.push({ nivel: "medio", icon: "🦠", texto: "Alta humedad" });
+    }
+
+    if (provincia.riesgos_plaga) {
+      if (provincia.riesgos_plaga.mosca?.nivel === 'alto') {
+        riesgos.push({ nivel: "alto", icon: "🦟", texto: "Mosca activa" });
+      }
+      if (provincia.riesgos_plaga.polilla?.nivel === 'alto') {
+        riesgos.push({ nivel: "alto", icon: "🦋", texto: "Polilla activa" });
+      }
+      if (provincia.riesgos_plaga.repilo?.nivel === 'alto') {
+        riesgos.push({ nivel: "alto", icon: "🍄", texto: "Repilo activo" });
+      }
+    }
+
+    return riesgos;
+  }
+
+  function getColorByRiesgoVariedad(provincia, variedad) {
+    if (!variedad) {
+      return getColorByTemperatura(provincia.temperatura);
+    }
+
+    const riesgos = calcularRiesgosVariedad(provincia, variedad);
+    const tieneAlto = riesgos.some(r => r.nivel === "alto");
+    const tieneMedio = riesgos.some(r => r.nivel === "medio");
+
+    if (tieneAlto) return "#ef4444";
+    if (tieneMedio) return "#f59e0b";
+    return "#22c55e";
+  }
+
+  let map, markersLayer, datos = [], filtroActual = 'temperatura', variedadActual = '';
+  const container = document.getElementById('mapa-container');
+  if (container?.dataset.variedad) {
+    variedadActual = container.dataset.variedad;
+  } else if (typeof window !== 'undefined' && window.__mapaVariedad) {
+    variedadActual = window.__mapaVariedad;
+  }
+
+  // Listen for variety changes
+  if (typeof window !== 'undefined') {
+    window.addEventListener('variedad-seleccionada', (e) => {
+      variedadActual = e.detail?.variedad || '';
+      if (container) container.dataset.variedad = variedadActual;
+      renderMarkers();
+      updateLegend();
+    });
+  }
 
   const initMap = async () => {
     const mapaDiv = document.getElementById('mapa');
@@ -343,11 +443,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     markersLayer.clearLayers();
 
     datos.forEach((provincia, index) => {
-      const color = getColor(provincia, filtroActual);
+      const colorBase = getColor(provincia, filtroActual);
+      const color = variedadActual ? getColorByRiesgoVariedad(provincia, variedadActual) : colorBase;
       const radius = getMarkerRadius(provincia.humedad);
       const isExtremo = provincia.estado === 'Extremo' && filtroActual === 'temperatura';
+      
+      const riesgosVariedad = variedadActual ? calcularRiesgosVariedad(provincia, variedadActual) : [];
 
-      if (isExtremo) {
+      if (isExtremo || riesgosVariedad.some(r => r.nivel === 'alto')) {
         const pulse = L.circleMarker([provincia.lat, provincia.lon], {
           radius: radius + 8,
           fillColor: color,
@@ -369,7 +472,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         className: `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`
       });
 
-      circle.bindTooltip(getTooltipContent(provincia, color, filtroActual), {
+      circle.bindTooltip(getTooltipContent(provincia, color, filtroActual, variedadActual, riesgosVariedad), {
         className: 'olivax-tooltip',
         direction: 'top',
         offset: [0, -10]
@@ -401,6 +504,16 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   };
 
   const init = () => {
+    // Get variety from localStorage or window variable
+    if (!variedadActual) {
+      try {
+        variedadActual = localStorage.getItem('olivaxi_variedad') || window.__mapaVariedad || '';
+      } catch (e) {}
+    }
+    if (container && variedadActual) {
+      container.dataset.variedad = variedadActual;
+    }
+
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
