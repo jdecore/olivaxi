@@ -177,6 +177,75 @@ function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
   return { frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia };
 }
 
+const VARIEDADES_RESISTENCIAS: Record<string, any> = {
+  cornicabra: { nombre: "Cornicabra", clima: { frio: "muy-alta", calor: "muy-alta", sequia: "muy-alta", humedad_alta: "media" } },
+  picual: { nombre: "Picual", clima: { frio: "alta", calor: "muy-alta", sequia: "media", humedad_alta: "baja" } },
+  arbequina: { nombre: "Arbequina", clima: { frio: "muy-alta", calor: "media", sequia: "baja", humedad_alta: "baja" } },
+  hojiblanca: { nombre: "Hojiblanca", clima: { frio: "media", calor: "alta", sequia: "media-alta", humedad_alta: "media" } },
+  manzanilla: { nombre: "Manzanilla", clima: { frio: "media", calor: "media-alta", sequia: "baja", humedad_alta: "baja" } },
+  empeltre: { nombre: "Empeltre", clima: { frio: "alta", calor: "media-alta", sequia: "muy-alta", humedad_alta: "media" } }
+};
+
+function calcularScoreRiesgo(temp: number, humedad: number, lluvia: number, variedadClima: any): { score: number; nivel: string; detalle: string[] } {
+  if (!variedadClima) {
+    return { score: 0, nivel: "óptimo", detalle: [] };
+  }
+
+  let score = 0;
+  const detalle: string[] = [];
+
+  const mapNivel: Record<string, number> = { 'muy-alta': 0, 'alta': 1, 'media-alta': 1, 'media': 2, 'baja': 3 };
+
+  // Calor
+  const nivelCalor = variedadClima.calor || 'media';
+  const pesoCalor = mapNivel[nivelCalor] || 2;
+  if (pesoCalor >= 2 && temp > 28) {
+    score += pesoCalor;
+    detalle.push(`🔥 Calor sensible (${temp}°C)`);
+  }
+  if (temp > 35) score += 1;
+  if (temp > 38) score += 1;
+
+  // Frío
+  const nivelFrio = variedadClima.frio || 'media';
+  const pesoFrio = mapNivel[nivelFrio] || 2;
+  if (pesoFrio >= 2 && temp < 10) {
+    score += pesoFrio;
+    detalle.push(`❄️ Frío sensible (${temp}°C)`);
+  }
+  if (temp < 5) score += 1;
+  if (temp < 0) score += 1;
+
+  // Sequía
+  const nivelSequia = variedadClima.sequia || 'media';
+  const pesoSequia = mapNivel[nivelSequia] || 2;
+  if (pesoSequia >= 2 && humedad < 50) {
+    score += pesoSequia;
+    detalle.push(`🏜️ Sequía sensible (${humedad}%)`);
+  }
+  if (humedad < 30) score += 1;
+  if (humedad < 20) score += 1;
+
+  // Humedad alta
+  const nivelHumedad = variedadClima.humedad_alta || 'media';
+  const pesoHumedad = mapNivel[nivelHumedad] || 2;
+  if (pesoHumedad >= 2 && humedad > 60) {
+    score += pesoHumedad;
+    detalle.push(`🦠 Humedad sensible (${humedad}%)`);
+  }
+  if (humedad > 80) score += 1;
+  if (humedad > 90) score += 1;
+
+  score = Math.min(score, 10);
+
+  let nivel = "óptimo";
+  if (score >= 7) nivel = "crítico";
+  else if (score >= 4) nivel = "medio";
+  else if (score >= 1) nivel = "bajo";
+
+  return { score, nivel, detalle };
+}
+
 export async function getClimaData() {
   const now = Date.now();
   const cacheRow = db.query("SELECT datos, cached_at FROM clima_cache WHERE id = 1").get() as { datos: string; cached_at: number } | undefined;
@@ -211,17 +280,26 @@ export async function getClimaData() {
 
   const resultados = data.map((item) => {
     const temp = item.temp;
-    const riesgos_olivar = calcularRiesgosOlivar(temp, item.humedad, item.lluvia);
+    const humedad = item.humedad;
+    const lluvia = item.lluvia;
+    const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
     const riesgo = calcularRiesgo(riesgos_olivar);
     const estado = getEstado(temp);
-    const riesgos_plaga = calcularRiesgosPlaga(temp, item.humedad, item.lluvia);
+    const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
+
+    // Calcular riesgo para cada variedad
+    const riesgos_variedad: Record<string, any> = {};
+    for (const [key, varData] of Object.entries(VARIEDADES_RESISTENCIAS)) {
+      riesgos_variedad[key] = calcularScoreRiesgo(temp, humedad, lluvia, varData.clima);
+    }
+
     return {
       provincia: item.provincia.nombre,
       lat: item.provincia.lat,
       lon: item.provincia.lon,
       temperatura: temp,
-      humedad: item.humedad,
-      lluvia: item.lluvia,
+      humedad,
+      lluvia,
       riesgo,
       estado,
       source: "api",
@@ -230,6 +308,7 @@ export async function getClimaData() {
       evapotranspiracion: item.evapotranspiracion,
       riesgos_plaga,
       riesgos_olivar,
+      riesgos_variedad,
     };
   });
 

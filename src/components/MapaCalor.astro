@@ -9,6 +9,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
       <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
       <button class="filter-btn" data-filtro="humedad">💧</button>
       <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
+      <button class="filter-btn" data-filtro="riesgo-variedad" title="Riesgo según variedad">⚠️</button>
     </div>
   </div>
   <div id="mapa"></div>
@@ -227,7 +228,11 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
   const getMarkerRadius = (humedad) => 8 + (humedad / 100) * 8;
 
-  const getColor = (provincia, filtro) => {
+  const getColor = (provincia, filtro, variedad) => {
+    // Si hay variedad seleccionada y el filtro es riesgo-variedad
+    if (variedad && filtro === 'riesgo-viedad' || filtro === 'riesgo-variedad') {
+      return getColorByRiesgoVariedad(provincia, variedad);
+    }
     switch (filtro) {
       case 'temperatura': return getColorByTemperatura(provincia.temperatura);
       case 'humedad': return getColorByHumedad(provincia.humedad);
@@ -259,6 +264,12 @@ const variedadSeleccionada = Astro.props.variedad || '';
         { label: '2-10mm', color: '#74B9FF' },
         { label: '>10mm', color: '#0984e3' },
       ],
+      'riesgo-variedad': [
+        { label: 'Óptimo (0)', color: '#16a34a' },
+        { label: 'Bajo (1-3)', color: '#22c55e' },
+        { label: 'Medio (4-6)', color: '#f59e0b' },
+        { label: 'Crítico (7+)', color: '#ef4444' },
+      ],
     };
     return legends[filtro] || [];
   };
@@ -269,6 +280,11 @@ const variedadSeleccionada = Astro.props.variedad || '';
     const mutedColor = isDark ? '#a0a095' : '#4a4a40';
     const bg = isDark ? '#000' : '#F7F4EE';
     const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 120px;`;
+
+    // Si hay variedad seleccionada y tenemos el filtro de riesgo-variedad
+    if (variedad && provincia.riesgos_variedad?.[variedad] && filtro === 'riesgo-variedad') {
+      return getTooltipRiesgoVariedad(provincia, variedad);
+    }
 
     const contenido = {
       temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
@@ -353,13 +369,45 @@ const variedadSeleccionada = Astro.props.variedad || '';
       return getColorByTemperatura(provincia.temperatura);
     }
 
-    const riesgos = calcularRiesgosVariedad(provincia, variedad);
-    const tieneAlto = riesgos.some(r => r.nivel === "alto");
-    const tieneMedio = riesgos.some(r => r.nivel === "medio");
+    // Usar datos del backend directamente
+    const riesgoData = provincia.riesgos_variedad?.[variedad];
+    const score = riesgoData?.score || 0;
+    const nivel = riesgoData?.nivel || 'óptimo';
 
-    if (tieneAlto) return "#ef4444";
-    if (tieneMedio) return "#f59e0b";
-    return "#22c55e";
+    if (nivel === 'crítico' || score >= 7) return "#ef4444";
+    if (nivel === 'medio' || score >= 4) return "#f59e0b";
+    if (nivel === 'bajo' || score >= 1) return "#22c55e";
+    return "#16a34a";
+  }
+
+  function getTooltipRiesgoVariedad(provincia, variedad) {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
+    const mutedColor = isDark ? '#a0a095' : '#4a4a40';
+    const bg = isDark ? '#000' : '#F7F4EE';
+    const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 140px;`;
+
+    const riesgoData = provincia.riesgos_variedad?.[variedad];
+    const score = riesgoData?.score || 0;
+    const nivel = riesgoData?.nivel || 'óptimo';
+    const detalle = riesgoData?.detalle || [];
+
+    const color = getColorByRiesgoVariedad(provincia, variedad);
+
+    return `
+      <div style="${base}">
+        <div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div>
+        <div style="color: ${color}; font-size: 13px; font-weight: 700;">
+          ⚠️ Riesgo: ${nivel.toUpperCase()} (${score}/10)
+        </div>
+        <div style="margin-top: 6px; font-size: 11px; color: ${mutedColor}; border-top: 1px solid ${mutedColor}; padding-top: 4px;">
+          ${detalle.length > 0 ? detalle.map(d => `• ${d}`).join('<br>') : '✅ Condiciones óptimas para tu variedad'}
+        </div>
+        <div style="margin-top: 4px; font-size: 10px; color: ${mutedColor};">
+          🌡️ ${provincia.temperatura}°C | 💧 ${provincia.humedad}%
+        </div>
+      </div>
+    `;
   }
 
   let map, markersLayer, datos = [], filtroActual = 'temperatura', variedadActual = '';
@@ -443,14 +491,17 @@ const variedadSeleccionada = Astro.props.variedad || '';
     markersLayer.clearLayers();
 
     datos.forEach((provincia, index) => {
-      const colorBase = getColor(provincia, filtroActual);
-      const color = variedadActual ? getColorByRiesgoVariedad(provincia, variedadActual) : colorBase;
+      // Usar el filtro seleccionado + variedad para el color
+      const color = getColor(provincia, filtroActual, variedadActual);
       const radius = getMarkerRadius(provincia.humedad);
       const isExtremo = provincia.estado === 'Extremo' && filtroActual === 'temperatura';
       
-      const riesgosVariedad = variedadActual ? calcularRiesgosVariedad(provincia, variedadActual) : [];
+      // Calcular riesgos para el tooltip usando datos del backend
+      const riesgosBackend = provincia.riesgos_variedad?.[variedadActual];
+      const tieneAlto = riesgosBackend?.nivel === 'crítico' || riesgosBackend?.score >= 7;
+      const tieneMedio = riesgosBackend?.nivel === 'medio' || (riesgosBackend?.score >= 4 && riesgosBackend?.score < 7);
 
-      if (isExtremo || riesgosVariedad.some(r => r.nivel === 'alto')) {
+      if (isExtremo || tieneAlto) {
         const pulse = L.circleMarker([provincia.lat, provincia.lon], {
           radius: radius + 8,
           fillColor: color,
@@ -472,7 +523,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
         className: `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`
       });
 
-      circle.bindTooltip(getTooltipContent(provincia, color, filtroActual, variedadActual, riesgosVariedad), {
+      circle.bindTooltip(getTooltipContent(provincia, color, filtroActual, variedadActual, []), {
         className: 'olivax-tooltip',
         direction: 'top',
         offset: [0, -10]
