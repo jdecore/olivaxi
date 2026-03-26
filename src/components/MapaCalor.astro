@@ -188,7 +188,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   @media (prefers-reduced-motion: reduce) {
     .marker-fadeIn { animation: none; opacity: 1; }
     .marker-pulse { animation: none; }
-    .skeleton-circle { animation: none; }
+    .skeleton-spinner, .sk-p { animation: none; }
   }
   @media (max-width: 768px) {
     .marker-fadeIn { animation-duration: 0.2s; }
@@ -295,7 +295,12 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       if (!res.ok) throw new Error(`Error ${res.status}`);
       datos = await res.json();
     } catch (e) {
-      if (loadingEl) loadingEl.querySelector('p').textContent = 'Error al cargar datos';
+      if (loadingEl) {
+        const spinner = loadingEl.querySelector('.skeleton-spinner');
+        const text = loadingEl.querySelector('.skeleton-text');
+        if (spinner) spinner.style.display = 'none';
+        if (text) text.textContent = 'Error al cargar datos';
+      }
       return;
     }
 

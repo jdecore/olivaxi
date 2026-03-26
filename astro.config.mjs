@@ -10,12 +10,25 @@ export default defineConfig({
   ],
   prefetch: {
     prefetchAll: true,
-    defaultStrategy: 'viewport'
+    defaultStrategy: 'viewport',
+    cacheControl: 'immutable'
   },
   build: {
-    inlineStylesheets: 'auto'
+    inlineStylesheets: 'auto',
+    assetsInlineLimit: 4096
   },
   compressHTML: true,
+  vite: {
+    build: {
+      cssMinify: true,
+      minify: 'terser',
+      rollupOptions: {
+        output: {
+          manualChunks: undefined
+        }
+      }
+    }
+  },
   devToolbar: {
     enabled: false
   }
