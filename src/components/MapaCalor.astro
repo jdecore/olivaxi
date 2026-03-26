@@ -4,9 +4,12 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
 <div id="mapa-container" class="mapa-wrapper" data-api-url={apiUrl}>
   <div id="mapa-filters" class="mapa-filters">
-    <button class="filter-btn active" data-filtro="temperatura">🌡️ Temp</button>
-    <button class="filter-btn" data-filtro="humedad">💧 Humedad</button>
-    <button class="filter-btn" data-filtro="precipitacion">🌧️ Lluvia</button>
+    <div class="filter-group">
+      <span class="filter-label">Ver:</span>
+      <button class="filter-btn active" data-filtro="temperatura">🌡️ Temperatura</button>
+      <button class="filter-btn" data-filtro="humedad">💧 Humedad</button>
+      <button class="filter-btn" data-filtro="precipitacion">🌧️ Lluvia</button>
+    </div>
   </div>
   <div id="mapa"></div>
   <div id="mapa-legend" class="mapa-legend"></div>
@@ -37,27 +40,41 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     position: absolute;
     top: 10px;
     right: 10px;
+    left: 10px;
     z-index: 99;
     display: flex;
-    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
     background: var(--color-muted-bg);
-    padding: 6px;
+    padding: 8px 12px;
     border-radius: 4px;
     border: 2px solid var(--color-sal);
   }
-  .filter-btn {
-    padding: 4px 8px;
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
     font-size: 11px;
     font-weight: 600;
-    border: 1px solid var(--color-sal);
-    border-radius: 3px;
+    color: var(--color-aceituna);
+    margin-right: 4px;
+  }
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1.5px solid var(--color-sal);
+    border-radius: 20px;
     background: var(--color-limon);
     color: var(--color-aceituna);
     cursor: pointer;
     transition: all 0.2s;
   }
   .filter-btn:hover { background: #c5d93e; }
-  .filter-btn.active { background: #FFFFFF; color: var(--color-aceituna); border-color: #FFFFFF; }
+  .filter-btn.active { background: #FFFFFF; color: var(--color-aceituna); border-color: var(--color-aceituna); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .mapa-loading {
     position: absolute;
     inset: 0;
