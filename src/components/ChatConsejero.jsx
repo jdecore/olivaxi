@@ -167,8 +167,9 @@ export default function ChatConsejero() {
               if (json.texto) {
                 if (!firstChunk) { firstChunk = true; setIsWaiting(false); }
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto } : m));
-                const currentFullText = messages().find(m => m.id === botId)?.text || '';
-                startTypingAnimation(botId, currentFullText + json.texto);
+                const currentFullText = (messages().find(m => m.id === botId)?.text || '') + json.texto;
+                setFullText(currentFullText);
+                startTypingAnimation(botId, currentFullText);
                 scrollToBottom();
               }
             } catch {}
@@ -468,6 +469,10 @@ export default function ChatConsejero() {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
       `}</style>
 
       <div class="chat-header">
@@ -507,6 +512,7 @@ export default function ChatConsejero() {
                 </Show>
                 <Show when={!msg.isWaiting && !msg.isThinking}>
                   <span innerHTML={formatText(typingMessageId() === msg.id && displayedText() !== fullText() ? displayedText() : msg.text)}></span>
+                  <span style={typingMessageId() === msg.id && displayedText() !== fullText() ? "animation: blink 1s infinite; display: inline;" : "display: none;"}>▊</span>
                 </Show>
                 <Show when={msg.showProvincias}>
                   <div class="province-grid">

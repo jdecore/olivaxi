@@ -20,51 +20,49 @@ let top3Riesgos = [];
   /* HERO MINIMALISTA ARC STYLE */
   .hero-section {
     min-height: 60vh;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 80px 24px 60px;
+    padding: 120px 24px 60px;
     gap: 24px;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .hero-title {
     font-family: 'Outfit', system-ui, sans-serif;
-    font-size: clamp(36px, 6vw, 56px);
+    font-size: clamp(36px, 6vw, 56px) !important;
     font-weight: 700;
-    color: #1C1C1C;
+    color: #1C1C1C !important;
     margin: 0;
     letter-spacing: -0.02em;
     line-height: 1.1;
     max-width: 700px;
     animation: heroFadeIn 0.8s ease-out;
-  }
-
-  [data-theme="dark"] .hero-title {
-    color: #F7F4EE;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .hero-subtitle {
     font-family: 'Outfit', system-ui, sans-serif;
-    font-size: clamp(16px, 2vw, 20px);
+    font-size: clamp(16px, 2vw, 20px) !important;
     font-weight: 400;
-    color: #6b6b60;
+    color: #6b6b60 !important;
     margin: 0;
     max-width: 600px;
     line-height: 1.5;
     animation: heroFadeIn 0.8s ease-out 0.15s both;
-  }
-
-  [data-theme="dark"] .hero-subtitle {
-    color: #a0a095;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .hero-cta {
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
-    background: #1C1C1C;
-    color: #ffffff;
+    background: #1C1C1C !important;
+    color: #ffffff !important;
     padding: 16px 32px;
     border-radius: 16px;
     font-family: 'Outfit', system-ui, sans-serif;
@@ -74,21 +72,13 @@ let top3Riesgos = [];
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease;
     animation: heroFadeIn 0.8s ease-out 0.3s both;
+    visibility: visible !important;
   }
 
   .hero-cta:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    background: #2d2d2d;
-  }
-
-  [data-theme="dark"] .hero-cta {
-    background: #F7F4EE;
-    color: #000000;
-  }
-
-  [data-theme="dark"] .hero-cta:hover {
-    background: #ffffff;
+    opacity: 0.9;
   }
 
   @keyframes heroFadeIn {
@@ -105,7 +95,7 @@ let top3Riesgos = [];
   @media (max-width: 640px) {
     .hero-section {
       min-height: 50vh;
-      padding: 60px 20px 40px;
+      padding: 100px 20px 40px;
     }
   }
 
