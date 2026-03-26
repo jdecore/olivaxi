@@ -141,9 +141,9 @@ export default function ChatConsejero() {
     const text = input().trim();
     if (!text || isLoading()) return;
 
-    // Contar solo intercambios (pregunta usuario + respuesta bot)
-    const intercambios = Math.floor(messages().length / 2);
-    if (chatStarted() && intercambios >= MAX_MESSAGES) {
+    // Contar solo respuestas del bot (no preguntas del usuario)
+    const respuestasBot = messages().filter(m => m.role === 'bot').length;
+    if (chatStarted() && respuestasBot >= MAX_MESSAGES) {
       setShowMemoryModal(true);
       return;
     }
@@ -651,10 +651,10 @@ export default function ChatConsejero() {
 
       <div class="chat-input-area">
         <button 
-          class={`memory-btn ${chatStarted() && Math.floor(messages().length / 2) >= 15 ? 'warning' : ''}`} 
+          class={`memory-btn ${chatStarted() && messages().filter(m => m.role === 'bot').length >= 15 ? 'warning' : ''}`} 
           onClick={() => setShowMemoryModal(true)}
         >
-          💾 {chatStarted() ? Math.floor(messages().length / 2) : 0}/{MAX_MESSAGES}
+          💾 {chatStarted() ? messages().filter(m => m.role === 'bot').length : 0}/{MAX_MESSAGES}
         </button>
         <input 
           class="chat-input" 
@@ -672,18 +672,17 @@ export default function ChatConsejero() {
         >
           ➤
         </button>
-        <button class="download-btn" onClick={descargarChat} title="Descargar chat">📥</button>
       </div>
 
       <Show when={showMemoryModal()}>
         <div class="memory-modal-overlay" onClick={() => setShowMemoryModal(false)}>
           <div class="memory-modal" onClick={(e) => e.stopPropagation()}>
             <h3>💾 Memoria del Chat</h3>
-            <p>Has usado {chatStarted() ? Math.floor(messages().length / 2) : 0} de {MAX_MESSAGES} intercambios.<br/>
-            {chatStarted() && Math.floor(messages().length / 2) >= MAX_MESSAGES ? 'El chat ha llegado al límite. Descarga el chat antes de borrar.' : 'Puedes descargar el chat o limpiarlo cuando quieras.'}</p>
+            <p>Has usado {chatStarted() ? messages().filter(m => m.role === 'bot').length : 0} de {MAX_MESSAGES} respuestas del asesor.<br/>
+            {chatStarted() && messages().filter(m => m.role === 'bot').length >= MAX_MESSAGES ? 'El chat ha llegado al límite. Descarga el chat antes de borrar.' : 'Puedes descargar el chat o limpiarlo cuando quieras.'}</p>
             <div class="memory-modal-buttons">
               <button class="memory-modal-btn download" onClick={() => { descargarChat(); setShowMemoryModal(false); }}>📥 Descargar</button>
-              <button class="memory-modal-btn clear" onClick={() => { limpiarChat(); setShowMemoryModal(false); }}>🗑️ Borrar todo</button>
+              <button class="memory-modal-btn clear" onClick={() => { limpiarChat(); setShowMemoryModal(false); }}>🗑️ Borrrar todo</button>
               <button class="memory-modal-btn cancel" onClick={() => setShowMemoryModal(false)}>✖️ Cerrar</button>
             </div>
           </div>
