@@ -9,7 +9,6 @@ const variedadSeleccionada = Astro.props.variedad || '';
       <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
       <button class="filter-btn" data-filtro="humedad">💧</button>
       <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
-      <button class="filter-btn" data-filtro="riesgo-variedad" title="Riesgo según variedad">⚠️</button>
     </div>
   </div>
   <div id="mapa"></div>
@@ -229,8 +228,8 @@ const variedadSeleccionada = Astro.props.variedad || '';
   const getMarkerRadius = (humedad) => 8 + (humedad / 100) * 8;
 
   const getColor = (provincia, filtro, variedad) => {
-    // Si hay variedad seleccionada y el filtro es riesgo-variedad
-    if (variedad && filtro === 'riesgo-viedad' || filtro === 'riesgo-variedad') {
+    // Si hay variedad seleccionada, usar colores de riesgo por variedad automáticamente
+    if (variedad && provincia.riesgos_variedad?.[variedad]) {
       return getColorByRiesgoVariedad(provincia, variedad);
     }
     switch (filtro) {
@@ -241,7 +240,16 @@ const variedadSeleccionada = Astro.props.variedad || '';
     }
   };
 
-  const getLeyenda = (filtro) => {
+  const getLeyenda = (filtro, variedad) => {
+    // Si hay variedad seleccionada, mostrar leyenda de riesgo por variedad
+    if (variedad) {
+      return [
+        { label: 'Óptimo (0)', color: '#16a34a' },
+        { label: 'Bajo (1-3)', color: '#22c55e' },
+        { label: 'Medio (4-6)', color: '#f59e0b' },
+        { label: 'Crítico (7+)', color: '#ef4444' },
+      ];
+    }
     const legends = {
       temperatura: [
         { label: '<10°C', color: '#74B9FF' },
@@ -264,12 +272,6 @@ const variedadSeleccionada = Astro.props.variedad || '';
         { label: '2-10mm', color: '#74B9FF' },
         { label: '>10mm', color: '#0984e3' },
       ],
-      'riesgo-variedad': [
-        { label: 'Óptimo (0)', color: '#16a34a' },
-        { label: 'Bajo (1-3)', color: '#22c55e' },
-        { label: 'Medio (4-6)', color: '#f59e0b' },
-        { label: 'Crítico (7+)', color: '#ef4444' },
-      ],
     };
     return legends[filtro] || [];
   };
@@ -281,8 +283,8 @@ const variedadSeleccionada = Astro.props.variedad || '';
     const bg = isDark ? '#000' : '#F7F4EE';
     const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 120px;`;
 
-    // Si hay variedad seleccionada y tenemos el filtro de riesgo-variedad
-    if (variedad && provincia.riesgos_variedad?.[variedad] && filtro === 'riesgo-variedad') {
+    // Si hay variedad seleccionada, mostrar tooltip de riesgo por variedad
+    if (variedad && provincia.riesgos_variedad?.[variedad]) {
       return getTooltipRiesgoVariedad(provincia, variedad);
     }
 
@@ -426,6 +428,15 @@ const variedadSeleccionada = Astro.props.variedad || '';
       renderMarkers();
       updateLegend();
     });
+
+    window.addEventListener('provincia-seleccionada', (e) => {
+      const provincia = e.detail?.provincia;
+      if (!provincia || !map) return;
+      const provData = datos.find(p => p.provincia === provincia);
+      if (provData && provData.lat && provData.lon) {
+        map.setView([provData.lat, provData.lon], 8, { animate: true, duration: 0.5 });
+      }
+    });
   }
 
   const initMap = async () => {
@@ -546,7 +557,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
     
-    legendEl.innerHTML = getLeyenda(filtroActual).map(item => `
+    legendEl.innerHTML = getLeyenda(filtroActual, variedadActual).map(item => `
       <div class="legend-item">
         <div class="legend-dot" style="background: ${item.color};"></div>
         <span class="legend-label" style="color: ${textColor};">${item.label}</span>
@@ -554,7 +565,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
     `).join('');
   };
 
-  const init = () => {
+  const init = async () => {
     // Get variety from localStorage or window variable
     if (!variedadActual) {
       try {
@@ -565,6 +576,10 @@ const variedadSeleccionada = Astro.props.variedad || '';
       container.dataset.variedad = variedadActual;
     }
 
+    // Initialize map first
+    await initMap();
+
+    // Then set up event listeners
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -575,7 +590,21 @@ const variedadSeleccionada = Astro.props.variedad || '';
       });
     });
 
-    setTimeout(() => initMap(), 200);
+    window.addEventListener('variedad-seleccionada', (e) => {
+      variedadActual = e.detail?.variedad || '';
+      if (container) container.dataset.variedad = variedadActual;
+      renderMarkers();
+      updateLegend();
+    });
+
+    window.addEventListener('provincia-seleccionada', (e) => {
+      const provincia = e.detail?.provincia;
+      if (!provincia || !map) return;
+      const provData = datos.find(p => p.provincia === provincia);
+      if (provData && provData.lat && provData.lon) {
+        map.setView([provData.lat, provData.lon], 8, { animate: true, duration: 0.5 });
+      }
+    });
 
     window.addEventListener('modoOscuroChange', (e) => {
       if (!map) return;

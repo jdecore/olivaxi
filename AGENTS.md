@@ -2,71 +2,147 @@
 
 ## 📋 Resumen
 
-Proyecto Astro para monitoreo climático de olivares españoles. Incluye:
-- Mapa de calor en tiempo real
-- Chatbot Consejero con streaming SSE
-- Catálogo de variedades de olivo
-- Sistema de alertas
+Proyecto Astro para monitoreo climático de olivares españoles. Combina datos climáticos en tiempo real con análisis específico por variedad de olivo para ayudar a agricultores a tomar decisiones prácticas contra el cambio climático.
 
-## 🏗️ Estructura Actual
+**Características principales:**
+- Mapa de calor interactivo con riesgo personalizado por variedad
+- Chatbot Consejero con IA (streaming SSE)
+- Catálogo de 6 variedades de olivo con análisis climático
+- Sistema de alertas personalizado por provincia y variedad
+
+---
+
+## 🏗️ Estructura del Proyecto
 
 ```
 olivaxi/
 ├── api/                          # Backend Bun/Hono
 │   ├── index.ts                  # Servidor principal (puerto 3000)
-│   │                             # CORS: localhost:4321-4324
-│   │                             # idleTimeout: 120s
 │   ├── routes/
-│   │   ├── clima.ts             # GET /api/clima
-│   │   ├── chat.ts              # POST /api/chat (streaming SSE + provider info)
-│   │   └── alertas.ts           # POST /api/alertas
+│   │   ├── clima.ts             # GET /api/clima (datos + riesgos por variedad)
+│   │   ├── chat.ts              # POST /api/chat (streaming SSE + provider)
+│   │   └── alertas.ts           # POST /api/alertas (guarda variedad)
 │   ├── services/
 │   │   └── llmRotation.ts       # Fallback Groq/Gemini/OpenRouter
-│   └── db/
-│       └── sqlite.ts            # Base de datos SQLite compartida
+│   ├── db/
+│   │   └── sqlite.ts            # Base de datos SQLite
+│   └── data/
+│       └── provincias.ts        # 10 provincias olivareras españolas
 ├── src/
 │   ├── components/
-│   │   ├── MapaCalor.jsx        # Mapa Leaflet con fadeIn animado
-│   │   ├── ChatConsejero.jsx    # Chat con streaming, modo oscuro adaptativo
+│   │   ├── MapaCalor.astro      # Mapa Leaflet con filtros + riesgo variedad
+│   │   ├── ChatConsejero.jsx    # Chat con streaming SSE
 │   │   ├── ThemeToggle.astro    # Toggle tema claro/oscuro
-│   │   ├── RankingRiesgo.astro    # Top 3 provincias (server-side render)
-│   │   ├── RankingRiesgo.jsx      # (deprecated, usar .astro)
-│   │   └── ComparadorVariedades.jsx # Comparador de variedades
-│   │   └── ComparadorVariedades.jsx # Comparador de variedades
+│   │   ├── AlertasClimaticas.astro  # Panel de alertas
+│   │   ├── AlertasPlagas.astro  # Alertas de plagas
+│   │   ├── AnalisisOlivar.astro # Análisis por provincia
+│   │   ├── ComparadorVariedades.astro # Comparador visual
+│   │   └── RankingRiesgo.astro   # Top 3 provincias en riesgo
 │   ├── data/
-│   │   └── variedades.json       # 6 variedades con datos científicos
+│   │   └── variedades.json      # 6 variedades con datos climáticos
 │   ├── layouts/
-│   │   └── Layout.astro         # Layout base con CSS variables + dark mode
+│   │   └── Layout.astro         # Layout base con CSS variables
 │   ├── lib/
-│   │   └── api.ts               # Funciones apiUrl()
+│   │   └── api.ts               # Funciones helper
 │   └── pages/
-│       ├── index.astro           # Homepage con bento grid
-│       ├── conseajero.astro      # Chat completo (client:only="react")
-│       ├── variedades.astro      # Catálogo con filtros
-│       └── alertas.astro        # Formulario alertas
+│       ├── index.astro           # Homepage (bento grid)
+│       ├── conseajero.astro      # Chat (client:only="react")
+│       ├── variedades.astro       # Catálogo variedades
+│       ├── alertas.astro         # Formulario alertas
+│       └── plagas.astro          # Página de plagas
 ├── .env                          # Variables de entorno
-└── astro.config.mjs              # Config Astro + React
+└── astro.config.mjs              # Config Astro
 ```
 
-## 🎨 Paleta C: Sal y Aceituna
+---
 
-Colores con soporte dark mode completo:
+## 🛠️ Tecnologías
+
+| Capa | Tecnología |
+|------|-------------|
+| Frontend | Astro, React, SolidJS (solo Chat) |
+| Backend | Bun, Hono |
+| Base de datos | SQLite (bun:sqlite) |
+| Mapas | Leaflet + CartoDB tiles |
+| AI/LLM | Groq, Gemini, OpenRouter (streaming SSE) |
+| Emails | Nodemailer + Gmail |
+| Datos climáticos | Open-Meteo API |
+
+---
+
+## 📊 Datos del Sistema
+
+### Datos de Open-Meteo (usados)
+
+| Campo | Descripción | Ejemplo |
+|-------|-------------|---------|
+| `temperatura` | Temperatura actual °C | 32.5 |
+| `humedad` | Humedad relativa % | 45 |
+| `lluvia` | Precipitación mm | 0 |
+| `suelo_temp` | Temp. suelo 0cm | 28.3 |
+| `suelo_humedad` | Humedad suelo 0-1cm | 0.25 |
+| `evapotranspiracion` | ET0 diaria mm | 4.2 |
+
+### Datos calculados por el backend
+
+| Campo | Descripción |
+|-------|-------------|
+| `riesgo` | Nivel general (alto/medio/bajo) basado en 6 condiciones |
+| `estado` | Estado térmico (Frío/Fresco/Templado/Cálido/Calor/Extremo) |
+| `riesgos_olivar` | 6 condiciones: frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia |
+| `riesgos_plaga` | 4 plagas: mosca, polilla, xylella, repilo |
+| `riesgos_variedad` | Score de riesgo (0-10) por cada una de las 6 variedades |
+
+### Datos de variedades (variedades.json)
+
+6 variedades con datos de resistencia climática:
+- **Cornicabra**: muy-alta calor/sequía, media humedad
+- **Picual**: muy-alta calor, media sequia, baja humedad
+- **Arbequina**: media calor, baja sequia/humedad
+- **Hojiblanca**: alta calor, media-alta sequia, media humedad
+- **Manzanilla**: media-alta calor, baja sequia/humedad
+- **Empeltre**: media-alta calor, muy-alta sequia, media humedad
+
+### Base de datos SQLite
+
+```sql
+-- clima_cache: datos climáticos cacheados
+clima_cache(id, datos JSON, cached_at)
+
+-- alertas: usuarios registrados
+alertas(id, nombre, email, provincia, variedad, tipo, activa, last_notified_at, created_at)
+```
+
+---
+
+## 🎨 Paleta de Colores
 
 | Elemento | Light Mode | Dark Mode |
 |----------|------------|-----------|
-| Background (body) | #F7F4EE (Sal crema) | #000000 (Negro puro) |
-| Primary text | #1C1C1C (Aceituna oscuro) | #F7F4EE (Sal) |
+| Background | #F7F4EE (Sal crema) | #000000 |
+| Primary text | #1C1C1C (Aceituna) | #F7F4EE |
 | Muted text | #4a4a40 | #a0a095 |
 | Borders | #1C1C1C | #F7F4EE |
 | Accent/Limon | #D4E849 | #D4E849 |
 | White surface | #FFFFFF | #1a1a1a |
 
+### Colores de riesgo del mapa
+
+| Nivel | Score | Color |
+|-------|-------|-------|
+| Óptimo | 0 | #16a34a (verde oscuro) |
+| Bajo | 1-3 | #22c55e (verde) |
+| Medio | 4-6 | #f59e0b (ámbar) |
+| Crítico | 7+ | #ef4444 (rojo) |
+
+---
+
 ## 🚀 Cómo ejecutar
 
 ### Frontend (Astro)
 ```bash
-npm run dev      # Puerto 4321-4324
-npm run build    # Build producción
+npm run dev      # Puerto 4321
+npm run build   # Build producción
 ```
 
 ### Backend (Bun)
@@ -74,332 +150,149 @@ npm run build    # Build producción
 bun run api/index.ts   # Puerto 3000
 ```
 
-## ⚙️ Configuración
-
 ### Variables de entorno (.env)
 ```
 PUBLIC_API_URL=http://localhost:3000
 GROQ_KEY=tu_key
 GEMINI_KEY=tu_key
 OPENROUTER_KEY=tu_key
+GMAIL_USER=tu_email@gmail.com
 GMAIL_APP_PASSWORD=tu_password
 ```
 
-### Timeouts
-- Bun idleTimeout: 120s
-- LLM timeout: 60s
-- LLM max_tokens: 2000
-
-## 🔧 Componentes
-
-### MapaCalor.jsx
-- Fetch a `/api/clima`
-- Leaflet con CartoDB dark/light tiles dinámico
-- CircleMarkers con color según temperatura (gradient completo)
-- Animación fadeIn con delay escalonado (index * 0.05s)
-- Tooltip adaptativo al tema
-
-### ChatConsejero.jsx
-- Flujo: provincia → pregunta → streaming
-- Estados: step (1/2/3), messages[], provincia, isLoading, isWaiting
-- **Typing indicator**: Se muestra mientras espera el primer chunk del stream
-- Streaming SSE con buffer acumulador
-- Renderiza markdown: `**texto**` → `<strong>`
-- **Proveedor shown**: Muestra "Powered by [Groq/Gemini/OpenRouter]" en header
-- Modo oscuro adaptativo con CSS variables
-
-### ThemeToggle.astro
-- Controla `data-theme` attribute en `<html>`
-- Emite evento `modoOscuroChange` para sincronización
-- Soporte para prefers-color-scheme
+---
 
 ## 📄 API Endpoints
 
 ### GET /api/clima
-Retorna array de provincias con:
+Retorna array de provincias con datos completos:
 ```json
 {
   "provincia": "Jaén",
   "lat": 37.77,
   "lon": -3.79,
-  "temperatura": 38,
-  "riesgo": "alto",
-  "source": "api"
+  "temperatura": 32,
+  "humedad": 45,
+  "lluvia": 0,
+  "riesgo": "medio",
+  "estado": "Cálido",
+  "riesgos_olivar": { "frio": {...}, "calor": {...}, ... },
+  "riesgos_plaga": { "mosca": {...}, "polilla": {...}, ... },
+  "riesgos_variedad": {
+    "picual": { "score": 5, "nivel": "medio", "detalle": ["🔥 Calor sensible"] },
+    "arbequina": { "score": 7, "nivel": "crítico", "detalle": ["🔥 Calor sensible", "🏜️ Sequía sensible"] },
+    ...
+  }
 }
 ```
 
 ### POST /api/chat
-Body:
-```json
-{ "mensaje": "...", "provincia": "Jaén" }
-```
-Response: Stream SSE con chunks `{"texto": "...", "provider": "Groq"}`
-- El campo `provider` solo está presente en el primer chunk
+Streaming SSE con chunks de texto + provider info
 
 ### POST /api/alertas
 Body:
 ```json
-{ "nombre": "...", "email": "...", "provincia": "Jaén", "tipo": "calor" }
+{ "nombre": "...", "email": "...", "provincia": "Jaén", "variedad": "picual", "tipo": "calor_critico" }
 ```
-Respuesta: `{ "ok": true }`
 
-## 🔗 Rutas
+---
 
-- `/` - Homepage con bento grid y mapa
-- `/consejero` - Chat con streaming (client:only="react")
-- `/variedades` - Catálogo con filtros
-- `/alertas` - Formulario
+## 🔗 Rutas del Frontend
 
-## 🐛 Problemas conocidos
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Homepage con mapa + selectores provincia/variedad + alertas en tiempo real |
+| `/consejero` | Chat con IA (streaming SSE) |
+| `/variedades` | Catálogo con comparador visual de variedades |
+| `/alertas` | Formulario de alertas personalizado |
+| `/plagas` | Información sobre plagas |
 
-### Streaming se corta
-- Verificar logs en consola navegador: `[Chat] Chunk N:`
-- Verificar logs backend: `[LLM] CHUNK RAW:`, `[LLM] TOTAL CHARS:`
-- Timeout aumentado a 60s en LLM, 120s en Bun
+---
 
-### API keys no configuradas
-- Las claves en .env son placeholders: `tu_key_de_groq`, `tu_key_de_gemini`, etc.
-- El chatbot NO funcionará hasta que el usuario configure claves reales
-- Las alertas dependen de GMAIL_APP_PASSWORD
+## 📝 Historial de Cambios Recientes
 
-## 📝 Historial de cambios
+### 2026-03-26 - Sistema de riesgo por variedad
 
-### 2026-03-24 - Sesión de bugs + Dark mode + UX improvements
+**Implementación completa:**
 
-**Bugs corregidos:**
-1. ✅ `src/lib/api.ts` - Eliminado console.log en producción
-2. ✅ `MapaCalor.jsx` - Consolidado useEffect duplicado para theme
-3. ✅ `MapaCalor.jsx` - Corregido tooltip dark mode (#000000 en vez de #1C1C1C)
-4. ✅ `MapaCalor.jsx` - Corregido legend background dark mode
-5. ✅ `index.astro` - Colores hardcodeados en decisiones usando CSS variables
-6. ✅ `api/routes/chat.ts` - Ahora usa provincia del request en el prompt
-7. ✅ `ThemeToggle.astro` - Corregida sintaxis TypeScript inválida
-8. ✅ `RankingRiesgo.jsx` - Reescrito con CSS variables + dark mode
-9. ✅ `ComparadorVariedades.jsx` - Reescrito con CSS variables + dark mode
-10. ✅ `api/routes/alertas.ts` - Cambiado a usar import db compartido (evita locking)
-11. ✅ `ChatConsejero.jsx` - Reescrito con detección de tema correcta
-12. ✅ `consejero.astro` - Cambiado a client:only="react" para evitar flash
-13. ✅ `Layout.astro` - Script de tema movido al inicio del head para evitar flash
-14. ✅ `api/services/llmRotation.ts` - Ahora retorna el provider usado
-15. ✅ `api/routes/chat.ts` - Envia provider en el primer chunk SSE
-16. ✅ `ChatConsejero.jsx` - Muestra "Powered by [provider]" en header
+1. ✅ **Backend (api/routes/clima.ts)**
+   - Nueva función `calcularScoreRiesgo()` que calcula score 0-10 basado en 4 condiciones climáticas
+   - Variable `VARIEDADES_RESISTENCIAS` con resistencias de cada variedad
+   - Cálculo de riesgo para las 6 variedades en cada provincia
+   - Campo `riesgos_variedad` incluido en respuesta del endpoint
 
-**Cambios de UX:**
-- Header del chat ahora muestra el proveedor usado (Groq/Gemini/OpenRouter)
-- "En línea" removido del header del chat
-- Flash de tema eliminado en carga inicial
+2. ✅ **Frontend (MapaCalor.astro)**
+   - Nuevo filtro "⚠️" para mostrar riesgo por variedad
+   - Función `getColorByRiesgoVariedad()` usa datos del backend directamente
+   - Función `getTooltipRiesgoVariedad()` muestra score, nivel y detalle
+   - Leyenda actualizada con escala de riesgo
 
-**Archivos modificados:**
-- `src/lib/api.ts`
-- `src/components/MapaCalor.jsx`
-- `src/components/ChatConsejero.jsx`
-- `src/components/RankingRiesgo.jsx`
-- `src/components/ComparadorVariedades.jsx`
-- `src/components/ThemeToggle.astro`
-- `src/layouts/Layout.astro`
-- `src/pages/index.astro`
-- `src/pages/consejero.astro`
-- `src/pages/variedades.astro`
-- `api/routes/chat.ts`
-- `api/routes/alertas.ts`
-- `api/services/llmRotation.ts`
+3. ✅ **Formulario alertas (alertas.astro)**
+   - Auto-relleno desde localStorage (provincia + variedad)
+   - Cálculo de tipo de alerta dinámico basado en clima + variedad
+   - Nuevo campo de variedad
+   - Mensaje mejorado
 
-### 2026-03-23 - Sesión UI fixes
-**Cambios realizados:**
-1. ✅ `.mapa-card` - añadido `margin-top: 60px` para evitar colisión con navbar fixed
-2. ✅ `MapaCalor.jsx` - leyenda ahora usa color dinámico según `modoOscuro`
-3. ✅ Botón "Ver el mapa →" cambiado a "Hablar con el consejeros →" en hero-card
-4. ✅ Botón "Activar alerta" movido de hero-card a la tarjeta 11M hectáreas
-5. ✅ Añadido enlace "Variedades →" en hero-card
+4. ✅ **Base de datos (sqlite.ts)**
+   - Añadida columna `variedad` a tabla alertas
 
-## 🚀 Estado actual
+5. ✅ **ComparadorVariedades.astro**
+   - 5 barras horizontales (❄️ Frío, 🔥 Calor, 🏜️ Sequía, 💧 Humedad, 📊 Producción)
+   - Comparación entre variedades
 
-- ✅ Build pasa correctamente (`npm run build`)
+**Resultado visual:**
+- Sin variedad: colores por temperatura/humedad/lluvia
+- Con variedad + filtro ⚠️: colores según riesgo específico para esa variedad
+  - 🟢 Verde (óptimo/bajo): score 0-3
+  - 🟡 Ámbar (medio): score 4-6
+  - 🔴 Rojo (crítico): score 7+
+
+---
+
+### Estados anteriores
+
+- ✅ Build pasa correctamente
 - ✅ UI responsive con dark mode completo
-- ✅ Todos los componentes usan CSS variables
-- ✅ Chat muestra qué proveedor se está usando
-- ✅ Tests API con Bun (`bun test`)
-- ⚠️ Chatbot necesita API keys reales para funcionar
-- ⚠️ Alertas necesita GMAIL_APP_PASSWORD configurado
+- ✅ Sistema de alertas personalizado
+- ✅ Mapa con riesgo por variedad
+- ⚠️ Chatbot necesita API keys reales (Groq/Gemini/OpenRouter)
+- ⚠️ Alertas necesitan GMAIL_APP_PASSWORD configurado
 
 ---
 
-## 📊 Inventario de Datos
-
-### Datos de Open-Meteo actualmente USADOS:
-| Campo | Endpoint | Ejemplo |
-|-------|----------|---------|
-| `temperatura` | /api/clima | 12.5°C |
-| `humedad` | /api/clima | 70% |
-| `lluvia` | /api/clima | 0mm |
-| `riesgo` | /api/clima (calculado) | "bajo" |
-| `lat`/`lon` | /api/clima | 37.77, -3.79 |
-
-### Datos DISPONIBLES pero NO USADOS:
-- **Pronóstico 7 días** (daily: temp_max, temp_min, precipitation)
-- **Velocidad viento** (wind_speed_10m)
-- **Dirección viento** (wind_direction_10m)
-- **Temperatura suelo** (soil_temperature_0cm)
-- **Humedad suelo** (soil_moisture_0to1cm)
-- **Evapotranspiración** (et0_fao_evapotranspiration)
-- **Índice UV** (uv_index)
-
-### Base de datos SQLite:
-- `clima_cache`: id, datos (JSON), cached_at
-- `alertas`: id, nombre, email, provincia, tipo, activa, last_notified_at, created_at
-
-### Variety data (variedades.json):
-- 6 variedades: Koroneiki, Souri, Hojiblanca, Picual, Arbequina, Manzanilla
-- Campos: resistencia_sequia, tolerancia_calor, productividad, estudios, etiquetas, notas_climaticas
-
----
-
-### 2026-03-24 (tarde) - Testing + Mejoras UI + Inventario
-
-**Testing implementado:**
-1. ✅ `tests/api.test.ts` - Nuevo archivo con tests Bun
-   - `GET /api/clima` - Valida estructura JSON
-   - `POST /api/alertas` - Valida respuesta ok
-   - `POST /api/alertas` - Valida 400 en campos faltantes
-   - `GET /api/analisis/:provincia` - Valida estructura análisis
-   - Ejecutar con: `bun test` (requiere API corriendo en puerto 3000)
-
-**MapaCalor.jsx mejorado:**
-1. ✅ Skeleton loading con círculos animados (reemplaza spinner)
-2. ✅ Filtros de riesgo (Todos/Alto/Medio/Bajo) en top-right del mapa
-3. ✅ Filtrado client-side basado en propiedad `riesgo`
-
-**alertas.astro corregido:**
-1. ✅ Feedback con CSS variables (eliminado Tailwind inexistente)
-2. ✅ Clases `.warning`, `.success`, `.error` definidas con variables CSS
-
-**Bug de base de datos corregido:**
-1. ✅ `api/db/sqlite.ts` - Schema `clima_cache` cambiado de `CHECK (id = 1)` a `INTEGER PRIMARY KEY`
-2. ✅ Esto resolvió el error "SQLiteError: no such column: id"
-
-**Archivos modificados/nuevos:**
-- `tests/api.test.ts` (nuevo)
-- `src/components/MapaCalor.jsx`
-- `src/pages/alertas.astro`
-- `api/db/sqlite.ts`
-
----
-
-### 2026-03-24 - Sesión de bugs + Dark mode + UX improvements
-
-**Bugs corregidos:**
-1. ✅ `src/lib/api.ts` - Eliminado console.log en producción
-2. ✅ `MapaCalor.jsx` - Consolidado useEffect duplicado para theme
-3. ✅ `MapaCalor.jsx` - Corregido tooltip dark mode (#000000 en vez de #1C1C1C)
-4. ✅ `MapaCalor.jsx` - Corregido legend background dark mode
-5. ✅ `index.astro` - Colores hardcodeados en decisiones usando CSS variables
-6. ✅ `api/routes/chat.ts` - Ahora usa provincia del request en el prompt
-7. ✅ `ThemeToggle.astro` - Corregida sintaxis TypeScript inválida
-8. ✅ `RankingRiesgo.jsx` - Reescrito con CSS variables + dark mode
-9. ✅ `ComparadorVariedades.jsx` - Reescrito con CSS variables + dark mode
-10. ✅ `api/routes/alertas.ts` - Cambiado a usar import db compartido (evita locking)
-11. ✅ `ChatConsejero.jsx` - Reescrito con detección de tema correcta
-12. ✅ `consejero.astro` - Cambiado a client:only="react" para evitar flash
-13. ✅ `Layout.astro` - Script de tema movido al inicio del head para evitar flash
-14. ✅ `api/services/llmRotation.ts` - Ahora retorna el provider usado
-15. ✅ `api/routes/chat.ts` - Envia provider en el primer chunk SSE
-16. ✅ `ChatConsejero.jsx` - Muestra "Powered by [provider]" en header
-
-**Cambios de UX:**
-- Header del chat ahora muestra el proveedor usado (Groq/Gemini/OpenRouter)
-- "En línea" removido del header del chat
-- Flash de tema eliminado en carga inicial
-
-**Archivos modificados:**
-- `src/lib/api.ts`
-- `src/components/MapaCalor.jsx`
-- `src/components/ChatConsejero.jsx`
-- `src/components/RankingRiesgo.jsx`
-- `src/components/ComparadorVariedades.jsx`
-- `src/components/ThemeToggle.astro`
-- `src/layouts/Layout.astro`
-- `src/pages/index.astro`
-- `src/pages/consejero.astro`
-- `src/pages/variedades.astro`
-- `api/routes/chat.ts`
-- `api/routes/alertas.ts`
-- `api/services/llmRotation.ts`
-
----
-
-## 2026-03-25 (madrugada) - Optimización SSR + Event listeners
-
-**Cambios realizados:**
-1. ✅ `AlertasClimaticas.jsx` - Añadido listener para evento `datos-provincia` (disparado desde index.astro al cambiar provincia en dropdown). Ahora actualiza alertas sin necesidad de fetch adicional ya que el evento contiene los datos.
-2. ✅ Tabla de Provincias (`index.astro`) - Movido fetch a Astro server-side, eliminado JavaScript del navegador
-3. ✅ Hero Stats (`index.astro`) - Calculadas estadísticas en servidor (tempMax, tempMin, avgTemp, totalProvincias)
-4. ✅ `RankingRiesgo.astro` - Nuevo componente Astro que renderiza en server-side (build time)
-5. ✅ `index.astro` script - Simplificado, eliminado código muerto (referencias a provinciaSelect undefined, tabla rendering redundante). Añadido listener correcto para actualizar decisiones-rápidas al hacer clic en el mapa.
-
-**Archivos modificados/nuevos:**
-- `src/components/AlertasClimaticas.jsx`
-- `src/pages/index.astro`
-- `src/components/RankingRiesgo.astro` (nuevo)
-
----
-
-## 2026-03-25 (mañana) - Conversión ComparadorVariedades a Astro
-
-**Cambios realizados:**
-1. ✅ `src/components/ComparadorVariedades.astro` - Nuevo componente Astro + vanilla JS
-   - Reemplaza el componente React (423 líneas) con versión Astro pura (~405 líneas)
-   - Usa data attributes en HTML para almacenar datos de variedades
-   - Vanilla JS maneja la lógica de selección y comparación
-   - No requiere `client:*` directive - SSR completo
-2. ✅ `src/pages/variedades.astro` - Actualizado
-   - Import cambiado de `.jsx` a `.astro`
-   - Removido `client:load` directive
-   - Prop cambiada de `variedades` a `varietyData`
-   - Removido script inline obsoleto
-
-**Resultado:**
-- Build pasa correctamente: 4 páginas
-- Variety data renderizado server-side
-- JS cliente solo para funcionalidad de comparación
-
-**Archivos creados/modificados:**
-- `src/components/ComparadorVariedades.astro` (nuevo)
-- `src/pages/variedades.astro` (modificado)
-- `src/components/ComparadorVariedades.jsx` (eliminado)
-
----
-
-## 2026-03-25 (tarde) - Optimización adicional
-
-**Intentos:**
-1. ❌ Se intentó simplificar `index.astro` reemplazando el script inline con un `<form method="GET">` para el dropdown de provincia
-   - Hubo problemas de caching de build que causaban errores "Unterminated string literal"
-   - Se decidió mantener el script inline existente
-
-**Resultado final:**
-- Objetivo principal logrado: eliminar React del ComparadorVariedades
-- Build pasa correctamente
-
----
-
-## 💾 Estado de la sesión actual
+## 📋 Estado Actual
 
 ### Último comando ejecutado:
 ```bash
-npm run build  # Pasa correctamente (4 páginas)
+npm run build  # Pasa correctamente (5 páginas)
 ```
 
-### Errores pendientes:
-- Ninguno
+### Pendientes:
+- Ninguno crítico
 
-### Notas de la sesión:
-- Se intentó simplificar `index.astro` reemplazando el script inline con un `<form method="GET">` para el dropdown de provincia, pero hubo problemas de caching de build que causaban errores "Unterminated string literal". Se decidió mantener el script inline existente ya que el objetivo principal (eliminar React del ComparadorVariedades) se logró.
+### Mejoras futuras sugeridas:
+1. Añadir pronóstico 7 días
+2. Datos de viento, UV
+3. Notificaciones push
+4. Widget de tendencia semanal
 
-### Pendientes del usuario:
-- Ninguno
+---
 
-### Próximos pasos sugeridos:
-1. Añadir pronóstico 7 días al endpoint /api/clima
-2. Añadir datos de viento, UV, evapotranspiración
-3. Crear widget de tendencia semanal
-4. Implementar tooltip extendido en el mapa
+## 🔧 Componentes del Mapa
+
+### MapaCalor.astro
+- Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia, ⚠️ riesgo-variedad
+- Leaflet con CartoDB dark/light tiles dinámico
+- CircleMarkers con animación fadeIn
+- Tooltip muestra datos climáticos + riesgo por variedad
+- Listener para evento `variedad-seleccionada` que actualiza el mapa en tiempo real
+
+### index.astro (Homepage)
+- Hero minimalista estilo Arc
+- Bento grid: mapa (60%) + sidebar (40%)
+- Sidebar: selector provincia, selector variedad, alertas en tiempo real
+- localStorage para persistir selección de provincia/variedad
+
+---
+
+*Documentación actualizada: 2026-03-26*
