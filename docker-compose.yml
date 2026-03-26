@@ -23,4 +23,8 @@ services:
       - GROQ_KEY=${GROQ_KEY}
       - GEMINI_KEY=${GEMINI_KEY}
       - OPENROUTER_KEY=${OPENROUTER_KEY}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - BREVO_API_KEY=${BREVO_API_KEY:-}
+      - PUBLIC_API_URL=http://localhost:3000
     restart: unless-stopped
