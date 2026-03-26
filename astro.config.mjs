@@ -4,7 +4,10 @@ import react from '@astrojs/react';
 import solid from '@astrojs/solid-js';
 
 export default defineConfig({
-  integrations: [react(), solid()],
+  integrations: [
+    react({ include: [] }),
+    solid({ include: ['**/ChatConsejero.jsx'] })
+  ],
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'viewport'
