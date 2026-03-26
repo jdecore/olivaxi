@@ -102,9 +102,9 @@ let top3Riesgos = [];
   /* BENTO GRID con Container Queries */
   .bento-grid {
     display: grid;
-    grid-template-columns: 50fr 50fr;
-    grid-template-rows: auto auto auto;
-    gap: 10px;
+    grid-template-columns: 60fr 40fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
     max-width: 1200px;
     margin: 10px auto 2rem;
     padding: 0 1rem;
@@ -113,10 +113,79 @@ let top3Riesgos = [];
 
   .mapa-card {
     grid-column: 1;
+    grid-row: 1 / 3;
   }
 
-  @media (max-width: 767px) {
-    .bento-grid { grid-template-columns: 1fr; }
+  .sidebar-panels {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-card {
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--color-aceituna);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-sal);
+    color: var(--color-aceituna);
+    font-size: 14px;
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  .panel-msg {
+    font-size: 12px;
+    color: var(--color-muted);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  .panel-link {
+    font-size: 12px;
+    color: var(--color-aceituna);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 8px;
+    display: inline-block;
+  }
+
+  .panel-link:hover {
+    color: var(--color-limon);
+  }
+
+  .panel-alertas {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 900px) {
+    .bento-grid { 
+      grid-template-columns: 1fr; 
+    }
+    .mapa-card {
+      grid-row: auto;
+    }
+    .sidebar-panels {
+      grid-column: 1;
+    }
   }
 
   .bento-card {
@@ -699,24 +768,55 @@ let top3Riesgos = [];
 
   <!-- BENTO GRID HERO -->
   <div class="bento-grid">
-    <!-- Map - right side (large) -->
+    <!-- Map - left side (spans 2 rows) -->
     <div class="bento-card mapa-card">
       <MapaCalor id="mapa-calor" />
     </div>
 
-    <!-- Bottom row - Alertas Climáticas -->
-    <div class="bento-card accent" id="alertas-card" style="grid-column: 1 / -1;">
-      <AlertasClimaticas />
-    </div>
+    <!-- Sidebar panels - right side -->
+    <div class="sidebar-panels">
+      <!-- Panel Provincia -->
+      <div class="panel-card">
+        <div class="panel-title">📍 Tu Provincia</div>
+        <select id="select-provincia" class="panel-select">
+          <option value="">Selecciona...</option>
+          <option value="Jaén">Jaén</option>
+          <option value="Córdoba">Córdoba</option>
+          <option value="Sevilla">Sevilla</option>
+          <option value="Granada">Granada</option>
+          <option value="Málaga">Málaga</option>
+          <option value="Badajoz">Badajoz</option>
+          <option value="Toledo">Toledo</option>
+          <option value="Ciudad Real">Ciudad Real</option>
+          <option value="Almería">Almería</option>
+          <option value="Huelva">Huelva</option>
+        </select>
+        <p class="panel-msg">Selecciona tu provincia para obtener datos personalizados.</p>
+      </div>
 
-    <!-- Card análisis olivar -->
-    <div class="bento-card" id="analisis-card">
-      <AnalisisOlivar id="analisis-olivar" />
-    </div>
+      <!-- Panel Variedad -->
+      <div class="panel-card">
+        <div class="panel-title">🫒 Tu Variedad</div>
+        <select id="select-variedad" class="panel-select">
+          <option value="">Selecciona...</option>
+          <option value="cornicabra">Cornicabra</option>
+          <option value="picual">Picual</option>
+          <option value="arbequina">Arbequina</option>
+          <option value="hojiblanca">Hojiblanca</option>
+          <option value="manzanilla">Manzanilla</option>
+          <option value="empeltre">Empeltre</option>
+        </select>
+        <p class="panel-msg">Si no sabes cuál es tu variedad y qué debilidades tiene por el cambio climático</p>
+        <a href="/variedades" class="panel-link">→ Ver todas las variedades</a>
+      </div>
 
-    <!-- Card alertas plagas -->
-    <div class="bento-card" id="plagas-card">
-      <AlertasPlagas id="alertas-plagas" />
+      <!-- Panel Alertas Compact -->
+      <div class="panel-card">
+        <div class="panel-title">🚨 Alertas en tu Zona</div>
+        <div id="alertas-panel" class="panel-alertas">
+          <p class="panel-msg">Selecciona una provincia para ver las alertas.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -832,6 +932,109 @@ let top3Riesgos = [];
   const decisionesGrid = document.getElementById('decisiones-grid');
   const analisisOlivar = document.getElementById('analisis-olivar');
   const alertasPlagas = document.getElementById('alertas-plagas');
+  const selectProvincia = document.getElementById('select-provincia');
+  const selectVariedad = document.getElementById('select-variedad');
+  const alertasPanel = document.getElementById('alertas-panel');
+
+  const VARIEDADES: Record<string, any> = {
+    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
+    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
+    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
+    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
+  };
+
+  function guardarSeleccion(tipo: string, valor: string) {
+    localStorage.setItem('olivaxi_' + tipo, valor);
+  }
+
+  function renderAlertasPanel(datos: any, variedad: string) {
+    if (!alertasPanel) return;
+    
+    const variedadData = VARIEDADES[variedad];
+    const alertas: string[] = [];
+    
+    const temp = datos?.temperatura || 0;
+    const humedad = datos?.humedad || 0;
+    const lluvia = datos?.lluvia || 0;
+    const riesgos_olivar = datos?.riesgos_olivar || {};
+    const riesgos_plaga = datos?.riesgos_plaga || {};
+
+    if (variedadData?.clima?.calor?.nivel === "baja" && temp > 35) {
+      alertas.push({ icon: '🔥', text: `Calor crítico para tu variedad (${temp}°C)`, level: 'high' });
+    } else if (temp > 38) {
+      alertas.push({ icon: '🔥', text: `Ola de calor extrema (${temp}°C)`, level: 'high' });
+    } else if (temp > 35) {
+      alertas.push({ icon: '🌡️', text: `Temperatura alta (${temp}°C)`, level: 'medium' });
+    }
+
+    if (variedadData?.clima?.frio?.nivel === "baja" && temp < 5) {
+      alertas.push({ icon: '❄️', text: `Helada crítica para tu variedad (${temp}°C)`, level: 'high' });
+    } else if (temp < 0) {
+      alertas.push({ icon: '❄️', text: `Helada (${temp}°C)`, level: 'high' });
+    }
+
+    if (variedadData?.clima?.sequia?.nivel === "baja" && humedad < 30) {
+      alertas.push({ icon: '🏜️', text: `Sequía severa para tu variedad (${humedad}%)`, level: 'high' });
+    } else if (humedad < 20) {
+      alertas.push({ icon: '🏜️', text: `Estrés hídrico (${humedad}%)`, level: 'medium' });
+    }
+
+    if (variedadData?.clima?.humedad_alta?.nivel === "baja" && humedad > 80) {
+      alertas.push({ icon: '🦠', text: `Riesgo hongos para tu variedad`, level: 'high' });
+    } else if (humedad > 85) {
+      alertas.push({ icon: '🦠', text: `Alta humedad - vigilancia`, level: 'medium' });
+    }
+
+    if (lluvia < 0.5 && humedad < 30) {
+      alertas.push({ icon: '🏜️', text: `Sequía extrema (${lluvia}mm)`, level: 'high' });
+    }
+
+    if (lluvia > 20) {
+      alertas.push({ icon: '🌊', text: `Lluvia intensa (${lluvia}mm)`, level: 'high' });
+    }
+
+    if (riesgos_plaga?.mosca?.nivel === 'alto') {
+      alertas.push({ icon: '🦟', text: `Mosca del olivo activa`, level: 'high' });
+    }
+    if (riesgos_plaga?.polilla?.nivel === 'alto') {
+      alertas.push({ icon: '🦋', text: `Polilla del olivo activa`, level: 'high' });
+    }
+    if (riesgos_plaga?.xylella?.nivel === 'alto') {
+      alertas.push({ icon: '🦠', text: `Xylella fastidiosa - Riesgo crítico`, level: 'high' });
+    }
+    if (riesgos_plaga?.repilo?.nivel === 'alto') {
+      alertas.push({ icon: '🍄', text: `Repilo activo`, level: 'high' });
+    }
+
+    if (riesgos_olivar?.calor?.nivel === 'alto') {
+      alertas.push({ icon: '🔥', text: riesgos_olivar.calor.descripcion, level: 'high' });
+    }
+    if (riesgos_olivar?.baja_humedad?.nivel === 'alto') {
+      alertas.push({ icon: '🏜️', text: riesgos_olivar.baja_humedad.descripcion, level: 'high' });
+    }
+    if (riesgos_olivar?.alta_humedad?.nivel === 'alto') {
+      alertas.push({ icon: '🦠', text: riesgos_olivar.alta_humedad.descripcion, level: 'high' });
+    }
+    if (riesgos_olivar?.baja_lluvia?.nivel === 'alto') {
+      alertas.push({ icon: '🏜️', text: riesgos_olivar.baja_lluvia.descripcion, level: 'high' });
+    }
+    if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') {
+      alertas.push({ icon: '🌊', text: riesgos_olivar.alta_lluvia.descripcion, level: 'high' });
+    }
+
+    if (alertas.length === 0) {
+      alertasPanel.innerHTML = `<p class="panel-msg" style="color: #22c55e;">✅ Sin alertas activas. Condiciones normales.</p>`;
+    } else {
+      alertasPanel.innerHTML = alertas.map(a => `
+        <div class="alerta-mini" style="padding: 8px; margin-bottom: 6px; border-radius: 4px; background: ${a.level === 'high' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; border-left: 3px solid ${a.level === 'high' ? '#ef4444' : '#f59e0b'};">
+          <span style="margin-right: 6px;">${a.icon}</span>
+          <span style="font-size: 12px; color: var(--color-aceituna);">${a.text}</span>
+        </div>
+      `).join('');
+    }
+  }
 
   async function fetchAnalisisProvincia(provincia) {
     try {
@@ -847,6 +1050,8 @@ let top3Riesgos = [];
       const provData = datos.find((p) => p.provincia === provincia);
       if (provData) {
         renderDecisiones(provincia, analisis, provData);
+        const variedad = selectVariedad?.value || '';
+        renderAlertasPanel(provData, variedad);
         window.dispatchEvent(new CustomEvent('datos-provincia', {
           detail: {
             provincia: provData.provincia,
@@ -904,13 +1109,51 @@ let top3Riesgos = [];
     fetchAnalisisProvincia(e.detail.provincia);
   });
 
+  // Select provincia change
+  selectProvincia?.addEventListener('change', (e) => {
+    const provincia = e.target.value;
+    if (provincia) {
+      guardarSeleccion('provincia', provincia);
+      fetchAnalisisProvincia(provincia);
+      window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia } }));
+    }
+  });
+
+  // Select variedad change
+  selectVariedad?.addEventListener('change', (e) => {
+    const variedad = e.target.value;
+    if (variedad) {
+      guardarSeleccion('variedad', variedad);
+      const provincia = selectProvincia?.value;
+      if (provincia) {
+        const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+        fetch(`${apiBase}/api/clima`).then(r => r.json()).then(datos => {
+          const provData = datos.find((p: any) => p.provincia === provincia);
+          if (provData) renderAlertasPanel(provData, variedad);
+        });
+      }
+    }
+  });
+
   // Click on Top 3 cards
   document.querySelectorAll('.top3-card').forEach(card => {
     card.addEventListener('click', () => {
       const provincia = card.dataset.provincia;
       if (provincia) {
+        if (selectProvincia) selectProvincia.value = provincia;
         window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia } }));
       }
     });
   });
+
+  // Restore from localStorage
+  const provGuardada = localStorage.getItem('olivaxi_provincia');
+  const varGuardada = localStorage.getItem('olivaxi_variedad');
+  if (provGuardada && selectProvincia) {
+    selectProvincia.value = provGuardada;
+    fetchAnalisisProvincia(provGuardada);
+  }
+  if (varGuardada && selectVariedad) {
+    selectVariedad.value = varGuardada;
+  }
 </script>

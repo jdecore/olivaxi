@@ -1,54 +1,38 @@
 [
   {
-    "id": "leccino",
-    "nombre": "Leccino",
-    "origen": "Italia",
-    "resistencia_sequia": 75,
-    "tolerancia_calor": 72,
-    "productividad": 80,
-    "estudios": 312,
-    "etiqueta": "Resistencia Xylella",
-    "descripcion": "Variedad italiana ampliamente cultivada. Reconocida por su alta resistencia a Xylella fastidiosa, la bacteria quedevasta olivos en el sur de Italia.",
-    "tags": ["resistencia-xylella", "aceite-delicado"],
-    "notas_climaticas": "Buena adaptación a climas templados. Moderadamente resistente a sequía.",
+    "id": "cornicabra",
+    "nombre": "Cornicabra",
+    "origen": "Castilla-La Mancha",
+    "resistencia_sequia": 90,
+    "tolerancia_calor": 85,
+    "productividad": 75,
+    "estudios": 234,
+    "etiqueta": "Rústica",
+    "descripcion": "Segunda variedad más cultivada en España. Notable resistencia a la mosca del olivo y buena tolerancia al calor.",
+    "tags": ["resistencia-mosca", "secano"],
+    "notas_climaticas": "Excelente adaptación a climas continentales con inviernos fríos y veranos calurosos.",
     "plagas": {
-      "xylella": "Alta resistencia",
-      "mosca": "Resistencia media",
+      "xylella": "Resistencia media",
+      "mosca": "Alta resistencia",
       "prays": "Resistencia media"
     },
     "enfermedades": {
       "antracnosis": "Resistencia media",
       "repilo": "Resistencia media"
-    }
-  },
-  {
-    "id": "favolosa",
-    "nombre": "Favolosa (FS-17)",
-    "origen": "Italia",
-    "resistencia_sequia": 78,
-    "tolerancia_calor": 75,
-    "productividad": 82,
-    "estudios": 156,
-    "etiqueta": "Mutante alto rendimiento",
-    "descripcion": "Mutante natural de Leccino seleccionado por su mayor rendimiento. Alta resistencia a Xylella y excelente vigor.",
-    "tags": ["resistencia-xylella", "alta-produccion"],
-    "notas_climaticas": "Mejor vigor que Leccino original. Buena tolerancia al calor.",
-    "plagas": {
-      "xylella": "Alta resistencia",
-      "mosca": "Resistencia media",
-      "prays": "Resistencia media"
     },
-    "enfermedades": {
-      "antracnosis": "Resistencia media",
-      "repilo": "Resistencia media"
+    "clima": {
+      "frio": { "nivel": "muy-alta", "valor": 90, "notas": "Muy resistente a heladas y fríos invernales. Es de las más rústicas para clima continental." },
+      "calor": { "nivel": "muy-alta", "valor": 85, "notas": "Bien adaptada a veranos muy calurosos. Típica de zonas de interior." },
+      "sequia": { "nivel": "muy-alta", "valor": 90, "notas": "Alta tolerancia a sequía. Se comporta bien en secano pobre." },
+      "humedad_alta": { "nivel": "media", "valor": 50, "notas": "Como todas, más riesgo de hongos (repilo, antracnosis), pero no especialmente sensible." }
     }
   },
   {
     "id": "picual",
     "nombre": "Picual",
     "origen": "Jaén, España",
-    "resistencia_sequia": 55,
-    "tolerancia_calor": 78,
+    "resistencia_sequia": 70,
+    "tolerancia_calor": 80,
     "productividad": 95,
     "estudios": 947,
     "etiqueta": "Resistencia Mosca",
@@ -63,36 +47,20 @@
     "enfermedades": {
       "antracnosis": "Susceptible",
       "repilo": "Resistencia media"
-    }
-  },
-  {
-    "id": "cornicabra",
-    "nombre": "Cornicabra",
-    "origen": "Castilla-La Mancha",
-    "resistencia_sequia": 70,
-    "tolerancia_calor": 80,
-    "productividad": 75,
-    "estudios": 234,
-    "etiqueta": "Resistencia Mosca",
-    "descripcion": "Segunda variedad más cultivada en España. Notable resistencia a la mosca del olivo y buena tolerancia al calor.",
-    "tags": ["resistencia-mosca", "secano"],
-    "notas_climaticas": "Excelente adaptación a climas continentales con inviernos fríos y veranos calurosos.",
-    "plagas": {
-      "xylella": "Resistencia media",
-      "mosca": "Alta resistencia",
-      "prays": "Resistencia media"
     },
-    "enfermedades": {
-      "antracnosis": "Resistencia media",
-      "repilo": "Resistencia media"
+    "clima": {
+      "frio": { "nivel": "alta", "valor": 75, "notas": "Buena tolerancia al frío en general. Apta para muchas zonas interiores." },
+      "calor": { "nivel": "muy-alta", "valor": 80, "notas": "Bastante resistente a calor y estrés térmico." },
+      "sequia": { "nivel": "media", "valor": 70, "notas": "Buena resistencia a sequía, pero en sequías fuertes necesita manejo de riego." },
+      "humedad_alta": { "nivel": "baja", "valor": 35, "notas": "Sensible a repilo y otras enfermedades fúngicas con humedad ambiental alta." }
     }
   },
   {
     "id": "arbequina",
     "nombre": "Arbequina",
     "origen": "Lleida, Cataluña",
-    "resistencia_sequia": 60,
-    "tolerancia_calor": 62,
+    "resistencia_sequia": 45,
+    "tolerancia_calor": 55,
     "productividad": 88,
     "estudios": 634,
     "etiqueta": "Resistencia Prays/Hongos",
@@ -107,28 +75,96 @@
     "enfermedades": {
       "antracnosis": "Alta resistencia",
       "repilo": "Alta resistencia"
+    },
+    "clima": {
+      "frio": { "nivel": "muy-alta", "valor": 85, "notas": "Alta resistencia a heladas y buen comportamiento en frío." },
+      "calor": { "nivel": "media", "valor": 55, "notas": "Soporta calor mediterráneo, pero con calor y riego abundante puede volverse muy vegetativa." },
+      "sequia": { "nivel": "baja", "valor": 45, "notas": "Tolerancia a sequía más bien baja. Responde mejor con riego controlado." },
+      "humedad_alta": { "nivel": "baja", "valor": 40, "notas": "Alta humedad favorece repilo y antracnosis. Importante el control sanitario." }
     }
   },
   {
-    "id": "lechin-granada",
-    "nombre": "Lechín de Granada",
-    "origen": "Granada, España",
-    "resistencia_sequia": 72,
-    "tolerancia_calor": 74,
-    "productividad": 70,
+    "id": "hojiblanca",
+    "nombre": "Hojiblanca",
+    "origen": "Málaga, España",
+    "resistencia_sequia": 70,
+    "tolerancia_calor": 75,
+    "productividad": 72,
     "estudios": 189,
-    "etiqueta": "Resistencia Prays",
-    "descripcion": "Variedad tradicional granadina con alta resistencia a Prays. Aceite rico en polifenoles.",
-    "tags": ["resistencia-prays", "secano"],
-    "notas_climaticas": "Bien adaptada a la dryness del sur de España. Tolera calor moderado.",
+    "etiqueta": "Equilibrada",
+    "descripcion": "Variedad tradicional malagueña de doble aptitud (aceite y mesa). Buena resistencia general.",
+    "tags": ["doble-aptitud", "secano"],
+    "notas_climaticas": "Bien adaptada a climas cálidos del sur. Aceptable en secano aunque no es de las más extremas.",
     "plagas": {
       "xylella": "Resistencia media",
       "mosca": "Resistencia media",
-      "prays": "Alta resistencia"
+      "prays": "Resistencia media"
     },
     "enfermedades": {
       "antracnosis": "Resistencia media",
       "repilo": "Resistencia media"
+    },
+    "clima": {
+      "frio": { "nivel": "media", "valor": 60, "notas": "Resistencia moderada a heladas. Algo menos rústica que Cornicabra pero aceptable." },
+      "calor": { "nivel": "alta", "valor": 75, "notas": "Bien adaptada a climas cálidos del sur (Málaga, Córdoba, Sevilla)." },
+      "sequia": { "nivel": "media-alta", "valor": 70, "notas": "Comportamiento aceptable en secano, aunque no es de las más extremas en sequía." },
+      "humedad_alta": { "nivel": "media", "valor": 55, "notas": "Buena resistencia general a humedad del suelo. Como todas, riesgo extra de hongos." }
+    }
+  },
+  {
+    "id": "manzanilla",
+    "nombre": "Manzanilla",
+    "origen": "Sevilla, España",
+    "resistencia_sequia": 40,
+    "tolerancia_calor": 65,
+    "productividad": 70,
+    "estudios": 156,
+    "etiqueta": "Mesa",
+    "descripcion": "Variedad de mesa por excelencia. Aceituna grande y carnosa. Muy apreciada para aliño.",
+    "tags": ["mesa", "alta-produccion"],
+    "notas_climaticas": "En secanos duros puede reducir mucho calibre. Sensible a condiciones extremas.",
+    "plagas": {
+      "xylella": "Susceptible",
+      "mosca": "Resistencia media",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Susceptible",
+      "repilo": "Susceptible"
+    },
+    "clima": {
+      "frio": { "nivel": "media", "valor": 50, "notas": "Sensibilidad media a heladas. No es de las más resistentes al frío intenso." },
+      "calor": { "nivel": "media-alta", "valor": 65, "notas": "Se adapta al calor andaluz, pero con golpes de calor fuertes puede sufrir caída de fruto." },
+      "sequia": { "nivel": "baja", "valor": 40, "notas": "En secanos duros puede reducir mucho calibre, lo que es problema para mesa." },
+      "humedad_alta": { "nivel": "baja", "valor": 30, "notas": "Variedad de mesa bastante sensible a enfermedades fúngicas con humedad y lluvias." }
+    }
+  },
+  {
+    "id": "empeltre",
+    "nombre": "Empeltre",
+    "origen": "Aragón, España",
+    "resistencia_sequia": 80,
+    "tolerancia_calor": 70,
+    "productividad": 65,
+    "estudios": 145,
+    "etiqueta": "Rústica",
+    "descripcion": "Variedad tradicional de Aragón y zonas del Ebro. Buena adaptación a condiciones adversas.",
+    "tags": ["secano", "rustica"],
+    "notas_climaticas": "Razonablemente resistente. Apta para Aragón y zonas frías del Ebro.",
+    "plagas": {
+      "xylella": "Resistencia media",
+      "mosca": "Resistencia media",
+      "prays": "Resistencia media"
+    },
+    "enfermedades": {
+      "antracnosis": "Resistencia media",
+      "repilo": "Resistencia media"
+    },
+    "clima": {
+      "frio": { "nivel": "alta", "valor": 75, "notas": "Razonablemente resistente. Apta para Aragón y zonas frías del Ebro." },
+      "calor": { "nivel": "media-alta", "valor": 70, "notas": "Buena adaptación a condiciones de clima templado continental." },
+      "sequia": { "nivel": "muy-alta", "valor": 80, "notas": "Buena adaptación a suelos pobres y secos. Variedad bastante rústica." },
+      "humedad_alta": { "nivel": "media", "valor": 45, "notas": "Como otras, más riesgo de hongos. No se cita como especialmente resistente en ambientes muy húmedos." }
     }
   }
 ]

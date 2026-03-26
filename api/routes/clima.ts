@@ -33,14 +33,19 @@ export interface DatosClima {
 
 const CACHE_TTL = 6 * 60 * 60 * 1000;
 
-function calcularRiesgo(temp: number, humedad: number, lluvia: number): string {
-  if (temp > 38 || (temp > 32 && humedad < 20)) {
-    return "alto";
-  }
-  if (temp > 30 || (temp > 25 && humedad < 30 && lluvia === 0)) {
-    return "medio";
-  }
-  return "bajo";
+function calcularRiesgo(riesgos_olivar: any): string {
+  const condiciones = [
+    riesgos_olivar.frio.nivel,
+    riesgos_olivar.calor.nivel,
+    riesgos_olivar.baja_humedad.nivel,
+    riesgos_olivar.alta_humedad.nivel,
+    riesgos_olivar.baja_lluvia.nivel,
+    riesgos_olivar.alta_lluvia.nivel
+  ];
+  
+  if (condiciones.includes('alto')) return 'alto';
+  if (condiciones.includes('medio')) return 'medio';
+  return 'bajo';
 }
 
 function getEstado(temp: number): string {
@@ -119,7 +124,7 @@ function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
     if (temp < 0) {
       return { nivel: 'alto', descripcion: 'Helada - riesgo de daño en flores y frutos', impacto: 'Daño en floración, pérdida de cosecha' };
     } else if (temp < 5) {
-      return { nivel: 'medio', descripcion: 'Temperatura muy baja - riesgo de helada', impacto: 'Vigilar состояние del olivo' };
+      return { nivel: 'medio', descripcion: 'Temperatura muy baja - riesgo de helada', impacto: 'Vigilar estado del olivo' };
     }
     return { nivel: 'bajo', descripcion: 'Temperatura adecuada para olivo', impacto: 'Sin riesgo de heladas' };
   })();
@@ -206,10 +211,10 @@ export async function getClimaData() {
 
   const resultados = data.map((item) => {
     const temp = item.temp;
-    const riesgo = calcularRiesgo(temp, item.humedad, item.lluvia);
+    const riesgos_olivar = calcularRiesgosOlivar(temp, item.humedad, item.lluvia);
+    const riesgo = calcularRiesgo(riesgos_olivar);
     const estado = getEstado(temp);
     const riesgos_plaga = calcularRiesgosPlaga(temp, item.humedad, item.lluvia);
-    const riesgos_olivar = calcularRiesgosOlivar(temp, item.humedad, item.lluvia);
     return {
       provincia: item.provincia.nombre,
       lat: item.provincia.lat,

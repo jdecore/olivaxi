@@ -5,8 +5,8 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Alertas - olivaξ">
   <!-- Hero -->
   <section class="alertas-hero">
-    <h1>🔔 Alertas de Calor Extremo</h1>
-    <p>Te avisamos cuando tu provincia supere los 38°C</p>
+    <h1>🔔 Alertas para tu Cultivo</h1>
+    <p>Te avisamos cuando las condiciones climáticas afecten a tu olivar</p>
   </section>
 
   <!-- Form -->
@@ -23,8 +23,9 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="form-field">
-        <label for="provincia">Tu provincia</label>
+        <label for="provincia">Provincia</label>
         <select id="provincia">
+          <option value="">Selecciona tu provincia...</option>
           <option value="Jaén">Jaén</option>
           <option value="Córdoba">Córdoba</option>
           <option value="Sevilla">Sevilla</option>
@@ -39,15 +40,28 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="form-field">
+        <label for="variedad">Variedad de olivo</label>
+        <select id="variedad">
+          <option value="">Selecciona tu variedad...</option>
+          <option value="cornicabra">Cornicabra</option>
+          <option value="picual">Picual</option>
+          <option value="arbequina">Arbequina</option>
+          <option value="hojiblanca">Hojiblanca</option>
+          <option value="manzanilla">Manzanilla</option>
+          <option value="empeltre">Empeltre</option>
+        </select>
+      </div>
+
+      <div class="form-field">
         <label for="tipo">Tipo de alerta</label>
         <select id="tipo">
-          <option value="calor">🌡️ Ola de calor (>38°C)</option>
-          <option value="helada">❄️ Helada (<0°C)</option>
-          <option value="sequia">💧 Estrés hídrico</option>
+          <option value="">Selecciona...</option>
         </select>
       </div>
 
       <button id="btn-submit" type="button">Activar alerta 🔔</button>
+
+      <p class="alertas-info">Se te avisará cuando cualquier riesgo aparezca en tu zona para tu cultivo de olivo.</p>
 
       <div id="mensaje" hidden></div>
     </form>
@@ -58,7 +72,7 @@ import Layout from '../layouts/Layout.astro';
   .alertas-hero {
     background: var(--color-aceituna);
     color: var(--color-sal);
-    padding: 3rem 0;
+    padding: 100px 1rem 3rem;
     text-align: center;
   }
 
@@ -129,6 +143,13 @@ import Layout from '../layouts/Layout.astro';
   #btn-submit:hover { opacity: 0.9; }
   #btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
+  .alertas-info {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    text-align: center;
+    margin-top: 1rem;
+  }
+
   #mensaje {
     margin-top: 1rem;
     border-radius: 4px;
@@ -161,15 +182,158 @@ import Layout from '../layouts/Layout.astro';
   const btn = document.getElementById("btn-submit");
   const msg = document.getElementById("mensaje");
   const form = document.getElementById("form-alerta");
+  const selectProvincia = document.getElementById("provincia") as HTMLSelectElement;
+  const selectVariedad = document.getElementById("variedad") as HTMLSelectElement;
+  const selectTipo = document.getElementById("tipo") as HTMLSelectElement;
+
+  const VARIEDADES: Record<string, any> = {
+    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
+    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
+    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
+    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
+    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
+  };
+
+  const ALERTAS_TIPO: Record<string, { label: string; icono: string }> = {
+    ola_calor: { label: "🔥 Ola de calor extrema", icono: "🔥" },
+    calor_critico: { label: "🔥 Calor crítico para tu variedad", icono: "🔥" },
+    helada: { label: "❄️ Helada", icono: "❄️" },
+    helada_critica: { label: "❄️ Helada crítica para tu variedad", icono: "❄️" },
+    estres_hidrico: { label: "🏜️ Estrés hídrico", icono: "🏜️" },
+    sequia_severa: { label: "🏜️ Sequía severa para tu variedad", icono: "🏜️" },
+    sequia_extrema: { label: "🏜️ Sequía extrema", icono: "🏜️" },
+    alta_humedad: { label: "🦠 Alta humedad - vigilancia de hongos", icono: "🦠" },
+    hongos_criticos: { label: "🦠 Riesgo hongos crítico para tu variedad", icono: "🦠" },
+    inundacion: { label: "🌊 Inundación", icono: "🌊" },
+    mosca: { label: "🦟 Mosca del olivo activa", icono: "🦟" },
+    polilla: { label: "🦋 Polilla del olivo activa", icono: "🦋" },
+    xylella: { label: "🦠 Xylella fastidiosa - Riesgo crítico", icono: "🦠" },
+    repilo: { label: "🍄 Repilo activo", icono: "🍄" },
+    condiciones_optimas: { label: "✅ Condiciones óptimas", icono: "✅" }
+  };
+
+  async function calcularTipoAlerta(provincia: string, variedad: string) {
+    try {
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+      const res = await fetch(`${apiBase}/api/clima`);
+      const datos = await res.json();
+      const datosProv = datos.find((p: any) => p.provincia === provincia);
+      
+      if (!datosProv) return [];
+
+      const variedadData = VARIEDADES[variedad];
+      const alertas: string[] = [];
+
+      const temp = datosProv.temperatura || 0;
+      const humedad = datosProv.humedad || 0;
+      const lluvia = datosProv.lluvia || 0;
+      const riesgos_plaga = datosProv.riesgos_plaga || {};
+
+      if (variedadData?.clima?.calor?.nivel === "baja" && temp > 35) {
+        alertas.push("calor_critico");
+      } else if (temp > 38) {
+        alertas.push("ola_calor");
+      }
+
+      if (variedadData?.clima?.frio?.nivel === "baja" && temp < 5) {
+        alertas.push("helada_critica");
+      } else if (temp < 0) {
+        alertas.push("helada");
+      }
+
+      if (variedadData?.clima?.sequia?.nivel === "baja" && humedad < 30) {
+        alertas.push("sequia_severa");
+      } else if (humedad < 20) {
+        alertas.push("estres_hidrico");
+      }
+
+      if (lluvia < 0.5 && humedad < 30) {
+        alertas.push("sequia_extrema");
+      }
+
+      if (variedadData?.clima?.humedad_alta?.nivel === "baja" && humedad > 80) {
+        alertas.push("hongos_criticos");
+      } else if (humedad > 85) {
+        alertas.push("alta_humedad");
+      }
+
+      if (lluvia > 20) {
+        alertas.push("inundacion");
+      }
+
+      if (riesgos_plaga?.mosca?.nivel === "alto") alertas.push("mosca");
+      if (riesgos_plaga?.polilla?.nivel === "alto") alertas.push("polilla");
+      if (riesgos_plaga?.xylella?.nivel === "alto") alertas.push("xylella");
+      if (riesgos_plaga?.repilo?.nivel === "alto") alertas.push("repilo");
+
+      return alertas;
+    } catch (e) {
+      console.error("Error calculating alert:", e);
+      return [];
+    }
+  }
+
+  async function actualizarTipoAlerta() {
+    const provincia = selectProvincia.value;
+    const variedad = selectVariedad.value;
+
+    selectTipo.innerHTML = '<option value="">Selecciona...</option>';
+
+    if (!provincia) return;
+
+    const alertas = await calcularTipoAlerta(provincia, variedad);
+
+    if (alertas.length === 0) {
+      const opt = document.createElement("option");
+      opt.value = "condiciones_optimas";
+      opt.textContent = ALERTAS_TIPO.condiciones_optimas.label;
+      selectTipo.appendChild(opt);
+    } else {
+      alertas.forEach((alerta) => {
+        const opt = document.createElement("option");
+        opt.value = alerta;
+        opt.textContent = ALERTAS_TIPO[alerta]?.label || alerta;
+        selectTipo.appendChild(opt);
+      });
+    }
+  }
+
+  selectProvincia?.addEventListener("change", async () => {
+    if (selectProvincia.value && selectVariedad.value) {
+      await actualizarTipoAlerta();
+    }
+  });
+
+  selectVariedad?.addEventListener("change", async () => {
+    if (selectProvincia.value && selectVariedad.value) {
+      await actualizarTipoAlerta();
+    }
+  });
+
+  const provGuardada = localStorage.getItem("olivaxi_provincia");
+  const varGuardada = localStorage.getItem("olivaxi_variedad");
+
+  if (provGuardada && selectProvincia) {
+    selectProvincia.value = provGuardada;
+  }
+  if (varGuardada && selectVariedad) {
+    selectVariedad.value = varGuardada;
+  }
+
+  if (provGuardada && varGuardada) {
+    setTimeout(actualizarTipoAlerta, 100);
+  }
 
   btn?.addEventListener("click", async () => {
     const nombre = (document.getElementById("nombre") as HTMLInputElement).value.trim();
     const email = (document.getElementById("email") as HTMLInputElement).value.trim();
     const provincia = (document.getElementById("provincia") as HTMLSelectElement).value;
+    const variedad = (document.getElementById("variedad") as HTMLSelectElement).value;
     const tipo = (document.getElementById("tipo") as HTMLSelectElement).value;
 
-    if (!nombre || !email) {
-      msg.textContent = "⚠️ Por favor completa todos los campos.";
+    if (!nombre || !email || !provincia) {
+      msg.textContent = "⚠️ Por favor completa los campos obligatorios.";
       msg.className = "warning";
       msg.removeAttribute("hidden");
       return;
@@ -179,18 +343,18 @@ import Layout from '../layouts/Layout.astro';
     btn.disabled = true;
 
     try {
-      const apiBase = import.meta.env.PUBLIC_API_URL.replace(/\/$/, "");
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
       const res = await fetch(`${apiBase}/api/alertas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, provincia, tipo }),
+        body: JSON.stringify({ nombre, email, provincia, variedad, tipo }),
       });
 
       if (res.ok) {
-        const tipoLabels: Record<string, string> = { calor: "38°C", helada: "0°C", sequia: "sequía" };
-        msg.textContent = `✅ ¡Alerta activada! Te avisaremos cuando ${provincia} baje de ${tipoLabels[tipo]}.`;
+        msg.textContent = `✅ ¡Alerta activada! Se te avisará cuando cualquier riesgo aparezca en tu zona para tu cultivo de olivo.`;
         msg.className = "success";
-        form.reset();
+        localStorage.setItem("olivaxi_provincia", provincia);
+        if (variedad) localStorage.setItem("olivaxi_variedad", variedad);
       } else {
         throw new Error("Respuesta no OK");
       }

@@ -18,6 +18,10 @@ const { varietyData = [] } = Astro.props;
       data-prays={v.plagas?.prays || ''}
       data-antracnosis={v.enfermedades?.antracnosis || ''}
       data-repilo={v.enfermedades?.repilo || ''}
+      data-frio={v.clima?.frio?.valor || 50}
+      data-calor-clima={v.clima?.calor?.valor || 50}
+      data-sequía-clima={v.clima?.sequia?.valor || 50}
+      data-humedad={v.clima?.humedad_alta?.valor || 50}
     >
       <span class="var-badge">{v.etiqueta}</span>
       <h3>🫒 {v.nombre}</h3>
@@ -25,21 +29,35 @@ const { varietyData = [] } = Astro.props;
       
       <div class="var-bars">
         <div class="var-bar-row">
-          <span class="var-bar-label">Sequía</span>
+          <span class="var-bar-label">❄️ Frío</span>
           <div class="var-bar-bg">
-            <div class="var-bar-fill var-bar-sequía" style={`width: ${v.resistencia_sequia}%`}></div>
+            <div class="var-bar-fill var-bar-frio" style={`width: ${v.clima?.frio?.valor || 50}%`}></div>
           </div>
-          <span class="var-bar-value">{v.resistencia_sequia}%</span>
+          <span class="var-bar-value">{v.clima?.frio?.valor || 50}%</span>
         </div>
         <div class="var-bar-row">
-          <span class="var-bar-label">Calor</span>
+          <span class="var-bar-label">🔥 Calor</span>
           <div class="var-bar-bg">
-            <div class="var-bar-fill var-bar-calor" style={`width: ${v.tolerancia_calor}%`}></div>
+            <div class="var-bar-fill var-bar-calor" style={`width: ${v.clima?.calor?.valor || 50}%`}></div>
           </div>
-          <span class="var-bar-value">{v.tolerancia_calor}%</span>
+          <span class="var-bar-value">{v.clima?.calor?.valor || 50}%</span>
         </div>
         <div class="var-bar-row">
-          <span class="var-bar-label">Prod.</span>
+          <span class="var-bar-label">🏜️ Sequía</span>
+          <div class="var-bar-bg">
+            <div class="var-bar-fill var-bar-sequía" style={`width: ${v.clima?.sequia?.valor || 50}%`}></div>
+          </div>
+          <span class="var-bar-value">{v.clima?.sequia?.valor || 50}%</span>
+        </div>
+        <div class="var-bar-row">
+          <span class="var-bar-label">💧 Humedad</span>
+          <div class="var-bar-bg">
+            <div class="var-bar-fill var-bar-humedad" style={`width: ${v.clima?.humedad_alta?.valor || 50}%`}></div>
+          </div>
+          <span class="var-bar-value">{v.clima?.humedad_alta?.valor || 50}%</span>
+        </div>
+        <div class="var-bar-row">
+          <span class="var-bar-label">📊 Prod.</span>
           <div class="var-bar-bg">
             <div class="var-bar-fill var-bar-prod" style={`width: ${v.productividad}%`}></div>
           </div>
@@ -112,7 +130,11 @@ const { varietyData = [] } = Astro.props;
       mosca: card.dataset.mosca,
       prays: card.dataset.prays,
       antracnosis: card.dataset.antracnosis,
-      repilo: card.dataset.repilo
+      repilo: card.dataset.repilo,
+      frio: parseInt(card.dataset.frio),
+      calor: parseInt(card.dataset.calorClima),
+      sequia: parseInt(card.dataset.sequíaClima),
+      humedad: parseInt(card.dataset.humedad)
     };
   }
 
@@ -181,16 +203,15 @@ const { varietyData = [] } = Astro.props;
     document.getElementById('th-b').textContent = b.nombre;
 
     const metrics = [
-      { key: 'resistencia_sequia', label: 'Sequía', type: 'bar', color: 'sequia' },
-      { key: 'tolerancia_calor', label: 'Calor', type: 'bar', color: 'calor' },
-      { key: 'productividad', label: 'Producción', type: 'bar', color: 'prod' },
-      { key: 'estudios', label: 'Estudios', type: 'number' },
-      { key: 'origen', label: 'Origen', type: 'text' },
-      { key: 'xylella', label: 'Xylella', type: 'tag' },
-      { key: 'mosca', label: 'Mosca', type: 'tag' },
-      { key: 'prays', label: 'Prays', type: 'tag' },
-      { key: 'antracnosis', label: 'Antracnosis', type: 'tag' },
-      { key: 'repilo', label: 'Repilo', type: 'tag' }
+      { key: 'frio', label: '❄️ Frío', type: 'bar', color: 'frio' },
+      { key: 'calor', label: '🔥 Calor', type: 'bar', color: 'calor' },
+      { key: 'sequia', label: '🏜️ Sequía', type: 'bar', color: 'sequia' },
+      { key: 'humedad', label: '💧 Humedad', type: 'bar', color: 'humedad' },
+      { key: 'productividad', label: '📊 Producción', type: 'bar', color: 'prod' },
+      { key: 'estudios', label: '📄 Estudios', type: 'number' },
+      { key: 'origen', label: '📍 Origen', type: 'text' },
+      { key: 'mosca', label: '🦟 Mosca', type: 'tag' },
+      { key: 'repilo', label: '🍄 Repilo', type: 'tag' }
     ];
 
     const tbody = document.getElementById('compare-tbody');
@@ -297,6 +318,8 @@ const { varietyData = [] } = Astro.props;
   .var-bar-sequía { background: #D4E849; }
   .var-bar-calor { background: #F59E0B; }
   .var-bar-prod { background: #3B82F6; }
+  .var-bar-frio { background: #06B6D4; }
+  .var-bar-humedad { background: #8B5CF6; }
 
   .var-bar-value { font-size: 11px; color: var(--color-muted); width: 2rem; text-align: right; }
 
@@ -444,6 +467,8 @@ const { varietyData = [] } = Astro.props;
   .sequia-fill { background: #D4E849; }
   .calor-fill { background: #F59E0B; }
   .prod-fill { background: #3B82F6; }
+  .frio-fill { background: #06B6D4; }
+  .humedad-fill { background: #8B5CF6; }
 
   .var-resistencias {
     margin-top: 0.75rem;

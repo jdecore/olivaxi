@@ -18,6 +18,7 @@ db.exec(`
     nombre TEXT,
     email TEXT,
     provincia TEXT,
+    variedad TEXT,
     tipo TEXT DEFAULT 'calor',
     activa INTEGER DEFAULT 1,
     last_notified_at INTEGER DEFAULT 0,
