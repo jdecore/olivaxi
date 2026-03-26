@@ -185,6 +185,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .legend-label { color: var(--color-aceituna); white-space: nowrap; }
   :global(.leaflet-container) { background: var(--color-bg); }
+  :global(.leaflet-control-loading) { display: none !important; }
+  :global(.leaflet-loader) { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
     .marker-fadeIn { animation: none; opacity: 1; }
     .marker-pulse { animation: none; }
