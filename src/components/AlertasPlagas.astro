@@ -85,14 +85,22 @@ const getNivelStyles = (nivel) => {
 }
 .plagas-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 12px;
+  container-type: inline-size;
+}
+@container (min-width: 300px) {
+  .plagas-grid { grid-template-columns: 1fr 1fr; }
 }
 .plaga-tarjeta {
   background: var(--color-white-surface);
   border: 2px solid;
   border-radius: 6px;
   padding: 12px;
+}
+.plaga-tarjeta:has(.nivel-alto) {
+  border-color: #DC3545;
+  background: rgba(220, 53, 69, 0.05);
 }
 </style>
 

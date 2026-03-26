@@ -233,10 +233,11 @@ const { varietyData = [] } = Astro.props;
     margin: 0 auto;
     padding: 3rem 1rem;
     background: var(--color-sal);
+    container-type: inline-size;
   }
 
-  @media (min-width: 768px) { .var-grid { grid-template-columns: 1fr 1fr; } }
-  @media (min-width: 1024px) { .var-grid { grid-template-columns: 1fr 1fr 1fr; } }
+  @container (min-width: 350px) { .var-grid { grid-template-columns: 1fr 1fr; } }
+  @container (min-width: 700px) { .var-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
   .var-card {
     background: var(--color-white-surface);
@@ -245,6 +246,11 @@ const { varietyData = [] } = Astro.props;
     padding: 1.5rem;
     border-top: 3px solid var(--color-border);
     transition: border-color 0.2s;
+  }
+
+  .var-card:has(.var-badge.destacada) {
+    border-color: var(--color-limon);
+    box-shadow: 0 4px 12px var(--color-shadow, rgba(0,0,0,0.1));
   }
 
   .var-card:hover {
