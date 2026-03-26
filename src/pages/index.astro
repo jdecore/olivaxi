@@ -387,14 +387,12 @@ let top3Riesgos = [];
 
     .values-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
-      max-width: 56rem;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 1.5rem;
     }
-
-    @media (min-width: 768px) { .values-grid { grid-template-columns: 1fr 1fr; } }
 
     .value-card {
       border-radius: 6px;
@@ -425,7 +423,7 @@ let top3Riesgos = [];
     .cta-content {
       text-align: center;
       color: var(--color-sal);
-      max-width: 42rem;
+      max-width: 800px;
       margin: 0 auto;
       padding: 0 1.5rem;
     }
@@ -508,7 +506,7 @@ let top3Riesgos = [];
     .signup-content {
       text-align: center;
       color: var(--color-sal);
-      max-width: 28rem;
+      max-width: 600px;
       margin: 0 auto;
       padding: 0 1.5rem;
     }
@@ -563,7 +561,7 @@ let top3Riesgos = [];
     /* DECISIONES RÁPIDAS */
     .decisiones-rapidas { background: var(--color-aceituna); padding: 3rem 1rem; }
 
-    .decisiones-container { max-width: 1000px; margin: 0 auto; }
+    .decisiones-container { max-width: 1200px; margin: 0 auto; }
 
     .decisiones-title {
       font-family: 'Literata', Georgia, serif;
@@ -757,6 +755,18 @@ let top3Riesgos = [];
     @media (max-width: 767px) {
       .analisis-card { grid-column: 1; grid-row: auto; }
     }
+
+    .mapa-destacado {
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+
+    .mapa-destacado :global(#mapa-container) {
+      height: 450px;
+      border-radius: 8px;
+      border: 3px solid var(--color-border);
+    }
   </style>
 
   <!-- HERO MINIMALISTA -->
@@ -821,8 +831,8 @@ let top3Riesgos = [];
 
   <!-- TOP 3 RIESGOS -->
   {top3Riesgos.length > 0 && (
-    <div style="max-width: 1000px; margin: 1rem auto; padding: 0 1rem;">
-      <h3 style="font-family: Georgia, serif; color: var(--color-aceituna); margin-bottom: 0.5rem;">
+    <div style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem;">
+      <h3 style="font-family: Georgia, serif; color: var(--color-aceituna); margin-bottom: 1rem; text-align: center;">
         🔴 Provincias en Riesgo
       </h3>
       <div class="top3-grid">
@@ -839,10 +849,6 @@ let top3Riesgos = [];
       </div>
     </div>
   )}
-
-  <div style="text-align: center; padding: 24px;">
-    <a href="/consejero" style="display: inline-flex; align-items: center; background: #1C1C1C; color: #ffffff; padding: 16px 32px; border-radius: 16px; font-family: 'Outfit', system-ui, sans-serif; font-size: 16px; font-weight: 600; text-decoration: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);">Hablar con el Consejero →</a>
-  </div>
 
   <!-- DECISIONES RÁPIDAS -->
   <section class="decisiones-rapidas">
