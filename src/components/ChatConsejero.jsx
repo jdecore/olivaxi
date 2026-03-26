@@ -71,26 +71,30 @@ export default function ChatConsejero() {
     });
   };
 
-  const startTypingAnimation = (botId, text) => {
-    setTypingMessageId(botId);
-    setFullText(text);
-    setDisplayedText('');
-    
-    if (typingInterval) clearInterval(typingInterval);
-    
-    let charIndex = 0;
-    const speed = 35;
-    
-    typingInterval = setInterval(() => {
-      if (charIndex < text.length) {
-        setDisplayedText(text.slice(0, charIndex + 1));
-        charIndex++;
-        scrollToBottom();
-      } else {
-        clearInterval(typingInterval);
-        typingInterval = null;
-      }
-    }, speed);
+  const startTypingAnimation = (botId, newText) => {
+    if (!typingMessageId()) {
+      setTypingMessageId(botId);
+      setFullText(newText);
+      setDisplayedText('');
+      
+      if (typingInterval) clearInterval(typingInterval);
+      
+      let charIndex = 0;
+      const speed = 30;
+      
+      typingInterval = setInterval(() => {
+        if (charIndex < fullText().length) {
+          setDisplayedText(fullText().slice(0, charIndex + 1));
+          charIndex++;
+          scrollToBottom();
+        } else {
+          clearInterval(typingInterval);
+          typingInterval = null;
+        }
+      }, speed);
+    } else {
+      setFullText(prev => prev + newText);
+    }
   };
 
   const stopTypingAnimation = () => {
@@ -167,9 +171,7 @@ export default function ChatConsejero() {
               if (json.texto) {
                 if (!firstChunk) { firstChunk = true; setIsWaiting(false); }
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto } : m));
-                const currentFullText = (messages().find(m => m.id === botId)?.text || '') + json.texto;
-                setFullText(currentFullText);
-                startTypingAnimation(botId, currentFullText);
+                startTypingAnimation(botId, json.texto);
                 scrollToBottom();
               }
             } catch {}
@@ -511,7 +513,7 @@ export default function ChatConsejero() {
                   <span style={{ color: '#6B6B5E' }}>...</span>
                 </Show>
                 <Show when={!msg.isWaiting && !msg.isThinking}>
-                  <span innerHTML={formatText(typingMessageId() === msg.id && displayedText() !== fullText() ? displayedText() : msg.text)}></span>
+                  <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
                   <span style={typingMessageId() === msg.id && displayedText() !== fullText() ? "animation: blink 1s infinite; display: inline;" : "display: none;"}>▊</span>
                 </Show>
                 <Show when={msg.showProvincias}>
