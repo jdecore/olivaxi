@@ -17,71 +17,96 @@ let top3Riesgos = [];
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
   <style is:global>
-  /* HERO MODERNO */
-  .hero-moderno {
-    padding: 30px 20px 10px;
-    max-width: 800px;
-    margin: 60px auto 0;
+  /* HERO MINIMALISTA ARC STYLE */
+  .hero-section {
+    min-height: 60vh;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 2px;
+    padding: 80px 24px 60px;
+    gap: 24px;
   }
 
-  .hero-titulo {
-    font-size: clamp(22px, 4vw, 38px);
-    font-weight: 900;
-    line-height: 1.1;
+  .hero-title {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 700;
     color: #1C1C1C;
     margin: 0;
-    letter-spacing: -0.5px;
-    font-style: italic;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    max-width: 700px;
+    animation: heroFadeIn 0.8s ease-out;
   }
 
-  .hero-titulo .highlight-verde {
-    color: #cfdb09;
-  }
-
-  [data-theme="dark"] .hero-titulo {
+  [data-theme="dark"] .hero-title {
     color: #F7F4EE;
   }
 
-  [data-theme="dark"] .hero-titulo .highlight-verde {
-    color: #cfdb09;
+  .hero-subtitle {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 400;
+    color: #6b6b60;
+    margin: 0;
+    max-width: 600px;
+    line-height: 1.5;
+    animation: heroFadeIn 0.8s ease-out 0.15s both;
   }
 
-  .hero-pildora {
+  [data-theme="dark"] .hero-subtitle {
+    color: #a0a095;
+  }
+
+  .hero-cta {
     display: inline-flex;
     align-items: center;
-    background: var(--color-limon);
-    color: #1C1C1C;
-    padding: 14px 32px;
-    border-radius: 50px;
+    background: #1C1C1C;
+    color: #ffffff;
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-family: 'Outfit', system-ui, sans-serif;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
-    border: 3px solid #1C1C1C;
-    box-shadow: 4px 4px 0 #1C1C1C;
-    transition: all 0.15s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    animation: heroFadeIn 0.8s ease-out 0.3s both;
   }
 
-  .hero-pildora:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 #1C1C1C;
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    background: #2d2d2d;
   }
 
-  .hero-pildora .olivo-text {
-    color: #1C1C1C;
+  [data-theme="dark"] .hero-cta {
+    background: #F7F4EE;
+    color: #000000;
   }
 
-  .hero-pildora .ai-text {
-    color: #1C1C1C;
+  [data-theme="dark"] .hero-cta:hover {
+    background: #ffffff;
   }
 
-  .hero-pildora:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
+  @keyframes heroFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-section {
+      min-height: 50vh;
+      padding: 60px 20px 40px;
+    }
   }
 
   /* BENTO GRID con Container Queries */
@@ -675,14 +700,11 @@ let top3Riesgos = [];
     }
   </style>
 
-  <!-- HERO MODERNO -->
-  <section class="hero-moderno">
-    <h1 class="hero-titulo">
-      Convertimos investigación científica<br/>
-      en decisiones <span class="highlight-verde">prácticas</span><br/>
-      para agricultores en <span class="highlight-verde">tiempo real</span>
-    </h1>
-    <a href="/consejero" class="hero-pildora"><span class="olivo-text">Olivo</span> <span class="ai-text">AI</span></a>
+  <!-- HERO MINIMALISTA -->
+  <section class="hero-section">
+    <h1 class="hero-title">Ciencia aplicada al cultivo</h1>
+    <p class="hero-subtitle">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
+    <a href="/consejero" class="hero-cta">Hablar con el Consejero →</a>
   </section>
 
   <!-- BENTO GRID HERO -->

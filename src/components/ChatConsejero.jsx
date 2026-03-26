@@ -27,7 +27,11 @@ export default function ChatConsejero() {
   const [isWaiting, setIsWaiting] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
   const [currentProvider, setCurrentProvider] = createSignal(null);
+  const [displayedText, setDisplayedText] = createSignal('');
+  const [fullText, setFullText] = createSignal('');
+  const [typingMessageId, setTypingMessageId] = createSignal(null);
   
+  let typingInterval;
   let messagesEndRef;
 
   const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
@@ -65,6 +69,40 @@ export default function ChatConsejero() {
     requestAnimationFrame(() => {
       messagesEndRef?.scrollIntoView({ behavior: 'auto', block: 'end' });
     });
+  };
+
+  const startTypingAnimation = (botId, text) => {
+    setTypingMessageId(botId);
+    setFullText(text);
+    setDisplayedText('');
+    
+    if (typingInterval) clearInterval(typingInterval);
+    
+    let charIndex = 0;
+    const speed = 35;
+    
+    typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setDisplayedText(text.slice(0, charIndex + 1));
+        charIndex++;
+        scrollToBottom();
+      } else {
+        clearInterval(typingInterval);
+        typingInterval = null;
+      }
+    }, speed);
+  };
+
+  const stopTypingAnimation = () => {
+    if (typingInterval) {
+      clearInterval(typingInterval);
+      typingInterval = null;
+    }
+    if (fullText()) {
+      setDisplayedText(fullText());
+    }
+    setTypingMessageId(null);
+    setFullText('');
   };
 
   const seleccionarProvincia = (prov) => {
@@ -129,6 +167,8 @@ export default function ChatConsejero() {
               if (json.texto) {
                 if (!firstChunk) { firstChunk = true; setIsWaiting(false); }
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto } : m));
+                const currentFullText = messages().find(m => m.id === botId)?.text || '';
+                startTypingAnimation(botId, currentFullText + json.texto);
                 scrollToBottom();
               }
             } catch {}
@@ -141,6 +181,7 @@ export default function ChatConsejero() {
   const finishMessage = (botId) => {
     setIsLoading(false);
     setIsWaiting(false);
+    stopTypingAnimation();
     setMessages(prev => prev.map(m => m.id === botId ? { ...m, isThinking: false, isWaiting: false, showNewQ: true } : m));
     setStep(2);
     scrollToBottom();
@@ -149,6 +190,7 @@ export default function ChatConsejero() {
   const nuevaPregunta = () => setMessages(prev => prev.map(m => m.showNewQ ? { ...m, showNewQ: false } : m));
 
   const limpiarChat = () => {
+    stopTypingAnimation();
     setMessages([
       { id: 1, role: 'bot', text: '¡Hola! Soy Olivo 🫒, tu Consejero del olivar. ¿De qué provincia eres?', showProvincias: true }
     ]);
@@ -464,7 +506,7 @@ export default function ChatConsejero() {
                   <span style={{ color: '#6B6B5E' }}>...</span>
                 </Show>
                 <Show when={!msg.isWaiting && !msg.isThinking}>
-                  <span innerHTML={formatText(msg.text)}></span>
+                  <span innerHTML={formatText(typingMessageId() === msg.id && displayedText() !== fullText() ? displayedText() : msg.text)}></span>
                 </Show>
                 <Show when={msg.showProvincias}>
                   <div class="province-grid">
