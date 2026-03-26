@@ -17,7 +17,7 @@ export default defineConfig({
     inlineStylesheets: 'auto',
     assetsInlineLimit: 4096
   },
-  compressHTML: true,
+  compressHTML: false,
   vite: {
     build: {
       cssMinify: true,
