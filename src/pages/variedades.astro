@@ -8,6 +8,7 @@ const varieties = [
     nombre: "Cornicabra",
     origen: "Castilla-La Mancha",
     etiqueta: "RÚSTICA",
+    categoria: ["alta-temp", "baja-temp", "baja-humedad", "baja-lluvia"],
     descripcion: "La más resistente al frío y sequía. Tolera hasta -10°C y 40°C. Ideal para clima continental.",
     notas_climaticas: "Tolera frío intenso (-10°C), calor extremo (40°C), y sequía severa. Sensible a humedad alta.",
     clima: { frio: 95, calor: 90, sequia: 95, humedad: 40, productividad: 75 },
@@ -20,6 +21,7 @@ const varieties = [
     nombre: "Picual",
     origen: "Jaén, Andalucía",
     etiqueta: "REINA",
+    categoria: ["alta-temp", "alta-produccion"],
     descripcion: "50% del olivar español. Máxima productividad y resistente a mosca. Tolera hasta 40°C.",
     notas_climaticas: "Tolera frío hasta -7°C y calor hasta 40°C. Sensible a humedad alta y repilo.",
     clima: { frio: 80, calor: 85, sequia: 70, humedad: 35, productividad: 95 },
@@ -32,6 +34,7 @@ const varieties = [
     nombre: "Arbequina",
     origen: "Lleida, Cataluña",
     etiqueta: "SUPERINTENSIVA",
+    categoria: ["alta-produccion", "alta-humedad"],
     descripcion: "Ideal para riego y plantaciones intensivas. Resistente a Prays y hongos. Sensible al frío intenso.",
     notas_climaticas: "Tolera frío hasta -5°C, pero calor limitado a 35°C. Sensible a sequía y humedad alta.",
     clima: { frio: 70, calor: 50, sequia: 40, humedad: 35, productividad: 90 },
@@ -44,6 +47,7 @@ const varieties = [
     nombre: "Hojiblanca",
     origen: "Málaga, Andalucía",
     etiqueta: "DOBLE APTITUD",
+    categoria: ["alta-temp"],
     descripcion: "Aceite y mesa. Resistente al calor del sur. Tolera hasta 38°C con buena productividad.",
     notas_climaticas: "Tolera calor hasta 38°C. Resfriamiento medio (-3°C). Sensible a frío intenso y humedad.",
     clima: { frio: 55, calor: 80, sequia: 65, humedad: 50, productividad: 72 },
@@ -56,6 +60,7 @@ const varieties = [
     nombre: "Manzanilla",
     origen: "Sevilla, Andalucía",
     etiqueta: "MESA",
+    categoria: ["alta-humedad", "baja-lluvia"],
     descripcion: "La variedad de mesa por excelencia. Gran calibre. Necesita agua y sensible a condiciones extremas.",
     notas_climaticas: "Tolera calor hasta 38°C pero sensible a sequía (-30% productividad). Sensible a humedad.",
     clima: { frio: 45, calor: 65, sequia: 35, humedad: 25, productividad: 70 },
@@ -68,6 +73,7 @@ const varieties = [
     nombre: "Empeltre",
     origen: "Aragón",
     etiqueta: "CONTINENTAL",
+    categoria: ["baja-temp", "baja-humedad", "baja-lluvia"],
     descripcion: "Tradicional del Valle del Ebro. Resistente a sequía y condiciones adversas. Tolera -5°C.",
     notas_climaticas: "Tolera frío hasta -5°C y calor hasta 38°C. Muy resistente a sequía (secano).",
     clima: { frio: 70, calor: 75, sequia: 85, humedad: 45, productividad: 65 },
@@ -90,15 +96,17 @@ const varieties = [
 
     <div class="var-filters">
       <button data-filter="all" class="filter-btn active">TODAS</button>
-      <button data-filter="secano" class="filter-btn">SECANO</button>
-      <button data-filter="calor" class="filter-btn">CALOR</button>
-      <button data-filter="frio" class="filter-btn">FRÍO</button>
-      <button data-filter="premium" class="filter-btn">PREMIUM</button>
+      <button data-filter="alta-temp" class="filter-btn">🔥 CALOR ALTO</button>
+      <button data-filter="baja-temp" class="filter-btn">❄️ FRÍO</button>
+      <button data-filter="alta-humedad" class="filter-btn">💧 HUMEDAD ALTA</button>
+      <button data-filter="baja-humedad" class="filter-btn">🏜️ HUMEDAD BAJA</button>
+      <button data-filter="baja-lluvia" class="filter-btn">🌧️ POCA LLUVIA</button>
+      <button data-filter="alta-produccion" class="filter-btn">📈 PRODUCCIÓN</button>
     </div>
 
     <div class="var-grid">
       {varieties.map((v) => (
-        <div class="var-card" data-tags={v.etiqueta.toLowerCase()}>
+        <div class="var-card" data-categoria={v.categoria.join(",")} data-nombre={v.nombre}>
           <div class="var-card-header">
             <span class="var-badge">{v.etiqueta}</span>
           </div>
@@ -613,7 +621,7 @@ const varieties = [
   const seleccionadas = [];
 
   function getCardData(nombre) {
-    const card = document.querySelector(`.var-card:has([data-nombre="${nombre}"])`);
+    const card = document.querySelector(`.var-card[data-nombre="${nombre}"]`);
     if (!card) return null;
     
     const btn = card.querySelector('.var-btn');
@@ -741,10 +749,11 @@ const varieties = [
       const filter = btn.dataset.filter;
       document.querySelectorAll('.var-card').forEach(card => {
         if (filter === 'all') {
-          card.style.display = 'block';
+          card.style.display = '';
         } else {
-          const tags = card.dataset.tags || '';
-          card.style.display = tags.includes(filter) ? 'block' : 'none';
+          const categorias = card.dataset.categoria || '';
+          const tieneCategoria = categorias.includes(filter);
+          card.style.display = tieneCategoria ? '' : 'none';
         }
       });
     });
