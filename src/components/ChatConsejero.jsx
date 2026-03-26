@@ -148,6 +148,16 @@ export default function ChatConsejero() {
 
   const nuevaPregunta = () => setMessages(prev => prev.map(m => m.showNewQ ? { ...m, showNewQ: false } : m));
 
+  const limpiarChat = () => {
+    setMessages([
+      { id: 1, role: 'bot', text: '¡Hola! Soy Olivo 🫒, tu Consejero del olivar. ¿De qué provincia eres?', showProvincias: true }
+    ]);
+    setStep(1);
+    setProvincia('');
+    setClimaActual(null);
+    setCurrentProvider(null);
+  };
+
   const quickQuestion = (tipo) => {
     const prov = provincia();
     const clima = climaActual();
@@ -165,10 +175,10 @@ export default function ChatConsejero() {
       <style>{`
         .chat-container {
           width: 100%;
-          height: calc(100vh - 64px);
+          height: calc(100vh - 64px - (100vh * 0.01));
           display: flex;
           flex-direction: column;
-          max-width: 760px;
+          max-width: 900px;
           margin: 0 auto;
           background: #F9F8F4;
         }
@@ -198,6 +208,9 @@ export default function ChatConsejero() {
           font-weight: bold;
           font-size: 16px;
           color: #1C1C1C;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         .chat-status {
           font-size: 13px;
@@ -205,6 +218,7 @@ export default function ChatConsejero() {
           display: flex;
           align-items: center;
           gap: 6px;
+          flex: 1;
         }
         .online-dot {
           width: 8px;
@@ -330,6 +344,25 @@ export default function ChatConsejero() {
         .new-q-btn:hover {
           background: #E8EDE0;
         }
+        .chat-header-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .clear-btn {
+          background: #DC3545;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 8px 16px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .clear-btn:hover {
+          background: #c82333;
+        }
         .chat-input-area {
           background: white;
           border-top: 1px solid #E8EDE0;
@@ -396,16 +429,17 @@ export default function ChatConsejero() {
       `}</style>
 
       <div class="chat-header">
-        <div class="chat-avatar">🫒</div>
-        <div class="chat-header-info">
+        <div class="chat-status">
+          <span class="online-dot"></span>
+          <span>Consejero del olivar · En línea</span>
+          <Show when={currentProvider()}>
+            <span style="margin-left: 4px;">· {currentProvider()}</span>
+          </Show>
+        </div>
+        <div class="chat-header-right">
           <div class="chat-name">Olivo</div>
-          <div class="chat-status">
-            <span class="online-dot"></span>
-            <span>Consejero del olivar · En línea</span>
-            <Show when={currentProvider()}>
-              <span style="margin-left: 4px;">· {currentProvider()}</span>
-            </Show>
-          </div>
+          <div class="chat-avatar">🫒</div>
+          <button class="clear-btn" onClick={limpiarChat}>Limpiar</button>
         </div>
       </div>
 
@@ -441,9 +475,7 @@ export default function ChatConsejero() {
                     )}</For>
                   </div>
                 </Show>
-                <Show when={msg.showNewQ}>
-                  <button class="new-q-btn" onClick={nuevaPregunta}>Nueva pregunta →</button>
-                </Show>
+
                 <Show when={msg.showQuickButtons}>
                   <div class="quick-btns">
                     <button class="quick-btn" onClick={() => quickQuestion('regar')}>💧 ¿Debo regar hoy?</button>

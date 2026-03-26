@@ -176,12 +176,29 @@ const apiUrl = isProduction ? 'http://45.90.237.135:3001' : 'http://localhost:30
     initMap();
   });
 
-  window.addEventListener('astro:after-swap', initMap);
+  window.addEventListener('astro:after-swap', () => {
+    loadingDiv = document.getElementById('mapa-loading');
+    legendDiv = document.getElementById('mapa-legend');
+    apiBase = document.getElementById('mapa-container')?.dataset.apiUrl || 'http://localhost:3000';
+    initMap();
+  });
 
   if (document.readyState !== 'loading') {
     console.log('[MapaCalor] DOM already loaded, calling initMap');
+    loadingDiv = document.getElementById('mapa-loading');
+    legendDiv = document.getElementById('mapa-legend');
+    apiBase = document.getElementById('mapa-container')?.dataset.apiUrl || 'http://localhost:3000';
     initMap();
   }
+
+  const getColorByTemperatura = (temp) => {
+    if (temp < 10) return '#74B9FF';
+    if (temp < 20) return '#55EFC4';
+    if (temp < 28) return '#A8D8A8';
+    if (temp < 35) return '#FDCB6E';
+    if (temp < 38) return '#E17055';
+    return '#D63031';
+  };
 
   const getColorByHumedad = (humedad) => {
     if (humedad < 20) return '#D63031';
