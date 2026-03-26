@@ -32,7 +32,7 @@ export default function ChatConsejero() {
   const [displayedText, setDisplayedText] = createSignal('');
   const [fullText, setFullText] = createSignal('');
   const [typingMessageId, setTypingMessageId] = createSignal(null);
-  const [showMemoryWarning, setShowMemoryWarning] = createSignal(false);
+  const [chatStarted, setChatStarted] = createSignal(false); // Para contar desde primera pregunta real
   const [showMemoryModal, setShowMemoryModal] = createSignal(false);
   
   let typingInterval;
@@ -141,13 +141,14 @@ export default function ChatConsejero() {
     const text = input().trim();
     if (!text || isLoading()) return;
 
-    // Verificar límite de memoria
-    const currentMessages = messages();
-    if (currentMessages.length >= MAX_MESSAGES) {
-      setShowMemoryWarning(true);
+    // Contar solo intercambios (pregunta usuario + respuesta bot)
+    const intercambios = Math.floor(messages().length / 2);
+    if (chatStarted() && intercambios >= MAX_MESSAGES) {
       setShowMemoryModal(true);
       return;
     }
+
+    if (!chatStarted()) setChatStarted(true);
 
     const pregunta = text;
     const botId = Date.now();
@@ -213,7 +214,7 @@ export default function ChatConsejero() {
     setProvincia('');
     setClimaActual(null);
     setCurrentProvider(null);
-    setShowMemoryWarning(false);
+    setChatStarted(false);
     setShowMemoryModal(false);
   };
 
@@ -504,6 +505,18 @@ export default function ChatConsejero() {
         .memory-modal-btn.download { background: #4CAF6F; color: white; }
         .memory-modal-btn.clear { background: #DC3545; color: white; }
         .memory-modal-btn.cancel { background: #f0f0f0; color: #666; }
+        .memory-btn {
+          background: var(--color-sal);
+          border: 1px solid var(--color-border);
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 12px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s;
+        }
+        .memory-btn:hover { background: var(--color-limon); }
+        .memory-btn.warning { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
         .chat-input-area {
           background: white;
           border-top: 1px solid #E8EDE0;
@@ -582,14 +595,6 @@ export default function ChatConsejero() {
           </Show>
         </div>
         <div class="chat-header-right">
-          <div 
-            class={`chat-memory-indicator ${messages().length >= MAX_MESSAGES ? 'warning' : messages().length >= 15 ? 'warning' : ''}`} 
-            title="Memoria del chat" 
-            onClick={() => setShowMemoryModal(true)}
-          >
-            💾 {messages().length}/{MAX_MESSAGES}
-          </div>
-          <button class="download-btn" onClick={descargarChat} title="Descargar chat">📥</button>
           <div class="chat-name">Olivo</div>
           <div class="chat-avatar">🫒</div>
           <button class="clear-btn" onClick={() => setShowMemoryModal(true)}>Limpiar</button>
@@ -645,6 +650,12 @@ export default function ChatConsejero() {
       </div>
 
       <div class="chat-input-area">
+        <button 
+          class={`memory-btn ${chatStarted() && Math.floor(messages().length / 2) >= 15 ? 'warning' : ''}`} 
+          onClick={() => setShowMemoryModal(true)}
+        >
+          💾 {chatStarted() ? Math.floor(messages().length / 2) : 0}/{MAX_MESSAGES}
+        </button>
         <input 
           class="chat-input" 
           type="text" 
@@ -661,19 +672,18 @@ export default function ChatConsejero() {
         >
           ➤
         </button>
+        <button class="download-btn" onClick={descargarChat} title="Descargar chat">📥</button>
       </div>
 
       <Show when={showMemoryModal()}>
         <div class="memory-modal-overlay" onClick={() => setShowMemoryModal(false)}>
           <div class="memory-modal" onClick={(e) => e.stopPropagation()}>
             <h3>💾 Memoria del Chat</h3>
-            <p>Has usado {messages().length} de {MAX_MESSAGES} mensajes.<br/>
-            {messages().length >= MAX_MESSAGES ? 'El chat ha llegado al límite. Descarga el chat antes de borrar.' : 'Puedes descargar el chat o limpiarlo cuando quieras.'}</p>
+            <p>Has usado {chatStarted() ? Math.floor(messages().length / 2) : 0} de {MAX_MESSAGES} intercambios.<br/>
+            {chatStarted() && Math.floor(messages().length / 2) >= MAX_MESSAGES ? 'El chat ha llegado al límite. Descarga el chat antes de borrar.' : 'Puedes descargar el chat o limpiarlo cuando quieras.'}</p>
             <div class="memory-modal-buttons">
               <button class="memory-modal-btn download" onClick={() => { descargarChat(); setShowMemoryModal(false); }}>📥 Descargar</button>
-              <Show when={messages().length >= MAX_MESSAGES}>
-                <button class="memory-modal-btn clear" onClick={() => { limpiarChat(); setShowMemoryModal(false); }}>🗑️ Borrar todo</button>
-              </Show>
+              <button class="memory-modal-btn clear" onClick={() => { limpiarChat(); setShowMemoryModal(false); }}>🗑️ Borrar todo</button>
               <button class="memory-modal-btn cancel" onClick={() => setShowMemoryModal(false)}>✖️ Cerrar</button>
             </div>
           </div>
