@@ -2,15 +2,15 @@ FROM oven/bun:latest
 
 WORKDIR /app
 
-COPY package.json ./
-COPY bun.lock ./
+COPY api/package.json ./
+COPY api/bun.lock ./
 RUN bun install
 
-COPY data ./data
-COPY routes ./routes
-COPY services ./services
-COPY db ./db
-COPY index.ts ./
+COPY api/data ./data
+COPY api/routes ./routes
+COPY api/services ./services
+COPY api/db ./db
+COPY api/index.ts ./
 
 EXPOSE 3000
 
