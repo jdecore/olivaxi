@@ -1,68 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import MapaCalor from '../components/MapaCalor.jsx';
+import MapaCalor from '../components/MapaCalor.astro';
 import AlertasClimaticas from '../components/AlertasClimaticas.astro';
 import AnalisisOlivar from '../components/AnalisisOlivar.astro';
 import AlertasPlagas from '../components/AlertasPlagas.astro';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+
 let climaData = [];
 let heroStats = { tempMax: '--', tempMin: '--', avgTemp: '--', totalProvincias: 0 };
+let top3Riesgos = [];
 
-try {
-  const res = await fetch(`${API_BASE}/api/clima`);
-  if (res.ok) {
-    climaData = await res.json();
-    
-    const temps = climaData.map((p: any) => p.temperatura).filter((t: number) => typeof t === 'number');
-    if (temps.length > 0) {
-      heroStats = {
-        tempMax: Math.max(...temps).toFixed(1),
-        tempMin: Math.min(...temps).toFixed(1),
-        avgTemp: (temps.reduce((a: number, b: number) => a + b, 0) / temps.length).toFixed(1),
-        totalProvincias: climaData.length
-      };
-    }
-  }
-} catch (e) {
-  console.error('Error fetching clima:', e);
-}
-
-const getRiesgoEmoji = (riesgo: string) => {
-  return riesgo === 'alto' ? '🔴' : riesgo === 'medio' ? '🟡' : '🟢';
-};
-
-const getRiesgoLabel = (riesgo: string) => {
-  return riesgo === 'alto' ? 'Alto' : riesgo === 'medio' ? 'Medio' : 'Bajo';
-};
-
-const top3Riesgos = [...climaData]
-  .filter((p: any) => p.riesgo === 'alto' || p.riesgo === 'medio')
-  .sort((a: any, b: any) => {
-    const order = { alto: 0, medio: 1, bajo: 2 };
-    return order[a.riesgo] - order[b.riesgo];
-  })
-  .slice(0, 3)
-  .map((p: any) => ({
-    provincia: p.provincia,
-    riesgo: p.riesgo,
-    emoji: getRiesgoEmoji(p.riesgo),
-    label: getRiesgoLabel(p.riesgo),
-    temperatura: p.temperatura
-  }));
-
-const tablaProvinciasHTML = [...climaData]
-  .sort((a: any, b: any) => b.temperatura - a.temperatura)
-  .map((p: any) => `
-    <tr class="riesgo-${p.riesgo}">
-      <td style="font-weight: 600;">${p.provincia}</td>
-      <td class="temp-cell">${p.temperatura}°C</td>
-      <td>${p.humedad}%</td>
-      <td>${p.lluvia}mm</td>
-      <td>${p.estado || ''}</td>
-      <td><span class="badge-riesgo ${p.riesgo}">${getRiesgoEmoji(p.riesgo)} ${p.riesgo}</span></td>
-    </tr>
-  `).join('');
+// Skip SSR fetch - client-side JS will fetch data
+// This allows the build to work without a running API server
 ---
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
@@ -721,7 +671,7 @@ const tablaProvinciasHTML = [...climaData]
   <div class="bento-grid">
     <!-- Map - right side (large) -->
     <div class="bento-card mapa-card">
-      <MapaCalor client:only="react" id="mapa-calor" />
+      <MapaCalor id="mapa-calor" />
     </div>
 
     <!-- Bottom row - Alertas Climáticas -->
@@ -840,12 +790,9 @@ const tablaProvinciasHTML = [...climaData]
   <!-- SECCIÓN 5 — CTA cierre -->
   <section class="section-signup">
     <div class="signup-content">
-      <h2 class="signup-title">Empieza gratis hoy</h2>
-      <p class="signup-subtitle">Sin tarjeta de crédito. Solo tu email y provincia.</p>
-      <form class="signup-form" action="/api/register" method="POST">
-        <input type="email" class="signup-input" placeholder="tucorreo@gmail.com" required />
-        <button type="submit" class="signup-btn">Unirse a olivaξ</button>
-      </form>
+      <h2 class="signup-title">Recibe alertas de tu zona</h2>
+      <p class="signup-subtitle">Configura alertas en la página de alertas.</p>
+      <a href="/alertas" class="signup-btn" style="text-decoration: none; display: inline-block;">Activar alertas</a>
       <p class="signup-footer">🔒 Solo te escribimos cuando tu zona esté en riesgo</p>
     </div>
   </section>

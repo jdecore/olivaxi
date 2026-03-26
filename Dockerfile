@@ -15,7 +15,8 @@ RUN bun run build
 
 FROM base AS runner
 ENV NODE_ENV=production
-ENV PUBLIC_API_URL=http://45.90.237.135:3001
+ARG PUBLIC_API_URL
+ENV PUBLIC_API_URL=$PUBLIC_API_URL
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.astro ./node_modules/.astro
 

@@ -1,0 +1,398 @@
+---
+let datosClima: any[] = [];
+let cargando = true;
+let error = null;
+
+const getColorByTemperatura = (temp: number) => {
+  if (temp < 10) return '#74B9FF';
+  if (temp < 20) return '#55EFC4';
+  if (temp < 28) return '#A8D8A8';
+  if (temp < 35) return '#FDCB6E';
+  if (temp < 38) return '#E17055';
+  return '#D63031';
+};
+
+const isProduction = import.meta.env.PROD;
+const apiUrl = isProduction ? 'http://45.90.237.135:3001' : 'http://localhost:3000';
+---
+
+<div id="mapa-container" class="mapa-wrapper" data-api-url={apiUrl}>
+  <div id="mapa-filters" class="mapa-filters">
+    <button class="filter-btn active" data-filtro="temperatura">🌡️ Temp</button>
+    <button class="filter-btn" data-filtro="humedad">💧 Humedad</button>
+    <button class="filter-btn" data-filtro="precipitacion">🌧️ Lluvia</button>
+  </div>
+  <div id="mapa" style="height: 380px; width: 100%; border-radius: 4px;"></div>
+  <div id="mapa-legend" class="mapa-legend"></div>
+  <div id="mapa-loading" class="mapa-loading">
+    <div class="skeleton-map">
+      <div class="skeleton-circle" data-provincia="Jaén" style="left: 46.3%; top: 61.5%;"></div>
+      <div class="skeleton-circle" data-provincia="Córdoba" style="left: 43.5%; top: 61.1%;"></div>
+      <div class="skeleton-circle" data-provincia="Sevilla" style="left: 40.1%; top: 62.9%;"></div>
+      <div class="skeleton-circle" data-provincia="Granada" style="left: 46.9%; top: 63.6%;"></div>
+      <div class="skeleton-circle" data-provincia="Málaga" style="left: 44.5%; top: 65.3%;"></div>
+      <div class="skeleton-circle" data-provincia="Badajoz" style="left: 37.2%; top: 57.6%;"></div>
+    </div>
+    <p class="skeleton-text">Cargando datos climáticos...</p>
+  </div>
+</div>
+
+<style>
+  #mapa-container {
+    position: relative;
+    height: 380px;
+    width: 100%;
+    border: 2px solid var(--color-sal);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mapa-filters {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 99;
+    display: flex;
+    gap: 4px;
+    background: var(--color-muted-bg);
+    padding: 6px;
+    border-radius: 4px;
+    border: 2px solid var(--color-sal);
+  }
+  .filter-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--color-sal);
+    border-radius: 3px;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { background: #c5d93e; }
+  .filter-btn.active { background: #FFFFFF; color: var(--color-aceituna); border-color: #FFFFFF; }
+  .mapa-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .mapa-loading.hidden { display: none; }
+  .skeleton-circle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-muted);
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+    transform: translate(-50%, -50%);
+  }
+  .skeleton-map {
+    height: 340px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .skeleton-text {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--color-muted);
+    font-size: 12px;
+  }
+  @keyframes skeletonPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.5; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.15; }
+    50% { transform: scale(1.1); opacity: 0.25; }
+  }
+  .marker-fadeIn { animation: fadeIn 0.35s ease-out forwards; opacity: 0; }
+  .marker-pulse { animation: pulse 2s ease-in-out infinite; }
+  .mapa-legend {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: var(--color-muted-bg);
+    border: 2px solid var(--color-sal);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 9px;
+    font-family: -apple-system, sans-serif;
+    z-index: 99;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 3px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--color-sal); flex-shrink: 0; }
+  .legend-label { color: var(--color-aceituna); white-space: nowrap; }
+  :global(.leaflet-container) { background: var(--color-bg); }
+  @media (prefers-reduced-motion: reduce) {
+    .marker-fadeIn { animation: none; opacity: 1; }
+    .marker-pulse { animation: none; }
+    .skeleton-circle { animation: none; }
+  }
+  @media (max-width: 768px) {
+    .marker-fadeIn { animation-duration: 0.2s; }
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+
+  console.log('[MapaCalor] Script loaded');
+  
+  let datos = [];
+  let filtroActual = 'temperatura';
+  let map;
+  let markersLayer;
+  let apiBase;
+  let loadingDiv;
+  let legendDiv;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('[MapaCalor] DOM ready, calling initMap');
+    loadingDiv = document.getElementById('mapa-loading');
+    legendDiv = document.getElementById('mapa-legend');
+    apiBase = document.getElementById('mapa-container')?.dataset.apiUrl || 'http://localhost:3000';
+    setTimeout(() => map?.invalidateSize(), 100);
+    initMap();
+  });
+
+  window.addEventListener('astro:after-swap', initMap);
+
+  if (document.readyState !== 'loading') {
+    console.log('[MapaCalor] DOM already loaded, calling initMap');
+    initMap();
+  }
+
+  const getColorByHumedad = (humedad) => {
+    if (humedad < 20) return '#D63031';
+    if (humedad < 40) return '#E17055';
+    if (humedad < 60) return '#FDCB6E';
+    if (humedad < 80) return '#55EFC4';
+    return '#74B9FF';
+  };
+
+  const getMarkerRadius = (humedad) => {
+    return 8 + (humedad / 100) * 8;
+  };
+
+  const getColorByPrecipitacion = (lluvia) => {
+    if (lluvia === 0) return '#FDCB6E';
+    if (lluvia < 2) return '#55EFC4';
+    if (lluvia < 10) return '#74B9FF';
+    return '#0984e3';
+  };
+
+  const getColor = (provincia) => {
+    switch (filtroActual) {
+      case 'temperatura': return getColorByTemperatura(provincia.temperatura);
+      case 'humedad': return getColorByHumedad(provincia.humedad);
+      case 'precipitacion': return getColorByPrecipitacion(provincia.lluvia);
+      default: return getColorByTemperatura(provincia.temperatura);
+    }
+  };
+
+  const getLeyenda = () => {
+    switch (filtroActual) {
+      case 'temperatura':
+        return [
+          { label: '<10°C', color: '#74B9FF' },
+          { label: '10-20°C', color: '#55EFC4' },
+          { label: '20-28°C', color: '#A8D8A8' },
+          { label: '28-35°C', color: '#FDCB6E' },
+          { label: '35-38°C', color: '#E17055' },
+          { label: '>38°C', color: '#D63031' },
+        ];
+      case 'humedad':
+        return [
+          { label: '<20%', color: '#D63031' },
+          { label: '20-40%', color: '#E17055' },
+          { label: '40-60%', color: '#FDCB6E' },
+          { label: '60-80%', color: '#55EFC4' },
+          { label: '>80%', color: '#74B9FF' },
+        ];
+      case 'precipitacion':
+        return [
+          { label: '0mm', color: '#FDCB6E' },
+          { label: '<2mm', color: '#55EFC4' },
+          { label: '2-10mm', color: '#74B9FF' },
+          { label: '>10mm', color: '#0984e3' },
+        ];
+      default: return [];
+    }
+  };
+
+  const getTooltipContent = (provincia, color) => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
+    const mutedColor = isDark ? '#a0a095' : '#4a4a40';
+
+    switch (filtroActual) {
+      case 'temperatura':
+        return `<div style="font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${isDark ? '#000' : '#F7F4EE'}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 100px;">
+          <div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div>
+          <div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div>
+          <div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado}</div>
+        </div>`;
+      case 'humedad':
+        return `<div style="font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${isDark ? '#000' : '#F7F4EE'}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 100px;">
+          <div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div>
+          <div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>
+          ${provincia.suelo_humedad !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">🌱 Suelo: ${(provincia.suelo_humedad * 100).toFixed(0)}%</div>` : ''}
+        </div>`;
+      case 'precipitacion':
+        return `<div style="font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${isDark ? '#000' : '#F7F4EE'}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 100px;">
+          <div style="font-size: 14px; margin-bottom: 4px;">${provincia.provincia}</div>
+          <div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>
+          ${provincia.evapotranspiracion !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">💨 ET0: ${provincia.evapotranspiracion.toFixed(1)}mm</div>` : ''}
+        </div>`;
+      default: return '';
+    }
+  };
+
+  const initMap = async () => {
+    console.log('[MapaCalor] initMap started, apiBase:', apiBase);
+    try {
+      const res = await fetch(`${apiBase}/api/clima`);
+      console.log('[MapaCalor] Fetch response:', res.status);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      datos = await res.json();
+      console.log('[MapaCalor] Datos received:', datos.length, 'items');
+    } catch (e) {
+      console.error('Error fetching clima:', e);
+      const loadingP = document.querySelector('#mapa-loading p');
+      if (loadingP) loadingP.textContent = 'Error al cargar datos';
+      return;
+    }
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const tileUrl = isDark 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+    map = L.map('mapa', {
+      center: [40.0, -3.5],
+      zoom: 6,
+      minZoom: 5,
+      maxZoom: 10,
+      maxBounds: [[27, -20], [55, 15]],
+      zoomControl: false
+    });
+
+    L.tileLayer(tileUrl, {
+      attribution: '© CartoDB'
+    }).addTo(map);
+
+    markersLayer = L.layerGroup().addTo(map);
+    renderMarkers();
+    const loadingEl = document.getElementById('mapa-loading');
+    if (loadingEl) loadingEl.classList.add('hidden');
+    updateLegend();
+  };
+
+  const renderMarkers = () => {
+    if (!markersLayer) return;
+    markersLayer.clearLayers();
+
+    datos.forEach((provincia, index) => {
+      const color = getColor(provincia);
+      const radius = getMarkerRadius(provincia.humedad);
+      const isExtremo = provincia.estado === 'Extremo' && filtroActual === 'temperatura';
+
+      if (isExtremo) {
+        const pulseCircle = L.circleMarker([provincia.lat, provincia.lon], {
+          radius: radius + 8,
+          fillColor: color,
+          fillOpacity: 0.15,
+          color: color,
+          weight: 0,
+          interactive: false,
+          className: 'marker-pulse'
+        });
+        setTimeout(() => pulseCircle.addTo(markersLayer), index * 50);
+      }
+
+      const circle = L.circleMarker([provincia.lat, provincia.lon], {
+        radius: radius,
+        fillColor: color,
+        color: color,
+        fillOpacity: 0.9,
+        weight: 2.5,
+        className: `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`
+      });
+
+      circle.bindTooltip(getTooltipContent(provincia, color), {
+        className: 'olivax-tooltip',
+        direction: 'top',
+        offset: [0, -10]
+      });
+
+      circle.on('click', () => {
+        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { 
+          detail: { provincia: provincia.provincia } 
+        }));
+      });
+
+      setTimeout(() => {
+        circle.addTo(markersLayer);
+      }, index * 50);
+    });
+  };
+
+  const updateLegend = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
+    legendDiv.innerHTML = getLeyenda().map(item => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background: ${item.color};"></div>
+        <span class="legend-label" style="color: ${textColor};">${item.label}</span>
+      </div>
+    `).join('');
+  };
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtroActual = btn.dataset.filtro;
+      renderMarkers();
+      updateLegend();
+    });
+  });
+
+  window.addEventListener('modoOscuroChange', (e) => {
+    if (map) {
+      const isDark = e.detail.modoOscuro;
+      const tileUrl = isDark 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      
+      map.eachLayer(layer => {
+        if (layer instanceof L.TileLayer) {
+          layer.setUrl(tileUrl);
+        }
+      });
+      renderMarkers();
+      updateLegend();
+    }
+  });
+</script>
