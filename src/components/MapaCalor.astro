@@ -376,9 +376,17 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
   };
 
+  const initAfterSwap = () => {
+    map = null;
+    datos = [];
+    setTimeout(() => init(), 100);
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
+
+  document.addEventListener('astro:after-swap', initAfterSwap);
 </script>

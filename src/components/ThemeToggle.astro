@@ -22,37 +22,29 @@
 </button>
 
 <script>
-  function initToggle() {
-    const toggle = document.getElementById('theme-toggle');
-    if (!toggle) return;
-    
-    const html = document.documentElement;
-    
-    function setTheme(dark: boolean) {
-      html.setAttribute('data-theme', dark ? 'dark' : 'light');
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
-      toggle.setAttribute('aria-checked', String(dark));
-      toggle.textContent = dark ? '🌙' : '☀️';
-    }
-
-    function initTheme() {
-      const stored = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const dark = stored === 'dark' || (!stored && prefersDark);
-      setTheme(dark);
-    }
-
-    toggle.addEventListener('click', () => {
-      const isDark = html.getAttribute('data-theme') === 'dark';
-      setTheme(!isDark);
-      window.dispatchEvent(new CustomEvent('modoOscuroChange', { 
-        detail: { modoOscuro: !isDark } 
-      }));
-    });
-
-    initTheme();
+  const toggle = document.getElementById('theme-toggle');
+  if (!toggle) {
+    document.addEventListener('DOMContentLoaded', () => initToggle());
+  } else {
+    initToggle();
   }
 
-  initToggle();
-  document.addEventListener('astro:after-swap', initToggle);
+  function initToggle() {
+    const toggle = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    
+    toggle.textContent = isDark ? '🌙' : '☀️';
+    toggle.setAttribute('aria-checked', String(isDark));
+
+    toggle.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme') === 'dark';
+      const next = !current;
+      html.setAttribute('data-theme', next ? 'dark' : 'light');
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      toggle.textContent = next ? '🌙' : '☀️';
+      toggle.setAttribute('aria-checked', String(next));
+      window.dispatchEvent(new CustomEvent('modoOscuroChange', { detail: { modoOscuro: next } }));
+    });
+  }
 </script>

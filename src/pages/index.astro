@@ -513,6 +513,12 @@ let top3Riesgos = [];
     .decision-card.riesgo.alto { border-left-color: #ef4444; }
     .decision-card.acciones { border-left: 4px solid #8b5cf6; }
 
+    /* :has() para detectar contenido dinámico */
+    .decision-card:has(.decision-value.alto) {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+    }
+
     .decision-label {
       font-size: 11px;
       color: var(--color-muted);
@@ -884,14 +890,7 @@ let top3Riesgos = [];
 
   // Listen for province selection from map
   window.addEventListener('provincia-seleccionada', (e) => {
-    const provincia = e.detail.provincia;
-    fetchAnalisisProvincia(provincia);
-    
-    // Scroll to alertas card
-    const alertasCard = document.getElementById('alertas-card');
-    if (alertasCard) {
-      alertasCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    fetchAnalisisProvincia(e.detail.provincia);
   });
 
   // Click on Top 3 cards
@@ -899,15 +898,7 @@ let top3Riesgos = [];
     card.addEventListener('click', () => {
       const provincia = card.dataset.provincia;
       if (provincia) {
-        window.dispatchEvent(new CustomEvent('provincia-seleccionada', {
-          detail: { provincia }
-        }));
-        
-        // Scroll to alertas card
-        const alertasCard = document.getElementById('alertas-card');
-        if (alertasCard) {
-          alertasCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia } }));
       }
     });
   });
