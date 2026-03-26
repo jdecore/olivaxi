@@ -19,12 +19,6 @@ services:
       - "3001:3000"
     volumes:
       - ./api/olivaxi.db:/app/olivaxi.db
-    environment:
-      - GMAIL_USER=${GMAIL_USER:-}
-      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
-      - GROQ_KEY=${GROQ_KEY:-}
-      - GEMINI_KEY=${GEMINI_KEY:-}
-      - OPENROUTER_KEY=${OPENROUTER_KEY:-}
-      - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - BREVO_API_KEY=${BREVO_API_KEY:-}
+    env_file:
+      - ./api/.env
     restart: unless-stopped
