@@ -35,7 +35,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     border-radius: 4px;
     overflow: hidden;
   }
-  #mapa { height: 100%; width: 100%; border-radius: 4px; }
+  #mapa { height: 100%; width: 100%; border-radius: 4px; z-index: 1; position: relative; }
+  :global(.leaflet-map-pane) { z-index: 1 !important; }
+  :global(.leaflet-marker-pane) { z-index: 2 !important; }
+  :global(.leaflet-overlay-pane) { z-index: 3 !important; }
+  :global(.leaflet-shadow-pane) { z-index: 4 !important; }
+  :global(.leaflet-tile-pane) { z-index: 1 !important; }
+  :global(.leaflet-marker-icon) { z-index: 10 !important; }
   .mapa-filters {
     position: absolute;
     top: 10px;
@@ -236,12 +242,16 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   let map, markersLayer, datos = [], filtroActual = 'temperatura';
 
   const initMap = async () => {
+    const mapaDiv = document.getElementById('mapa');
     const container = document.getElementById('mapa-container');
     const apiBase = container?.dataset.apiUrl || 'http://localhost:3000';
     const loadingEl = document.getElementById('mapa-loading');
-    const legendEl = document.getElementById('mapa-legend');
 
-    if (!container || map) return;
+    if (!mapaDiv || map) return;
+
+    if (mapaDiv._leaflet_id) {
+      mapaDiv.remove();
+    }
 
     try {
       const res = await fetch(`${apiBase}/api/clima`);
@@ -263,13 +273,23 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       minZoom: 5,
       maxZoom: 10,
       maxBounds: [[27, -20], [55, 15]],
-      zoomControl: false
+      zoomControl: false,
+      preferCanvas: true
     });
 
-    L.tileLayer(tileUrl, { attribution: '© CartoDB' }).addTo(map);
+    L.tileLayer(tileUrl, { 
+      attribution: '© CartoDB',
+      zIndex: 1
+    }).addTo(map);
 
-    markersLayer = L.layerGroup().addTo(map);
+    markersLayer = L.layerGroup();
     renderMarkers();
+    markersLayer.addTo(map);
+    
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    
     if (loadingEl) loadingEl.classList.add('hidden');
     updateLegend();
   };
@@ -347,6 +367,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       });
     });
 
+    setTimeout(() => initMap(), 200);
+
     window.addEventListener('modoOscuroChange', (e) => {
       if (!map) return;
       const isDark = e.detail.modoOscuro;
@@ -361,7 +383,6 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       updateLegend();
     });
 
-    initMap();
   };
 
   if (document.readyState === 'loading') {
