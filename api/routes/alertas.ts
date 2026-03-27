@@ -240,7 +240,186 @@ const VALID_PROVINCIAS = PROVINCIAS.map(p => p.nombre);
 const VALID_VARIEDADES = Object.keys(VARIEDADES_INFO);
 const VALID_TIPOS = Object.keys(CONSEJOS);
 
+// ============================================
+// Funciones de cálculo de riesgos (para contexto LLM)
+// ============================================
+function calcularRiesgosPlaga(temp: number, humedad: number, lluvia: number) {
+  const mosca = (() => {
+    const tempAlto = temp >= 18 && temp <= 32;
+    const humidityAlto = humedad > 60;
+    const tempMedio = temp >= 15 && temp <= 35;
+    const humidityMedio = humedad > 40;
+    const tempBajo = temp > 35 || temp < 10;
+    const humedadBajo = humedad < 30;
+
+    if (tempAlto && humidityAlto) {
+      return { nivel: 'alto', descripcion: 'Condiciones perfectas para reproducción de mosca' };
+    } else if (tempMedio && humidityMedio) {
+      return { nivel: 'medio', descripcion: 'Vigilar aparición de mosca del olivo' };
+    } else if (tempBajo || humedadBajo) {
+      return { nivel: 'bajo', descripcion: 'Riesgo bajo de mosca del olivo' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de mosca del olivo' };
+  })();
+
+  const polilla = (() => {
+    const tempOptimo = temp >= 15 && temp <= 25;
+    const lluviaBaja = lluvia < 5;
+    const tempMedio = temp >= 10 && temp <= 30;
+    const tempBajo = temp < 8 || temp > 32;
+
+    if (tempOptimo && lluviaBaja) {
+      return { nivel: 'alto', descripcion: 'Condiciones favorables para polilla' };
+    } else if (tempMedio) {
+      return { nivel: 'medio', descripcion: 'Monitorear trampas de polilla' };
+    } else if (tempBajo) {
+      return { nivel: 'bajo', descripcion: 'Riesgo bajo de polilla' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de polilla' };
+  })();
+
+  const xylella = (() => {
+    const alto = temp > 20 && humedad > 70 && lluvia > 10;
+    const medio = temp > 15 && humedad > 50;
+
+    if (alto) {
+      return { nivel: 'alto', descripcion: 'Condiciones de riesgo - Revisar vectores' };
+    } else if (medio) {
+      return { nivel: 'medio', descripcion: 'Condiciones moderadas - Vigilancia preventiva' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de Xylella' };
+  })();
+
+  const repilo = (() => {
+    const alto = lluvia > 5 && temp >= 10 && temp <= 20;
+    const medio = humedad > 70 && temp < 25;
+
+    if (alto) {
+      return { nivel: 'alto', descripcion: 'Condiciones ideales para repilo - Aplicar fungicida' };
+    } else if (medio) {
+      return { nivel: 'medio', descripcion: 'Humedad elevada - Vigilar manchas en hojas' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de repilo' };
+  })();
+
+  return { mosca, polilla, xylella, repilo };
+}
+
+function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
+  const frio = (() => {
+    if (temp < 0) {
+      return { nivel: 'alto', descripcion: 'Helada - riesgo de daño en flores y frutos' };
+    } else if (temp < 5) {
+      return { nivel: 'medio', descripcion: 'Temperatura muy baja - riesgo de helada' };
+    }
+    return { nivel: 'bajo', descripcion: 'Temperatura adecuada para olivo' };
+  })();
+
+  const calor = (() => {
+    if (temp > 40) {
+      return { nivel: 'alto', descripcion: 'Calor extremo - cierre estomático' };
+    } else if (temp > 35) {
+      return { nivel: 'medio', descripcion: 'Temperatura alta - estrés térmico' };
+    }
+    return { nivel: 'bajo', descripcion: 'Temperatura normal para olivo' };
+  })();
+
+  const baja_humedad = (() => {
+    if (humedad < 20) {
+      return { nivel: 'alto', descripcion: 'Humedad muy baja - estrés hídrico severo' };
+    } else if (humedad < 35) {
+      return { nivel: 'medio', descripcion: 'Humedad baja - precaución' };
+    }
+    return { nivel: 'bajo', descripcion: 'Humedad adecuada' };
+  })();
+
+  const alta_humedad = (() => {
+    if (humedad > 85) {
+      return { nivel: 'alto', descripcion: 'Humedad muy alta - riesgo de enfermedades' };
+    } else if (humedad > 75) {
+      return { nivel: 'medio', descripcion: 'Humedad elevada - vigilancia' };
+    }
+    return { nivel: 'bajo', descripcion: 'Humedad normal' };
+  })();
+
+  const baja_lluvia = (() => {
+    if (lluvia < 0.5) {
+      return { nivel: 'alto', descripcion: 'Sequía severa' };
+    } else if (lluvia < 2) {
+      return { nivel: 'medio', descripcion: 'Lluvia baja - monitorear riego' };
+    }
+    return { nivel: 'bajo', descripcion: 'Precipitación adecuada' };
+  })();
+
+  const alta_lluvia = (() => {
+    if (lluvia > 20) {
+      return { nivel: 'alto', descripcion: 'Lluvia intensa - riesgo de inundación' };
+    } else if (lluvia > 10) {
+      return { nivel: 'medio', descripcion: 'Lluvia moderada - vigilancia' };
+    }
+    return { nivel: 'bajo', descripcion: 'Precipitación normal' };
+  })();
+
+  return { frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia };
+}
+
+// ============================================
+// Función para obtener contexto completo del clima
+// ============================================
+async function obtenerContextoAlerta(
+  provincia: string,
+  variedad: string,
+  fenologia: string,
+  nombre: string,
+  tipo: string
+): Promise<ContextoAlerta | null> {
+  const PROVINCIAS_COORDS: Record<string, { lat: number; lon: number }> = {};
+  for (const p of PROVINCIAS) {
+    PROVINCIAS_COORDS[p.nombre] = { lat: p.lat, lon: p.lon };
+  }
+
+  const coords = PROVINCIAS_COORDS[provincia];
+  if (!coords) return null;
+
+  try {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,precipitation`
+    );
+    const data = await res.json();
+
+    const temp = data.current?.temperature_2m ?? 20;
+    const humedad = data.current?.relative_humidity_2m ?? 50;
+    const lluvia = data.current?.precipitation ?? 0;
+
+    const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
+    const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
+
+    const varInfo = VARIEDADES_INFO[variedad];
+    const faseFenologica = fenologia || 'No especificada';
+
+    return {
+      nombre,
+      provincia,
+      variedad,
+      variedadNombre: varInfo?.nombre || variedad,
+      fenologia: faseFenologica,
+      tipo,
+      temp,
+      humedad,
+      lluvia,
+      riesgos_olivar,
+      riesgos_plaga,
+      faseFenologica
+    };
+  } catch (e) {
+    console.error("[Alertas] Error obteniendo contexto:", e);
+    return null;
+  }
+}
+
+// ============================================
 // Sanitización
+// ====================================
 const sanitizeStr = (str: string, maxLen = 100): string => {
   return str.replace(/[<>'";]/g, '').trim().slice(0, maxLen);
 };
@@ -249,6 +428,9 @@ const isValidEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
+// ============================================
+// ENDPOINTS
+// ============================================
 const alertas = new Hono();
 
 alertas.post("/", async (c) => {
@@ -261,7 +443,6 @@ alertas.post("/", async (c) => {
   const tipoRaw = body.tipo || 'condiciones_optimas';
   const fenologiaRaw = body.fenologia || '';
 
-  // Validación
   if (!nombreRaw || !emailRaw || !provinciaRaw) {
     return c.json({ error: "Faltan datos requeridos" }, 400);
   }
@@ -319,23 +500,47 @@ alertas.post("/", async (c) => {
 
   if (gmailPass) {
     try {
-      const varInfo = VARIEDADES_INFO[variedad];
-      const consejos = CONSEJOS[tipo] || [];
-      
-      await transporter.sendMail({
-        from: `olivaξ <${gmailUser}>`,
-        to: email,
-        subject: `✅ Tu alerta está activa - ${provincia}`,
-        html: `<p>Hola <strong>${nombre}</strong>,</p>
+      // Obtener contexto para LLM
+      const contexto = await obtenerContextoAlerta(provincia, variedad, fenologia, nombre, tipo);
+      let emailHtml: string | null = null;
+      let emailSubject = `✅ Tu alerta está activa - ${provincia}`;
+      let llmUsed = false;
+
+      // Intentar generar email con LLM
+      if (contexto) {
+        console.log("[ALERTAS] Generando email con LLM...");
+        emailHtml = await generarEmailConLLM(contexto, "bienvenida");
+        if (emailHtml) {
+          llmUsed = true;
+          console.log("[ALERTAS] Email personalizado generado con LLM");
+        }
+      }
+
+      // Fallback al template tradicional si LLM falla
+      if (!emailHtml) {
+        console.log("[ALERTAS] Usando template tradicional (fallback)");
+        const varInfo = VARIEDADES_INFO[variedad];
+        const consejos = CONSEJOS[tipo] || [];
+        emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
 <p>Tu alerta está activa en olivaξ para <strong>${provincia}</strong>.</p>
 ${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
 ${fenologia ? `<p>Fase fenológica: <strong>${fenologia}</strong></p>` : ''}
 <p>Te avisaremos cuando las condiciones climáticas afecten a tu cultivo de olivo.</p>
 <p><strong>Consejos para condiciones actuales:</strong></p>
 <ul>${consejos.map(c => `<li>${c}</li>`).join('') || '<li>✅ Sin acciones necesarias</li>'}</ul>
-<p>🫒 Equipo olivaξ</p>`,
+<p>🫒 Equipo olivaξ</p>`;
+      } else {
+        // Añadir footer al email generado por LLM
+        emailHtml += `<p style="margin-top: 20px; font-size: 12px; color: #666;">🫒 Equipo olivaξ</p>`;
+      }
+
+      await transporter.sendMail({
+        from: `olivaξ <${gmailUser}>`,
+        to: email,
+        subject: llmUsed ? `✅ Bienvenido a olivaξ - ${provincia}` : emailSubject,
+        html: emailHtml,
       });
-      console.log("[ALERTAS] Email de confirmación enviado a:", email);
+      console.log("[ALERTAS] Email de confirmación enviado a:", email, llmUsed ? "(con LLM)" : "(template)");
     } catch (e) {
       console.log("[ALERTAS] Error enviando email:", e);
     }
@@ -366,7 +571,8 @@ alertas.post("/check", async (c) => {
     PROVINCIAS_COORDS[p.nombre] = { lat: p.lat, lon: p.lon };
   }
 
-  const temps: Record<string, number> = {};
+  // Obtener datos climáticos completos para cada provincia
+  const datosClima: Record<string, { temp: number; humedad: number; lluvia: number }> = {};
 
   await Promise.all(
     provincesToCheck.map(async (provincia) => {
@@ -374,22 +580,27 @@ alertas.post("/check", async (c) => {
       if (!p) return;
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m`
+          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation`
         );
         const d = await res.json();
-        temps[provincia] = d.current?.temperature_2m ?? 0;
+        datosClima[provincia] = {
+          temp: d.current?.temperature_2m ?? 0,
+          humedad: d.current?.relative_humidity_2m ?? 50,
+          lluvia: d.current?.precipitation ?? 0
+        };
       } catch {
-        temps[provincia] = 0;
+        datosClima[provincia] = { temp: 0, humedad: 50, lluvia: 0 };
       }
     })
   );
 
-  console.log("[ALERTAS] Temperaturas:", temps);
+  console.log("[ALERTAS] Datos climáticos:", datosClima);
 
   let enviados = 0;
   for (const alerta of alertasActivas) {
-    const temp = temps[alerta.provincia] ?? 0;
+    const clima = datosClima[alerta.provincia] || { temp: 0, humedad: 50, lluvia: 0 };
     const tipo = alerta.tipo || 'calor';
+    const temp = clima.temp;
     
     if (alerta.last_notified_at && (now - alerta.last_notified_at < TWELVE_HOURS)) {
       continue;
@@ -401,21 +612,56 @@ alertas.post("/check", async (c) => {
     if (tipo === 'sequia' && temp >= 35) activar = true;
     
     if (activar) {
-      const icon = tipo === 'calor' ? '🔥' : tipo === 'helada' ? '❄️' : '💧';
-      const titulo = tipo === 'calor' ? 'ALERTA DE CALOR EXTREMO' : tipo === 'helada' ? 'ALERTA DE HELADA' : 'ALERTA DE ESTRÉS HÍDRICO';
+      console.log(`[ALERTAS] Activando alerta para ${alerta.nombre} en ${alerta.provincia} (${temp}°C)`);
+      
+      // Generar contexto para LLM
+      const contexto = await obtenerContextoAlerta(
+        alerta.provincia,
+        alerta.variedad,
+        alerta.fenologia,
+        alerta.nombre,
+        tipo
+      );
+
+      let emailHtml: string | null = null;
+      let emailSubject = `🔥 ALERTA: ${alerta.provincia} a ${temp.toFixed(1)}°C`;
+      let llmUsed = false;
+
+      // Intentar generar email con LLM
+      if (contexto) {
+        console.log("[ALERTAS] Generando email de alerta con LLM...");
+        emailHtml = await generarEmailConLLM(contexto, "alerta");
+        if (emailHtml) {
+          llmUsed = true;
+          console.log("[ALERTAS] Email de alerta personalizado generado con LLM");
+        }
+      }
+
+      // Fallback al template tradicional
+      if (!emailHtml) {
+        console.log("[ALERTAS] Usando template tradicional de alerta (fallback)");
+        const icon = tipo === 'calor' ? '🔥' : tipo === 'helada' ? '❄️' : '💧';
+        const titulo = tipo === 'calor' ? 'ALERTA DE CALOR EXTREMO' : tipo === 'helada' ? 'ALERTA DE HELADA' : 'ALERTA DE ESTRÉS HÍDRICO';
+        const consejos = CONSEJOS[tipo] || [];
+        
+        emailHtml = `<p>Hola <strong>${alerta.nombre}</strong>,</p>
+<p><strong>${icon} ${titulo}</strong></p>
+<p>Tu provincia <strong>${alerta.provincia}</strong> ha alcanzado los <strong>${temp.toFixed(1)}°C</strong>.</p>
+<p><strong>Consejos urgentes:</strong></p>
+<ul>${consejos.map(c => `<li>${c}</li>`).join('') || ''}</ul>
+<p>🫒 Equipo olivaξ</p>`;
+      } else {
+        // El LLM ya incluye la firma, no añadir nada extra
+      }
+
       try {
         await transporter.sendMail({
           from: `olivaξ <${gmailUser}>`,
           to: alerta.email,
-          subject: `${icon} ALERTA: ${alerta.provincia} a ${temp.toFixed(1)}°C`,
-          html: `<p>Hola <strong>${alerta.nombre}</strong>,</p>
-<p><strong>${icon} ${titulo}</strong></p>
-<p>Tu provincia <strong>${alerta.provincia}</strong> ha alcanzado los <strong>${temp.toFixed(1)}°C</strong>.</p>
-<p><strong>Consejos urgentes:</strong></p>
-<ul>${CONSEJOS[tipo]?.map(c => `<li>${c}</li>`).join('') || ''}</ul>
-<p>🫒 Equipo olivaξ</p>`,
+          subject: llmUsed ? `🚨 ALERTA URGENTE - ${alerta.provincia}: ${temp.toFixed(1)}°C` : emailSubject,
+          html: emailHtml,
         });
-        console.log("[ALERTAS] Alerta enviada a:", alerta.email, "por", temp.toFixed(1) + "°C", "tipo:", tipo);
+        console.log("[ALERTAS] Alerta enviada a:", alerta.email, llmUsed ? "(con LLM)" : "(template)");
         
         db.query("UPDATE alertas SET last_notified_at = ? WHERE id = ?")
           .run(now, alerta.id);
@@ -427,7 +673,7 @@ alertas.post("/check", async (c) => {
     }
   }
 
-  return c.json({ ok: true, alertas: alertasActivas.length, enviados, temps });
+  return c.json({ ok: true, alertas: alertasActivas.length, enviados, datosClima });
 });
 
 export default alertas;
