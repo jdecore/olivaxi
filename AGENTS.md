@@ -10,6 +10,7 @@ Proyecto Astro para monitoreo climático de olivares españoles. Combina datos c
 - Catálogo de 6 variedades de olivo con análisis climático
 - Sistema de alertas personalizado por provincia y variedad
 - Comparador visual de variedades
+- Carrusel de cards premium (Mercado, Clima, Recomendación)
 
 ---
 
@@ -60,23 +61,19 @@ olivaxi/
 │   │   ├── MapaCalor.astro      # Mapa Leaflet con riesgo automático por variedad
 │   │   ├── ChatConsejero.jsx    # Chat con streaming SSE
 │   │   ├── ThemeToggle.astro    # Toggle tema claro/oscuro
-│   │   ├── AlertasClimaticas.astro  # Panel de alertas
-│   │   ├── AlertasPlagas.astro  # Alertas de plagas
-│   │   ├── AnalisisOlivar.astro # Análisis por provincia
-│   │   ├── ComparadorVariedades.astro # Comparador visual
-│   │   └── RankingRiesgo.astro   # Top 3 provincias en riesgo
-│   ├── data/
-│   │   └── variedades.json      # 6 variedades con datos climáticos
+│   │   └── ComparadorVariedades.astro # Comparador visual
 │   ├── layouts/
 │   │   └── Layout.astro         # Layout base con CSS variables + navbar redondeada
 │   ├── lib/
-│   │   └── api.ts               # Funciones helper
+│   │   ├── api.ts               # Funciones helper
+│   │   └── variedades.ts        # Datos compartidos de variedades
 │   └── pages/
-│       ├── index.astro           # Homepage (bento grid + mapa destacado)
-│       ├── conseajero.astro      # Chat (client:only="react")
-│       ├── variedades.astro       # Catálogo variedades (estilo neobrutalista)
-│       ├── alertas.astro         # Formulario alertas
-│       └── plagas.astro          # Página de plagas
+│       ├── index.astro           # Homepage (bento grid + mapa + cards premium)
+│       ├── consejero.astro      # Chat (client:only="react")
+│       ├── variedades.astro     # Catálogo variedades (estilo neobrutalista)
+│       ├── alertas.astro        # Formulario alertas (estilo neobrutalista)
+│       ├── plagas.astro         # Página de plagas
+│       └── agua-suelos.astro    # Página agua y suelos
 ├── .env                          # Variables de entorno
 └── astro.config.mjs              # Config Astro
 ```
@@ -106,7 +103,7 @@ olivaxi/
 | `riesgos_plaga` | 4 plagas: mosca, polilla, xylella, repilo |
 | `riesgos_variedad` | Score de riesgo (0-10) por cada una de las 6 variedades |
 
-### Rangos agronómicos por variedad (actualizado 2026-03-26)
+### Rangos agronómicos por variedad
 
 | Variedad | Frío | Calor | Humedad alta | Sequía |
 |----------|------|-------|--------------|--------|
@@ -194,7 +191,6 @@ Retorna array de provincias con datos completos:
   "riesgos_plaga": { "mosca": {...}, "polilla": {...}, ... },
   "riesgos_variedad": {
     "picual": { "score": 5, "nivel": "medio", "detalle": ["🔥 Calor sensible"] },
-    "arbequina": { "score": 7, "nivel": "crítico", "detalle": ["🔥 Calor sensible", "🏜️ Sequía sensible"] },
     ...
   }
 }
@@ -215,67 +211,72 @@ Body:
 
 | Ruta | Descripción |
 |------|-------------|
-| `/` | Homepage con bento grid, mapa (60%) + sidebar (40%), mapa destacado, top 3 riesgos |
+| `/` | Homepage con bento grid, mapa (60%) + sidebar (40%), mapa destacado, cards premium, top 3 riesgos |
 | `/consejero` | Chat con IA (streaming SSE) |
 | `/variedades` | Catálogo neobrutalista con comparador visual y filtros climáticos |
-| `/alertas` | Formulario de alertas personalizado |
+| `/alertas` | Formulario de alertas personalizado (estilo neobrutalista) |
 | `/plagas` | Información sobre plagas |
+| `/agua-suelos` | Página de agua y suelos |
 
 ---
 
 ## 📝 Historial de Cambios Recientes
 
-### 2026-03-26 - Sistema de riesgo automático + Mejoras UI
+### 2026-03-27 - Optimización de código + UI
 
 **Cambios implementados:**
 
-1. ✅ **Mapa interactivo (MapaCalor.astro)**
-   - Eliminado botón manual ⚠️ de riesgo
-   - Colores cambian automáticamente según variedad seleccionada
-   - Zoom automático a provincia cuando se selecciona en sidebar
-   - Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia
-   - Tooltip muestra riesgo específico por variedad
+1. ✅ **Código unificado**
+   - Nuevo archivo `src/lib/variedades.ts` con VARIEDADES, ICONOS_ALERTAS, PLAGAS_INFO
+   - Eliminado duplicación en MapaCalor.astro, alertas.astro
+   - Cálculos solo en backend, frontend solo renderiza
 
-2. ✅ **Backend (api/routes/clima.ts)**
-   - Rangos agronámicos actualizados por variedad (basados en investigación)
-   - Funciones con umbrales exactos: frío (-10°C a -3°C), calor (35°C a 40°C), humedad (70-80%)
-   - Score de riesgo mejorado considerando múltiples factores
+2. ✅ **Eliminación de código muerto**
+   - Eliminados componentes sin usar: AlertasClimaticas.astro, AlertasPlagas.astro, AnalisisOlivar.astro, RankingRiesgo.astro
+   - Eliminado archivo sin usar: src/data/variedades.json
+   - Eliminado CSS sin usar: ThemeToggle.module.css
 
-3. ✅ **Página Variedades (variedades.astro)**
-   - Estilo neobrutalista con bordes negros y sombras offset
-   - Filtros por 6 condiciones climáticas: 🔥 CALOR ALTO, ❄️ FRÍO, 💧 HUMEDAD ALTA, 🏜️ HUMEDAD BAJA, 🌧️ POCA LLUVIA, 📈 PRODUCCIÓN
-   - Tarjetas con datos agronómicos: rangos de temperatura, resistencias, riesgos
-   - Comparador visual entre variedades
+3. ✅ **Cards premium (carrusel)**
+   - 3 cards: MERCADO, CLIMA, RECOMENDACIÓN
+   - Diseño estilo carta con bordes y sombras
+   - Carrusel horizontal con flechas de navegación
+   - Dots indicadores
 
-4. ✅ **Navbar (Layout.astro)**
-   - Estilo redondeado (border-radius: 50px)
-   - Fondo blanco, borde sutil
-   - Distribución simétrica con gap uniforme
-   - Botón de alertas con hover suave
-   - Mayor longitud (min-width: 800px)
+4. ✅ **Mapa más alto**
+   - Aumentado a 580px para igualar panel de alertas
+   - Responsive: 350px tablet, 280px móvil
 
-5. ✅ **Homepage (index.astro)**
-   - Nuevo mapa destacado (450px) debajo del top 3 riesgos
-   - Espacios reducidos (~5% menos entre secciones)
-   - Hero compactado (50vh, padding reducido)
-   - Mapa en bento grid: 60% mapa + 40% sidebar
+5. ✅ **Formulario alertas neobrutalista**
+   - Bordes cuadrados, border negro 3px
+   - Sombra offset (6px 6px 0 #1C1C1C)
+   - Botón con efecto hover
+   - Labels en mayúsculas
 
-**Resultado visual:**
-- Mapa cambia de colores automáticamente al seleccionar variedad
-- Zoom smooth a provincia seleccionada
-- UI más compacta y acercada al navbar
-- Neobrutalismo en página de variedades
+6. ✅ **Espacios reducidos**
+   - Hero: padding y min-height reducidos
+   - Bento grid: gap y margin reducidos
+
+7. ✅ **Optimización móvil completa**
+   - Homepage: mapa adaptativo, cards carrusel
+   - Alertas: formulario responsive
+   - Variedades: grid 1 columna, filtros compactos
 
 ---
 
-### Estados anteriores
+### 2026-03-26 - Sistema de riesgo automático
 
-- ✅ Build pasa correctamente (5 páginas)
-- ✅ UI responsive con dark mode completo
-- ✅ Sistema de alertas personalizado
-- ✅ Mapa con riesgo automático por variedad
-- ⚠️ Chatbot necesita API keys reales (Groq/Gemini/OpenRouter)
-- ⚠️ Alertas necesitan GMAIL_APP_PASSWORD configurado
+1. ✅ **Backend (api/routes/clima.ts)**
+   - Rangos agronómicos actualizados por variedad (basados en investigación)
+   - Funciones con umbrales exactos: frío (-10°C a -3°C), calor (35°C a 40°C), humedad (70-80%)
+
+2. ✅ **Frontend (MapaCalor.astro)**
+   - Eliminado botón manual ⚠️ de riesgo
+   - Colores cambian automáticamente según variedad seleccionada
+   - Zoom automático a provincia
+
+3. ✅ **Navbar**
+   - Estilo redondeado (border-radius: 50px)
+   - Fondo blanco, distribución simétrica
 
 ---
 
@@ -283,17 +284,18 @@ Body:
 
 ### Último comando ejecutado:
 ```bash
-npm run build  # Pasa correctamente (5 páginas)
+npm run build  # Pasa correctamente (6 páginas)
 ```
 
 ### Pendientes:
 - Ninguno crítico
 
 ### Mejoras futuras sugeridas:
-1. Añadir pronóstico 7 días
-2. Datos de viento, UV
-3. Notificaciones push
-4. Widget de tendencia semanal
+1. Añadir datos dinámicos de precios del aceite
+2. Pronóstico 7 días
+3. Datos de viento, UV
+4. Notificaciones push
+5. Widget de tendencia semanal
 
 ---
 
@@ -301,17 +303,18 @@ npm run build  # Pasa correctamente (5 páginas)
 
 ### MapaCalor.astro
 - Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia
-- Colores automáticos según variedad (sin botón manual)
+- Colores automáticos según variedad
 - Leaflet con CartoDB dark/light tiles dinámico
-- CircleMarkers con animación fadeIn
+- CircleMarkers con animación
 - Tooltip muestra datos climáticos + riesgo por variedad
 - Zoom a provincia en evento `provincia-seleccionada`
 
 ### index.astro (Homepage)
-- Hero minimalista (50vh, padding compactado)
+- Hero minimalista (40vh, padding compactado)
 - Bento grid: mapa (60%) + sidebar (40%)
 - Sidebar: selector provincia, selector variedad, alertas en tiempo real
-- Mapa destacado (450px) después del top 3
+- Mapa destacado (580px) después del top 3
+- Premium cards carrusel (Mercado, Clima, Recomendación)
 - localStorage para persistir selección de provincia/variedad
 
 ### variedades.astro
@@ -320,6 +323,10 @@ npm run build  # Pasa correctamente (5 páginas)
 - Filtros por condiciones climáticas
 - Comparador visual entre 2 variedades
 
+### alertas.astro
+- Formulario neobrutalista
+- Estilo distintivo con bordes cuadrados y sombras offset
+
 ---
 
-*Documentación actualizada: 2026-03-26*
+*Documentación actualizada: 2026-03-27*

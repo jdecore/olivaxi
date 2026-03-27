@@ -26,7 +26,7 @@ import Layout from '../layouts/Layout.astro';
 
     .agua-section {
       background: var(--color-sal);
-      padding: 3rem 1rem;
+      padding: 2.5rem 1rem;
     }
 
     .agua-container {
@@ -37,7 +37,7 @@ import Layout from '../layouts/Layout.astro';
     .agua-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
+      gap: 16px;
     }
 
     @media (max-width: 768px) {
@@ -46,9 +46,10 @@ import Layout from '../layouts/Layout.astro';
 
     .agua-card {
       background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
+      border: 3px solid var(--color-border);
+      border-radius: 0;
       padding: 1.5rem;
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .agua-card h2 {
@@ -94,9 +95,9 @@ import Layout from '../layouts/Layout.astro';
     }
 
     .agua-tip {
-      background: rgba(212, 232, 73, 0.15);
-      border: 1px solid var(--color-limon);
-      border-radius: 6px;
+      background: var(--color-limon);
+      border: 3px solid var(--color-border);
+      border-radius: 0;
       padding: 1rem;
       margin-top: 1rem;
     }

@@ -16,14 +16,14 @@ let top3Riesgos = [];
   <style is:global>
   /* HERO MINIMALISTA ARC STYLE */
   .hero-section {
-    min-height: 60vh;
+    min-height: 40vh;
     display: flex !important;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 120px 24px 60px;
-    gap: 24px;
+    padding: 50px 24px 30px;
+    gap: 16px;
     visibility: visible !important;
     opacity: 1 !important;
   }
@@ -58,24 +58,24 @@ let top3Riesgos = [];
   .hero-cta {
     display: inline-flex !important;
     align-items: center;
-    background: #1C1C1C !important;
-    color: #ffffff !important;
-    padding: 16px 32px;
-    border-radius: 16px;
+    background: var(--color-limon) !important;
+    color: var(--color-aceituna) !important;
+    padding: 14px 28px;
+    border-radius: 0;
     font-family: 'Outfit', system-ui, sans-serif;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    border: 3px solid var(--color-border);
+    box-shadow: 4px 4px 0 var(--color-border);
+    transition: all 0.15s ease;
     animation: heroFadeIn 0.8s ease-out 0.3s both;
     visibility: visible !important;
   }
 
   .hero-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    opacity: 0.9;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--color-border);
   }
 
   @keyframes heroFadeIn {
@@ -91,9 +91,9 @@ let top3Riesgos = [];
 
   @media (max-width: 640px) {
     .hero-section {
-      min-height: 35vh;
-      padding: 60px 16px 20px;
-      gap: 12px;
+      min-height: 30vh;
+      padding: 40px 16px 20px;
+      gap: 10px;
     }
     .hero-title {
       font-size: 1.75rem !important;
@@ -108,9 +108,9 @@ let top3Riesgos = [];
     display: grid;
     grid-template-columns: 60fr 40fr;
     grid-template-rows: auto auto;
-    gap: 8px;
+    gap: 4px;
     max-width: 1200px;
-    margin: 3px auto 1.5rem;
+    margin: 2px auto 1rem;
     padding: 0 1rem;
     align-items: start;
   }
@@ -121,7 +121,7 @@ let top3Riesgos = [];
     }
 
     .mapa-card :global(#mapa-container) {
-      height: 580px;
+      height: 400px;
     }
 
     .sidebar-panels {
@@ -133,8 +133,8 @@ let top3Riesgos = [];
 
   .panel-card {
     background: var(--color-white-surface);
-    border: 2px solid var(--color-border);
-    border-radius: 6px;
+    border: 3px solid var(--color-border);
+    border-radius: 0;
     padding: 16px;
   }
 
@@ -151,8 +151,8 @@ let top3Riesgos = [];
   .panel-select {
     width: 100%;
     padding: 10px 12px;
-    border: 2px solid var(--color-border);
-    border-radius: 4px;
+    border: 3px solid var(--color-border);
+    border-radius: 0;
     background: var(--color-sal);
     color: var(--color-aceituna);
     font-size: 14px;
@@ -192,7 +192,7 @@ let top3Riesgos = [];
       grid-row: auto;
     }
     .mapa-card :global(#mapa-container) {
-      height: 350px;
+      height: 280px;
     }
     .sidebar-panels {
       grid-column: 1;
@@ -201,12 +201,12 @@ let top3Riesgos = [];
 
   @media (max-width: 600px) {
     .bento-grid {
-      gap: 6px;
+      gap: 4px;
       margin: 2px auto 1rem;
       padding: 0 0.5rem;
     }
     .mapa-card :global(#mapa-container) {
-      height: 280px;
+      height: 220px;
     }
     .panel-card {
       padding: 12px;
@@ -409,30 +409,31 @@ let top3Riesgos = [];
     }
 
     /* SECTION VALUES */
-    .section-values { background-color: var(--color-sal); padding: 4rem 0; }
+    .section-values { background-color: var(--color-sal); padding: 2.5rem 0; }
 
     .values-title {
       text-align: center;
       font-size: 1.875rem;
       font-weight: 700;
       color: var(--color-aceituna);
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
       font-family: 'Literata', Georgia, serif;
     }
 
     .values-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
+      gap: 1rem;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 1rem;
     }
 
     .value-card {
-      border-radius: 6px;
-      padding: 2rem;
-      border-top: 3px solid var(--color-aceituna);
+      border-radius: 0;
+      padding: 1.5rem;
+      border: 3px solid var(--color-border);
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .value-card.light { background-color: var(--color-white-surface); }
@@ -536,14 +537,14 @@ let top3Riesgos = [];
     .step-desc { color: var(--color-muted); font-size: 0.875rem; margin-top: 0.5rem; }
 
     /* SECTION SIGNUP */
-    .section-signup { background-color: var(--color-muted); padding: 4rem 0; }
+    .section-signup { background-color: var(--color-muted); padding: 2.5rem 0; }
 
     .signup-content {
       text-align: center;
       color: var(--color-sal);
       max-width: 600px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 1rem;
     }
 
     .signup-title { font-size: 1.875rem; font-weight: 700; font-family: 'Literata', Georgia, serif; }
@@ -556,9 +557,9 @@ let top3Riesgos = [];
       background-color: var(--color-sal);
       color: var(--color-aceituna);
       padding: 0.75rem 1rem;
-      border-radius: 4px;
+      border-radius: 0;
       width: 16rem;
-      border: none;
+      border: 3px solid var(--color-border);
     }
 
     .signup-input::placeholder { color: var(--color-muted); }
@@ -567,13 +568,14 @@ let top3Riesgos = [];
       background-color: var(--color-limon);
       color: var(--color-aceituna);
       padding: 0.75rem 1.5rem;
-      border-radius: 4px;
+      border-radius: 0;
       font-weight: 700;
-      border: none;
+      border: 3px solid var(--color-border);
+      box-shadow: 4px 4px 0 var(--color-border);
       cursor: pointer;
     }
 
-    .signup-btn:hover { opacity: 0.9; }
+    .signup-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--color-border); }
 
     .signup-footer { font-size: 0.875rem; color: rgba(247,244,238,0.6); margin-top: 1rem; }
 
@@ -594,7 +596,7 @@ let top3Riesgos = [];
     .mapa-container { border-radius: 6px; height: 100%; }
 
     /* DECISIONES RÁPIDAS */
-    .decisiones-rapidas { background: var(--color-aceituna); padding: 3rem 1rem; }
+    .decisiones-rapidas { background: var(--color-aceituna); padding: 2.5rem 1rem; }
 
     .decisiones-container { max-width: 1200px; margin: 0 auto; }
 
@@ -603,7 +605,7 @@ let top3Riesgos = [];
       font-size: 24px;
       color: var(--color-sal);
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .decisiones-grid {
@@ -618,9 +620,10 @@ let top3Riesgos = [];
 
     .decision-card {
       background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
+      border: 3px solid var(--color-border);
+      border-radius: 0;
       padding: 20px;
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .decision-card.temp { border-left: 4px solid var(--color-limon); }
@@ -1012,9 +1015,10 @@ let top3Riesgos = [];
 
     .climolive-card {
       background: rgba(247,244,238,0.1);
-      border: 1px solid rgba(247,244,238,0.2);
-      border-radius: 8px;
+      border: 3px solid var(--color-sal);
+      border-radius: 0;
       padding: 1.5rem;
+      box-shadow: 4px 4px 0 var(--color-sal);
     }
 
     .climolive-flag {
@@ -1042,7 +1046,7 @@ let top3Riesgos = [];
     /* RECOMENDACIONES PRÁCTICAS SECTION */
     .section-recomendaciones {
       background: var(--color-sal);
-      padding: 4rem 1rem;
+      padding: 2.5rem 1rem;
     }
 
     .recomendaciones-container {
@@ -1061,7 +1065,7 @@ let top3Riesgos = [];
     .recomendaciones-subtitle {
       color: var(--color-muted);
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .recomendaciones-grid {
@@ -1080,9 +1084,10 @@ let top3Riesgos = [];
 
     .recom-card {
       background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
+      border: 3px solid var(--color-border);
+      border-radius: 0;
       padding: 1.5rem;
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .recom-icon {
@@ -1133,7 +1138,7 @@ let top3Riesgos = [];
     /* PRECIOS SECTION */
     .section-precios {
       background: var(--color-sal);
-      padding: 4rem 1rem;
+      padding: 2.5rem 1rem;
     }
 
     .precios-container {
@@ -1151,7 +1156,7 @@ let top3Riesgos = [];
 
     .precios-subtitle {
       color: var(--color-muted);
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .precios-grid {
@@ -1167,9 +1172,10 @@ let top3Riesgos = [];
 
     .precio-card {
       background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
+      border: 3px solid var(--color-border);
+      border-radius: 0;
       padding: 1.5rem;
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .precio-header {

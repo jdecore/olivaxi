@@ -5,15 +5,27 @@ import clima from "./routes/clima";
 import chat from "./routes/chat";
 import alertas from "./routes/alertas";
 import analisis from "./routes/analisis";
+import { ejecutarCheckAlertas } from "./services/cronAlertas";
 
 const app = new Hono();
 
 // Rate limiting simple en memoria (resetea cada hora)
+// EXCLUIR las peticiones del CRON interno (header X-Internal-Cron)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 100; // requests por hora
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hora
+const RATE_LIMIT = 100;
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
+
+const isInternalCron = (c: any): boolean => {
+  return c.req.header('X-Internal-Cron') === 'true';
+};
 
 const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
+  // Skip rate limit para CRON interno
+  if (isInternalCron(c)) {
+    await next();
+    return;
+  }
+  
   const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
   const now = Date.now();
   
@@ -67,14 +79,13 @@ app.get("/", (c) => c.text("OK"));
 
 console.log("API olivaξ corriendo en :3000");
 
-const ALERTAS_CHECK_INTERVAL = 15 * 60 * 1000; // 15 minutos
+// CRON - Llamar directamente a la función de check (sin HTTP)
+const ALERTAS_CHECK_INTERVAL = 15 * 60 * 1000;
 setInterval(async () => {
-  console.log("[CRON] Verificando temperaturas...");
-  const apiUrl = process.env.PUBLIC_API_URL || "http://localhost:3000";
+  console.log("[CRON] Verificando alertas de clima...");
   try {
-    const res = await fetch(`${apiUrl}/api/alertas/check`, { method: "POST" });
-    const data = await res.json();
-    console.log("[CRON] Resultado:", data);
+    const resultado = await ejecutarCheckAlertas();
+    console.log("[CRON] Resultado:", resultado);
   } catch (e) {
     console.log("[CRON] Error:", e);
   }

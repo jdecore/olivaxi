@@ -8,6 +8,16 @@ const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 20;
 const RATE_WINDOW = 60 * 1000;
 
+// Skills disponibles para el chat
+const SKILL_PROMPTS: Record<string, string> = {
+  drought: 'Eres un experto en gestión del estrés hídrico en olivares. Enfoca tus respuestas en técnicas de riego, cubiertas vegetales, y manejo del suelo para conservar agua. Da recomendaciones específicas para la situación actual.',
+  calor: 'Eres un experto en protección térmica de olivares. Enfoca tus respuestas en estrategias de sombreo, riego temprano, protección contra olas de calor extremas, y mulch. Considera la variedad del usuario si se menciona.',
+  frio: 'Eres un experto en protección contra heladas en olivares. Enfoca tus respuestas en técnicas de protección, momento de poda, prevención de daños por frío, y manejo de árboles dañados.',
+  humedad: 'Eres un experto en enfermedades fúngicas del olivo. Enfoca tus respuestas en repilo, aceituna jabonosa, verticilosis, control de humedad, y tratamientos preventivos con fungicidas.',
+  plaga: 'Eres un experto en control de plagas del olivo. Enfoca tus respuestas en mosca del olivo, polilla, tuberculosis, barrenillo, y control integrado de plagas (IPM).',
+  fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: reposo (nov-ene), brotación (feb-mar), floración (abr-may), cuaje (may-jun), endurecimiento del hueso (jun-ago), envero (sep-oct), y recolección (oct-nov).',
+};
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const record = rateLimit.get(ip);
@@ -35,6 +45,8 @@ chat.post("/", async (c) => {
   const bodyRaw = await c.req.json().catch(() => ({}));
   const mensajeRaw = bodyRaw.mensaje || '';
   const provinciaRaw = bodyRaw.provincia || '';
+  const skillRaw = bodyRaw.skill || '';
+  const systemPromptRaw = bodyRaw.systemPrompt || '';
 
   // Validación de inputs
   if (!mensajeRaw || typeof mensajeRaw !== 'string') {
@@ -43,6 +55,7 @@ chat.post("/", async (c) => {
 
   const mensaje = mensajeRaw.replace(/[<>'";]/g, '').trim().slice(0, 1000);
   const provincia = provinciaRaw.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, '').trim().slice(0, 50);
+  const skill = SKILL_PROMPTS[skillRaw] || '';
 
   if (mensaje.length < 2) {
     return c.json({ error: "Mensaje demasiado corto" }, 400);
@@ -59,7 +72,8 @@ chat.post("/", async (c) => {
   const provinciaInfo = climaHoy.find((p: any) => p.provincia === provincia) || climaHoy[0];
   const provinciaNombre = provinciaInfo?.provincia || provincia || 'Andalucía';
 
-  const systemPrompt = `Eres Olivo, consejero experto en olivicultura española, especialmente Andalucía.
+  // Construir el systemPrompt base
+  let basePrompt = `Eres Olivo, consejero experto en olivicultura española, especialmente Andalucía.
 Provincia actual: ${provinciaNombre}
 Datos climáticos actuales: ${JSON.stringify(climaHoy)}
 Reglas IMPORTANTES:
@@ -69,6 +83,25 @@ Reglas IMPORTANTES:
 - NUNCA termines una frase a mitad
 - SIEMPRE termina con un punto final completo
 - Máximo 5 párrafos`;
+
+  // Añadir skill específico si está activo
+  if (skill) {
+    basePrompt = `Eres Olivo, consejero experto en olivicultura española.
+${skill}
+Provincia actual: ${provinciaNombre}
+Datos climáticos actuales: ${JSON.stringify(climaHoy)}
+Reglas:
+- Responde en español
+- Da consejos prácticos y específicos para el tema
+- Máximo 4 párrafos`;
+  }
+
+  // Añadir systemPrompt personalizado del frontend (para casos específicos)
+  if (systemPromptRaw) {
+    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nDatos climáticos: ${JSON.stringify(climaHoy)}`;
+  }
+
+  const systemPrompt = basePrompt;
 
   const messages = [
     { role: "system", content: systemPrompt },
