@@ -765,6 +765,83 @@ let top3Riesgos = [];
       border: 3px solid var(--color-border);
     }
 
+    /* PREMIUM CARDS */
+    .premium-cards {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .cards-container {
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1rem;
+      }
+    }
+
+    .premium-card {
+      background: var(--color-white-surface);
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .premium-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-image {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon {
+      font-size: 3rem;
+    }
+
+    .card-content {
+      padding: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-category {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #6b6b60;
+      letter-spacing: 0.1em;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-aceituna);
+      margin: 0.4rem 0;
+    }
+
+    .card-text {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      margin: 0;
+    }
+
     /* CLIMOLIVEMED SECTION */
     .section-climolive {
       background: var(--color-aceituna);
@@ -1096,230 +1173,41 @@ let top3Riesgos = [];
     </div>
   )}
 
-  <!-- DECISIONES RÁPIDAS -->
-  <section class="decisiones-rapidas">
-    <div class="decisiones-container">
-      <h2 class="decisiones-title">⚡ Qué hacer hoy</h2>
-      <div class="decisiones-grid" id="decisiones-grid">
-        <div class="decisiones-placeholder">
-          <p>Selecciona tu provincia arriba para ver las recomendaciones.</p>
+  <!-- PREMIUM CARDS -->
+  <section class="premium-cards">
+    <div class="cards-container">
+      <a href="#" class="premium-card" style="cursor: default;">
+        <div class="card-image" style="background: linear-gradient(135deg, #D4E849 0%, #1C1C1C 100%);">
+          <span class="card-icon">🫒</span>
         </div>
-      </div>
-    </div>
-  </section>
+        <div class="card-content">
+          <span class="card-category">MERCADO</span>
+          <h3 class="card-title">Precio del aceite hoy</h3>
+          <p class="card-text">AOVE €8.45 (+2.3%)</p>
+        </div>
+      </a>
 
-  <!-- SECCIÓN 2 — Grid valores -->
-  <section class="section-values">
-    <h2 class="values-title">Todo lo que necesita tu olivar</h2>
-    <div class="values-grid">
-      <div class="value-card light">
-        <div class="value-icon">🌡️</div>
-        <h3>Clima en tiempo real</h3>
-        <p>Temperatura y riesgo por provincia cada 6 horas</p>
-      </div>
-      <div class="value-card dark">
-        <div class="value-icon">💬</div>
-        <h3>Consejero experto</h3>
-        <p>Respuestas basadas en el clima de hoy</p>
-      </div>
-      <div class="value-card dark">
-        <div class="value-icon">🧬</div>
-        <h3>Laboratorio de variedades</h3>
-        <p>Compara resistencia al calor y sequía</p>
-      </div>
-      <div class="value-card light">
-        <div class="value-icon">🔔</div>
-        <h3>Alertas por email</h3>
-        <p>Aviso cuando tu zona supere los 38°C</p>
-      </div>
-    </div>
-  </section>
+      <a href="/variedades" class="premium-card">
+        <div class="card-image" style="background: linear-gradient(135deg, #74B9FF 0%, #0984e3 100%);">
+          <span class="card-icon">🌍</span>
+        </div>
+        <div class="card-content">
+          <span class="card-category">CLIMA</span>
+          <h3 class="card-title">ClimOliveMed</h3>
+          <p class="card-text">Datos de España, Italia y Grecia</p>
+        </div>
+      </a>
 
-  <!-- SECCIÓN 3 — Banner CTA -->
-  <section class="section-cta">
-    <div class="cta-content">
-      <h2 class="cta-title">El calor extremo no avisa. Tú sí puedes.</h2>
-      <p class="cta-subtitle">
-        Regístrate gratis y recibe alertas cuando<br />
-        tu provincia entre en riesgo alto
-      </p>
-      <a href="/alertas" class="cta-btn">Quiero mis alertas →</a>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 4 — Cómo funciona -->
-  <section class="section-steps">
-    <h2 class="steps-title">Así funciona olivaξ</h2>
-    <div class="steps-container">
-      <div class="step">
-        <div class="step-number">01</div>
-        <div class="step-icon">📍</div>
-        <h3 class="step-title">Elige tu provincia</h3>
-        <p class="step-desc">Selecciona dónde están tus olivos</p>
-      </div>
-      <div class="step">
-        <div class="step-number">02</div>
-        <div class="step-icon">🌡️</div>
-        <h3 class="step-title">Monitoriza el clima</h3>
-        <p class="step-desc">Seguimos la temperatura en tiempo real</p>
-      </div>
-      <div class="step">
-        <div class="step-number">03</div>
-        <div class="step-icon">📧</div>
-        <h3 class="step-title">Recibe la alerta</h3>
-        <p class="step-desc">Te avisamos antes de que llegue el calor</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 5 — CTA cierre -->
-  <section class="section-signup">
-    <div class="signup-content">
-      <h2 class="signup-title">Recibe alertas de tu zona</h2>
-      <p class="signup-subtitle">Configura alertas en la página de alertas.</p>
-      <a href="/alertas" class="signup-btn" style="text-decoration: none; display: inline-block;">Activar alertas</a>
-      <p class="signup-footer">🔒 Solo te escribimos cuando tu zona esté en riesgo</p>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 6 — ClimOliveMed -->
-  <section class="section-climolive">
-    <div class="climolive-container">
-      <div class="climolive-header">
-        <span class="climolive-badge">🌍 Proyecto Internacional</span>
-        <h2 class="climolive-title">ClimOliveMed</h2>
-      </div>
-      <p class="climolive-desc">
-        olivaξ forma parte de <strong>ClimOliveMed</strong>, un proyecto de investigación colaboración entre España, Italia y Grecia para desarrollar estrategias de adaptación al cambio climático en el sector olivarero mediterráneo.
-      </p>
-      <div class="climolive-grid">
-        <div class="climolive-card">
-          <span class="climolive-flag">🇪🇸</span>
-          <h3>España</h3>
-          <p>Andalucía, Castilla-La Mancha, Extremadura</p>
+      <a href="/consejero" class="premium-card">
+        <div class="card-image" style="background: linear-gradient(135deg, #55EFC4 0%, #00b894 100%);">
+          <span class="card-icon">🛠️</span>
         </div>
-        <div class="climolive-card">
-          <span class="climolive-flag">🇮🇹</span>
-          <h3>Italia</h3>
-          <p>Puglia, Toscana, Sicilia</p>
+        <div class="card-content">
+          <span class="card-category">RECOMENDACIÓN</span>
+          <h3 class="card-title">Técnicas de adaptación</h3>
+          <p class="card-text">Cubiertas, biochar, riego inteligente</p>
         </div>
-        <div class="climolive-card">
-          <span class="climolive-flag">🇬🇷</span>
-          <h3>Grecia</h3>
-          <p>Peloponeso, Creta, Macedonia</p>
-        </div>
-      </div>
-      <p class="climolive-note">🔬 Datos climáticos combinados de 3 países para mejores predicciones</p>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 7 — Recomendaciones Prácticas -->
-  <section class="section-recomendaciones">
-    <div class="recomendaciones-container">
-      <h2 class="recomendaciones-title">🛠️ Recomendaciones Prácticas</h2>
-      <p class="recomendaciones-subtitle">Técnicas probadas para adaptar tu olivar al cambio climático</p>
-      
-      <div class="recomendaciones-grid">
-        <div class="recom-card">
-          <div class="recom-icon">🌿</div>
-          <h3>Cubiertas Vegetales</h3>
-          <p>Siembra especies rastreras entre calles para:</p>
-          <ul>
-            <li>Reducir evaporación del suelo 20-30%</li>
-            <li>Capturar CO2 y mejorar materia orgánica</li>
-            <li>Controlar erosión en pendientes</li>
-          </ul>
-          <span class="recom-ideal">Ideal: Legumes + gramíneas</span>
-        </div>
-        
-        <div class="recom-card">
-          <div class="recom-icon">⬛</div>
-          <h3>Biochar</h3>
-          <p>Carón vegetal para:</p>
-          <ul>
-            <li>Aumentar capacidad de retención de agua</li>
-            <li>Activar microbioma del suelo</li>
-            <li>Secuestrar carbono décadas</li>
-          </ul>
-          <span class="recom-ideal">Dosis: 2-5 ton/ha</span>
-        </div>
-        
-        <div class="recom-card">
-          <div class="recom-icon">💧</div>
-          <h3>Riego Inteligente</h3>
-          <p>Sistemas de riego eficiente:</p>
-          <ul>
-            <li>Goteo subsuperficial 4L/h/árbol</li>
-            <li>Sensores de humedad en tiempo real</li>
-            <li>Programación basada en evapotranspiración</li>
-          </ul>
-          <span class="recom-ideal">Ahorro: hasta 40% agua</span>
-        </div>
-        
-        <div class="recom-card">
-          <div class="recom-icon">🌳</div>
-          <h3>Poda de Formación</h3>
-          <p>Adaptación del canopy:</p>
-          <ul>
-            <li>Copas más aireadas para reducir humedad</li>
-            <li>Altura reducida para facilitar recolección</li>
-            <li>Podas suaves anuales vs podas severas</li>
-          </ul>
-          <span class="recom-ideal">Reducción de enfermedades fúngicas</span>
-        </div>
-        
-        <div class="recom-card">
-          <div class="recom-icon">🪨</div>
-          <h3>Manejo del Suelo</h3>
-          <p>Técnicas de conservación:</p>
-          <ul>
-            <li>Laboreo mínimo o nulo</li>
-            <li>Mantillo de restos de poda</li>
-            <li>Contour farming en pendientes</li>
-          </ul>
-          <span class="recom-ideal">Mejora infiltración agua lluvia</span>
-        </div>
-        
-        <div class="recom-card">
-          <div class="recom-icon">🌡️</div>
-          <h3>Monitoreo Continuo</h3>
-          <p>Tecnologías aplicadas:</p>
-          <ul>
-            <li>Drones para detección temprana estrés</li>
-            <li>Estaciones meteorológicas locales</li>
-            <li>Apps de alerta en tiempo real</li>
-          </ul>
-          <span class="recom-ideal">Toma de decisiones basada en datos</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 8 — Precios del Aceite -->
-  <section class="section-precios">
-    <div class="precios-container">
-      <h2 class="precios-title">🫒 Precios del Aceite de Oliva</h2>
-      <p class="precios-subtitle">Precios medios en origen (€/kg) - Actualizado semanalmente</p>
-      
-      <div class="precios-grid">
-        <div class="precio-card">
-          <div class="precio-header">Virgen Extra (AOVE)</div>
-          <div class="precio-value">€8.45</div>
-          <div class="precio-change positivo">+2.3% vs mes anterior</div>
-        </div>
-        <div class="precio-card">
-          <div class="precio-header">Aceite Virgen</div>
-          <div class="precio-value">€7.12</div>
-          <div class="precio-change negativo">-1.8% vs mes anterior</div>
-        </div>
-        <div class="precio-card">
-          <div class="precio-header">Aceite Lampante</div>
-          <div class="precio-value">€5.68</div>
-          <div class="precio-change negativo">-3.2% vs mes anterior</div>
-        </div>
-      </div>
-      
-      <p class="precios-note">📊 Fuente: Poolred + Oleista. Datos orientativos del mercado español. Consultar en almazara local para precio exacto.</p>
+      </a>
     </div>
   </section>
 </Layout>

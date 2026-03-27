@@ -13,6 +13,202 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// ============================================
+// LLM para Emails Personalizados - Alertas
+// ============================================
+const LLM_ALERTAS_PROVIDERS = [
+  {
+    name: "GeminiAlertas",
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    key: process.env.GEMINI_ALERTAS_KEY,
+    model: "gemini-2.0-flash",
+  },
+  {
+    name: "Cerebras1",
+    url: "https://api.cerebras.ai/v1/chat/completions",
+    key: process.env.CEREBRAS_KEY_1,
+    model: "llama3.1-70b",
+  },
+  {
+    name: "Cerebras2",
+    url: "https://api.cerebras.ai/v1/chat/completions",
+    key: process.env.CEREBRAS_KEY_2,
+    model: "llama3.1-70b",
+  },
+];
+
+interface ContextoAlerta {
+  nombre: string;
+  provincia: string;
+  variedad: string;
+  variedadNombre: string;
+  fenologia: string;
+  tipo: string;
+  temp: number;
+  humedad: number;
+  lluvia: number;
+  riesgos_olivar: {
+    frio: { nivel: string; descripcion: string };
+    calor: { nivel: string; descripcion: string };
+    baja_humedad: { nivel: string; descripcion: string };
+    alta_humedad: { nivel: string; descripcion: string };
+    baja_lluvia: { nivel: string; descripcion: string };
+    alta_lluvia: { nivel: string; descripcion: string };
+  };
+  riesgos_plaga: {
+    mosca: { nivel: string; descripcion: string };
+    polilla: { nivel: string; descripcion: string };
+    xylella: { nivel: string; descripcion: string };
+    repilo: { nivel: string; descripcion: string };
+  };
+  faseFenologica: string;
+}
+
+function construirPromptBienvenida(contexto: ContextoAlerta): string {
+  return `Eres un asistente experto en olivar y cambio climático. Escribe un email de bienvenida personalizado y cálido para un usuario que ha activado una alerta de olivar.
+
+INFORMACIÓN DEL USUARIO:
+- Nombre: ${contexto.nombre}
+- Provincia: ${contexto.provincia}
+- Variedad de olivo: ${contexto.variedadNombre}
+- Fase fenológica: ${contexto.faseFenologica}
+
+DATOS CLIMÁTICOS ACTUALES DE LA ZONA:
+- Temperatura: ${contexto.temp}°C
+- Humedad: ${contexto.humedad}%
+- Lluvia: ${contexto.lluvia}mm
+
+RIESGOS CLIMÁTICOS ACTUALES:
+- Frío: ${contexto.riesgos_olivar.frio.nivel} - ${contexto.riesgos_olivar.frio.descripcion}
+- Calor: ${contexto.riesgos_olivar.calor.nivel} - ${contexto.riesgos_olivar.calor.descripcion}
+- Humedad baja: ${contexto.riesgos_olivar.baja_humedad.nivel} - ${contexto.riesgos_olivar.baja_humedad.descripcion}
+- Humedad alta: ${contexto.riesgos_olivar.alta_humedad.nivel} - ${contexto.riesgos_olivar.alta_humedad.descripcion}
+
+RIESGOS DE PLAGAS:
+- Mosca del olivo: ${contexto.riesgos_plaga.mosca.nivel} - ${contexto.riesgos_plaga.mosca.descripcion}
+- Polilla: ${contexto.riesgos_plaga.polilla.nivel} - ${contexto.riesgos_plaga.polilla.descripcion}
+- Xylella: ${contexto.riesgos_plaga.xylella.nivel} - ${contexto.riesgos_plaga.xylella.descripcion}
+- Repilo: ${contexto.riesgos_plaga.repilo.nivel} - ${contexto.riesgos_plaga.repilo.descripcion}
+
+INSTRUCCIONES:
+1. Usa el nombre del usuario
+2. Menciona la variedad de olivo que tiene
+3. Da la bienvenida de manera cálida y profesional
+4. Explica brevemente qué recibirá (alertas cuando el clima afecte su cultivo)
+5. Añade 3-4 consejos prácticos basados en la situación climática actual de su zona
+6. Usa emojis relevantes para hacerlo más visual
+7. El email debe ser corto (máximo 200 palabras)
+8. Firma como "🫒 Equipo olivaξ"
+
+Devuelve SOLO el contenido HTML del body del email (sin etiquetas <html> ni <body>).`;
+}
+
+function construirPromptAlerta(contexto: ContextoAlerta): string {
+  return `Eres un asistente experto en olivar y cambio climático. Escribe un email de ALERTA URGENTE personalizada para un usuario cuyo olivar está en riesgo.
+
+INFORMACIÓN DEL USUARIO:
+- Nombre: ${contexto.nombre}
+- Provincia: ${contexto.provincia}
+- Variedad de olivo: ${contexto.variedadNombre}
+- Fase fenológica: ${contexto.faseFenologica}
+- Tipo de alerta activada: ${contexto.tipo}
+
+DATOS CLIMÁTICOS CRÍTICOS ACTUALES:
+- Temperatura: ${contexto.temp}°C
+- Humedad: ${contexto.humedad}%
+- Lluvia: ${contexto.lluvia}mm
+
+RIESGOS CLIMÁTICOS ACTIVOS:
+- Frío: ${contexto.riesgos_olivar.frio.nivel} - ${contexto.riesgos_olivar.frio.descripcion}
+- Calor: ${contexto.riesgos_olivar.calor.nivel} - ${contexto.riesgos_olivar.calor.descripcion}
+- Humedad baja: ${contexto.riesgos_olivar.baja_humedad.nivel} - ${contexto.riesgos_olivar.baja_humedad.descripcion}
+- Humedad alta: ${contexto.riesgos_olivar.alta_humedad.nivel} - ${contexto.riesgos_olivar.alta_humedad.descripcion}
+
+RIESGOS DE PLAGAS ASOCIADOS:
+- Mosca del olivo: ${contexto.riesgos_plaga.mosca.nivel}
+- Polilla: ${contexto.riesgos_plaga.polilla.nivel}
+- Repilo: ${contexto.riesgos_plaga.repilo.nivel}
+
+INSTRUCCIONES:
+1. Usa el nombre del usuario
+2. El asunto debe ser claro y urgente (ej: "🔥 ALERTA: Calor extremo en Jaén")
+3. Indica la temperatura actual y qué significa para su olivo
+4. Da 4-5 ACCIONES CONCRETAS Y URGENTES que debe tomar ahora mismo
+5. Considera su variedad de olivo específica al dar recomendaciones
+6. Menciona la fase fenológica actual si es relevante
+7. Usa emojis para hacerlo visual y urgente
+8. El email debe ser moderado (150-250 palabras)
+9. Firma como "🫒 Equipo olivaξ"
+
+Devuelve SOLO el contenido HTML del body del email (sin etiquetas <html> ni <body>).`;
+}
+
+async function generarEmailConLLM(
+  contexto: ContextoAlerta,
+  tipo: "bienvenida" | "alerta"
+): Promise<string | null> {
+  const prompt = tipo === "bienvenida"
+    ? construirPromptBienvenida(contexto)
+    : construirPromptAlerta(contexto);
+
+  const messages = [
+    { role: "system", content: "Eres un experto en olivar y comunicación con agricultores. Escribes emails claros, prácticos y útiles." },
+    { role: "user", content: prompt }
+  ];
+
+  const errors: Error[] = [];
+
+  for (const provider of LLM_ALERTAS_PROVIDERS) {
+    if (!provider.key) {
+      errors.push(new Error(`${provider.name} sin API key`));
+      continue;
+    }
+
+    try {
+      console.log(`[LLM-Alertas] Llamando a ${provider.name}...`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+      const response = await fetch(provider.url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${provider.key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: provider.model,
+          messages,
+          max_tokens: 1000,
+          temperature: 0.7,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`${provider.name} error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (content) {
+        console.log(`[LLM-Alertas] Email generado con ${provider.name}`);
+        return content;
+      }
+    } catch (e) {
+      console.error(`[LLM-Alertas] Error con ${provider.name}:`, e);
+      errors.push(e as Error);
+      continue;
+    }
+  }
+
+  console.error(`[LLM-Alertas] Todos los providers fallaron:`, errors.map(e => e.message).join(", "));
+  return null;
+}
+
 const VARIEDADES_INFO: Record<string, any> = {
   cornicabra: { nombre: "Cornicabra", clima: { frio: "muy-alta", calor: "muy-alta", sequia: "muy-alta", humedad_alta: "media" } },
   picual: { nombre: "Picual", clima: { frio: "alta", calor: "muy-alta", sequia: "media", humedad_alta: "baja" } },
