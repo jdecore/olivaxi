@@ -104,17 +104,37 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .alertas-section {
     background-color: var(--color-sal);
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
   }
 
   .alertas-form {
     background: #FFFFFF;
     border: 3px solid #1C1C1C;
     border-radius: 0;
-    padding: 2rem;
-    max-width: 28rem;
+    padding: 1.5rem;
+    max-width: 100%;
     margin: 0 auto;
     box-shadow: 6px 6px 0 #1C1C1C;
+  }
+
+  @media (max-width: 480px) {
+    .alertas-form {
+      padding: 1rem;
+      box-shadow: 4px 4px 0 #1C1C1C;
+    }
+    .alertas-hero h1 {
+      font-size: 1.5rem;
+    }
+    .form-field {
+      margin-bottom: 0.75rem;
+    }
+    .form-field label {
+      font-size: 0.75rem;
+    }
+    #btn-submit {
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
   }
 
   .form-field { margin-bottom: 1rem; }

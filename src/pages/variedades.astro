@@ -615,6 +615,51 @@ const varieties = [
     font-weight: 700;
     font-size: 10px;
   }
+
+  @media (max-width: 768px) {
+    .var-grid {
+      grid-template-columns: 1fr;
+      padding: 16px 12px;
+      gap: 12px;
+    }
+    .var-card {
+      padding: 14px;
+      box-shadow: 4px 4px 0 #1C1C1C;
+    }
+    .var-header {
+      padding: 1.5rem 1rem;
+      margin-top: 50px;
+    }
+    .var-title {
+      font-size: 1.5rem;
+    }
+    .var-subtitle {
+      font-size: 0.85rem;
+    }
+    .var-filters {
+      padding: 1rem 0.5rem;
+      gap: 6px;
+    }
+    .filter-btn {
+      padding: 6px 10px;
+      font-size: 10px;
+    }
+    .compare-panel {
+      padding: 1rem;
+      margin: 1rem;
+    }
+    .compare-table {
+      font-size: 11px;
+    }
+    .compare-title {
+      font-size: 1rem;
+      padding-right: 0;
+    }
+    .clear-btn {
+      position: static;
+      margin-bottom: 1rem;
+    }
+  }
 </style>
 
 <script>

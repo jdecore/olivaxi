@@ -91,8 +91,15 @@ let top3Riesgos = [];
 
   @media (max-width: 640px) {
     .hero-section {
-      min-height: 50vh;
-      padding: 100px 20px 40px;
+      min-height: 35vh;
+      padding: 60px 16px 20px;
+      gap: 12px;
+    }
+    .hero-title {
+      font-size: 1.75rem !important;
+    }
+    .hero-subtitle {
+      font-size: 0.9rem !important;
     }
   }
 
@@ -184,8 +191,35 @@ let top3Riesgos = [];
     .mapa-card {
       grid-row: auto;
     }
+    .mapa-card :global(#mapa-container) {
+      height: 350px;
+    }
     .sidebar-panels {
       grid-column: 1;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .bento-grid {
+      gap: 6px;
+      margin: 2px auto 1rem;
+      padding: 0 0.5rem;
+    }
+    .mapa-card :global(#mapa-container) {
+      height: 280px;
+    }
+    .panel-card {
+      padding: 12px;
+    }
+    .panel-title {
+      font-size: 13px;
+    }
+    .panel-select {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    .panel-msg {
+      font-size: 11px;
     }
   }
 
@@ -903,15 +937,32 @@ let top3Riesgos = [];
 
     @media (max-width: 768px) {
       .premium-card {
-        flex: 0 0 calc(80% - 1rem);
-        min-width: 260px;
+        flex: 0 0 calc(85% - 1rem);
+        min-width: 240px;
+      }
+      .cards-nav-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
       }
     }
 
     /* CLIMOLIVEMED SECTION */
     .section-climolive {
       background: var(--color-aceituna);
-      padding: 4rem 1rem;
+      padding: 2rem 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .section-climolive {
+        padding: 1.5rem 0.75rem;
+      }
+      .climolive-title {
+        font-size: 1.5rem;
+      }
+      .climolive-desc {
+        font-size: 0.9rem;
+      }
     }
 
     .climolive-container {
