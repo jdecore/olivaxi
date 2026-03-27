@@ -1,9 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapaCalor from '../components/MapaCalor.astro';
-import AlertasClimaticas from '../components/AlertasClimaticas.astro';
-import AnalisisOlivar from '../components/AnalisisOlivar.astro';
-import AlertasPlagas from '../components/AlertasPlagas.astro';
 
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -767,6 +764,255 @@ let top3Riesgos = [];
       border-radius: 8px;
       border: 3px solid var(--color-border);
     }
+
+    /* CLIMOLIVEMED SECTION */
+    .section-climolive {
+      background: var(--color-aceituna);
+      padding: 4rem 1rem;
+    }
+
+    .climolive-container {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .climolive-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .climolive-badge {
+      display: inline-block;
+      background: var(--color-limon);
+      color: var(--color-aceituna);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .climolive-title {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 2rem;
+      color: var(--color-sal);
+      margin-top: 1rem;
+    }
+
+    .climolive-desc {
+      color: rgba(247,244,238,0.8);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+
+    .climolive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .climolive-grid { grid-template-columns: 1fr; }
+    }
+
+    .climolive-card {
+      background: rgba(247,244,238,0.1);
+      border: 1px solid rgba(247,244,238,0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .climolive-flag {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .climolive-card h3 {
+      color: var(--color-sal);
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .climolive-card p {
+      color: rgba(247,244,238,0.6);
+      font-size: 0.875rem;
+    }
+
+    .climolive-note {
+      color: rgba(247,244,238,0.6);
+      font-size: 0.875rem;
+    }
+
+    /* RECOMENDACIONES PRÁCTICAS SECTION */
+    .section-recomendaciones {
+      background: var(--color-sal);
+      padding: 4rem 1rem;
+    }
+
+    .recomendaciones-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .recomendaciones-title {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 1.75rem;
+      color: var(--color-aceituna);
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .recomendaciones-subtitle {
+      color: var(--color-muted);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .recomendaciones-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .recomendaciones-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .recomendaciones-grid { grid-template-columns: 1fr; }
+    }
+
+    .recom-card {
+      background: var(--color-white-surface);
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1.5rem;
+    }
+
+    .recom-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .recom-card h3 {
+      font-size: 1rem;
+      color: var(--color-aceituna);
+      margin-bottom: 0.5rem;
+    }
+
+    .recom-card p {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .recom-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .recom-card li {
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      padding: 4px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .recom-card li:last-child {
+      border-bottom: none;
+    }
+
+    .recom-ideal {
+      display: block;
+      margin-top: 0.75rem;
+      padding: 6px 12px;
+      background: var(--color-limon);
+      color: var(--color-aceituna);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* PRECIOS SECTION */
+    .section-precios {
+      background: var(--color-sal);
+      padding: 4rem 1rem;
+    }
+
+    .precios-container {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .precios-title {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 1.75rem;
+      color: var(--color-aceituna);
+      margin-bottom: 0.5rem;
+    }
+
+    .precios-subtitle {
+      color: var(--color-muted);
+      margin-bottom: 2rem;
+    }
+
+    .precios-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .precios-grid { grid-template-columns: 1fr; }
+    }
+
+    .precio-card {
+      background: var(--color-white-surface);
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1.5rem;
+    }
+
+    .precio-header {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .precio-value {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-aceituna);
+    }
+
+    .precio-change {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .precio-change.positivo {
+      background: rgba(34, 197, 94, 0.15);
+      color: #15803d;
+    }
+
+    .precio-change.negativo {
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+    }
+
+    .precios-note {
+      color: var(--color-muted);
+      font-size: 0.85rem;
+    }
   </style>
 
   <!-- HERO MINIMALISTA -->
@@ -935,6 +1181,147 @@ let top3Riesgos = [];
       <p class="signup-footer">🔒 Solo te escribimos cuando tu zona esté en riesgo</p>
     </div>
   </section>
+
+  <!-- SECCIÓN 6 — ClimOliveMed -->
+  <section class="section-climolive">
+    <div class="climolive-container">
+      <div class="climolive-header">
+        <span class="climolive-badge">🌍 Proyecto Internacional</span>
+        <h2 class="climolive-title">ClimOliveMed</h2>
+      </div>
+      <p class="climolive-desc">
+        olivaξ forma parte de <strong>ClimOliveMed</strong>, un proyecto de investigación colaboración entre España, Italia y Grecia para desarrollar estrategias de adaptación al cambio climático en el sector olivarero mediterráneo.
+      </p>
+      <div class="climolive-grid">
+        <div class="climolive-card">
+          <span class="climolive-flag">🇪🇸</span>
+          <h3>España</h3>
+          <p>Andalucía, Castilla-La Mancha, Extremadura</p>
+        </div>
+        <div class="climolive-card">
+          <span class="climolive-flag">🇮🇹</span>
+          <h3>Italia</h3>
+          <p>Puglia, Toscana, Sicilia</p>
+        </div>
+        <div class="climolive-card">
+          <span class="climolive-flag">🇬🇷</span>
+          <h3>Grecia</h3>
+          <p>Peloponeso, Creta, Macedonia</p>
+        </div>
+      </div>
+      <p class="climolive-note">🔬 Datos climáticos combinados de 3 países para mejores predicciones</p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 7 — Recomendaciones Prácticas -->
+  <section class="section-recomendaciones">
+    <div class="recomendaciones-container">
+      <h2 class="recomendaciones-title">🛠️ Recomendaciones Prácticas</h2>
+      <p class="recomendaciones-subtitle">Técnicas probadas para adaptar tu olivar al cambio climático</p>
+      
+      <div class="recomendaciones-grid">
+        <div class="recom-card">
+          <div class="recom-icon">🌿</div>
+          <h3>Cubiertas Vegetales</h3>
+          <p>Siembra especies rastreras entre calles para:</p>
+          <ul>
+            <li>Reducir evaporación del suelo 20-30%</li>
+            <li>Capturar CO2 y mejorar materia orgánica</li>
+            <li>Controlar erosión en pendientes</li>
+          </ul>
+          <span class="recom-ideal">Ideal: Legumes + gramíneas</span>
+        </div>
+        
+        <div class="recom-card">
+          <div class="recom-icon">⬛</div>
+          <h3>Biochar</h3>
+          <p>Carón vegetal para:</p>
+          <ul>
+            <li>Aumentar capacidad de retención de agua</li>
+            <li>Activar microbioma del suelo</li>
+            <li>Secuestrar carbono décadas</li>
+          </ul>
+          <span class="recom-ideal">Dosis: 2-5 ton/ha</span>
+        </div>
+        
+        <div class="recom-card">
+          <div class="recom-icon">💧</div>
+          <h3>Riego Inteligente</h3>
+          <p>Sistemas de riego eficiente:</p>
+          <ul>
+            <li>Goteo subsuperficial 4L/h/árbol</li>
+            <li>Sensores de humedad en tiempo real</li>
+            <li>Programación basada en evapotranspiración</li>
+          </ul>
+          <span class="recom-ideal">Ahorro: hasta 40% agua</span>
+        </div>
+        
+        <div class="recom-card">
+          <div class="recom-icon">🌳</div>
+          <h3>Poda de Formación</h3>
+          <p>Adaptación del canopy:</p>
+          <ul>
+            <li>Copas más aireadas para reducir humedad</li>
+            <li>Altura reducida para facilitar recolección</li>
+            <li>Podas suaves anuales vs podas severas</li>
+          </ul>
+          <span class="recom-ideal">Reducción de enfermedades fúngicas</span>
+        </div>
+        
+        <div class="recom-card">
+          <div class="recom-icon">🪨</div>
+          <h3>Manejo del Suelo</h3>
+          <p>Técnicas de conservación:</p>
+          <ul>
+            <li>Laboreo mínimo o nulo</li>
+            <li>Mantillo de restos de poda</li>
+            <li>Contour farming en pendientes</li>
+          </ul>
+          <span class="recom-ideal">Mejora infiltración agua lluvia</span>
+        </div>
+        
+        <div class="recom-card">
+          <div class="recom-icon">🌡️</div>
+          <h3>Monitoreo Continuo</h3>
+          <p>Tecnologías aplicadas:</p>
+          <ul>
+            <li>Drones para detección temprana estrés</li>
+            <li>Estaciones meteorológicas locales</li>
+            <li>Apps de alerta en tiempo real</li>
+          </ul>
+          <span class="recom-ideal">Toma de decisiones basada en datos</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 8 — Precios del Aceite -->
+  <section class="section-precios">
+    <div class="precios-container">
+      <h2 class="precios-title">🫒 Precios del Aceite de Oliva</h2>
+      <p class="precios-subtitle">Precios medios en origen (€/kg) - Actualizado semanalmente</p>
+      
+      <div class="precios-grid">
+        <div class="precio-card">
+          <div class="precio-header">Virgen Extra (AOVE)</div>
+          <div class="precio-value">€8.45</div>
+          <div class="precio-change positivo">+2.3% vs mes anterior</div>
+        </div>
+        <div class="precio-card">
+          <div class="precio-header">Aceite Virgen</div>
+          <div class="precio-value">€7.12</div>
+          <div class="precio-change negativo">-1.8% vs mes anterior</div>
+        </div>
+        <div class="precio-card">
+          <div class="precio-header">Aceite Lampante</div>
+          <div class="precio-value">€5.68</div>
+          <div class="precio-change negativo">-3.2% vs mes anterior</div>
+        </div>
+      </div>
+      
+      <p class="precios-note">📊 Fuente: Poolred + Oleista. Datos orientativos del mercado español. Consultar en almazara local para precio exacto.</p>
+    </div>
+  </section>
 </Layout>
 
 <script>
@@ -954,16 +1341,13 @@ let top3Riesgos = [];
     
     const alertas: {icon: string, text: string, level: string}[] = [];
     
-    const temp = datos?.temperatura || 0;
-    const humedad = datos?.humedad || 0;
-    const lluvia = datos?.lluvia || 0;
     const riesgos_olivar = datos?.riesgos_olivar || {};
     const riesgos_plaga = datos?.riesgos_plaga || {};
     const riesgos_variedad = datos?.riesgos_variedad || {};
 
-    // Usar datos del backend directamente
-    if (riesgos_variedad[variedad]) {
-      const rv = riesgos_variedad[variedad];
+    // Riesgos de la variedad seleccionada (del backend)
+    const rv = riesgos_variedad[variedad];
+    if (rv) {
       if (rv.nivel === 'crítico') {
         alertas.push({ icon: '🔴', text: `Riesgo crítico para ${variedad}`, level: 'high' });
         rv.detalle?.forEach((d: string) => alertas.push({ icon: '⚠️', text: d, level: 'high' }));
@@ -974,50 +1358,20 @@ let top3Riesgos = [];
     }
 
     // Riesgos del olivar (del backend)
-    if (riesgos_olivar?.calor?.nivel === 'alto') {
-      alertas.push({ icon: '🔥', text: riesgos_olivar.calor.descripcion, level: 'high' });
-    }
-    if (riesgos_olivar?.baja_humedad?.nivel === 'alto') {
-      alertas.push({ icon: '🏜️', text: riesgos_olivar.baja_humedad.descripcion, level: 'high' });
-    }
-    if (riesgos_olivar?.alta_humedad?.nivel === 'alto') {
-      alertas.push({ icon: '🦠', text: riesgos_olivar.alta_humedad.descripcion, level: 'high' });
-    }
-    if (riesgos_olivar?.baja_lluvia?.nivel === 'alto') {
-      alertas.push({ icon: '🏜️', text: riesgos_olivar.baja_lluvia.descripcion, level: 'high' });
-    }
-    if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') {
-      alertas.push({ icon: '🌊', text: riesgos_olivar.alta_lluvia.descripcion, level: 'high' });
-    }
+    const agregarRiesgo = (riesgo: any, icono: string, texto: string) => {
+      if (riesgo?.nivel === 'alto') alertas.push({ icon: icono, text: texto || riesgo.descripcion, level: 'high' });
+    };
+    agregarRiesgo(riesgos_olivar.calor, '🔥', '');
+    agregarRiesgo(riesgos_olivar.baja_humedad, '🏜️', '');
+    agregarRiesgo(riesgos_olivar.alta_humedad, '🦠', '');
+    agregarRiesgo(riesgos_olivar.baja_lluvia, '🏜️', '');
+    agregarRiesgo(riesgos_olivar.alta_lluvia, '🌊', '');
 
-    // Riesgos de plagas (del backend)
-    if (riesgos_plaga?.mosca?.nivel === 'alto') {
-      alertas.push({ icon: '🦟', text: `Mosca del olivo activa`, level: 'high' });
-    }
-    if (riesgos_plaga?.polilla?.nivel === 'alto') {
-      alertas.push({ icon: '🦋', text: `Polilla del olivo activa`, level: 'high' });
-    }
-    if (riesgos_plaga?.xylella?.nivel === 'alto') {
-      alertas.push({ icon: '🦠', text: `Xylella fastidiosa - Riesgo crítico`, level: 'high' });
-    }
-    if (riesgos_plaga?.repilo?.nivel === 'alto') {
-      alertas.push({ icon: '🍄', text: `Repilo activo`, level: 'high' });
-    }
-
-    // Alertas genéricas extremas
-    if (temp > 38) {
-      alertas.push({ icon: '🔥', text: `Ola de calor extrema (${temp}°C)`, level: 'high' });
-    } else if (temp > 35 && !alertas.find(a => a.text.includes('calor'))) {
-      alertas.push({ icon: '🌡️', text: `Temperatura alta (${temp}°C)`, level: 'medium' });
-    }
-
-    if (temp < 0) {
-      alertas.push({ icon: '❄️', text: `Helada (${temp}°C)`, level: 'high' });
-    }
-
-    if (lluvia > 20) {
-      alertas.push({ icon: '🌊', text: `Lluvia intensa (${lluvia}mm)`, level: 'high' });
-    }
+    // Riesgos de plagas
+    agregarRiesgo(riesgos_plaga.mosca, '🦟', 'Mosca activa');
+    agregarRiesgo(riesgos_plaga.polilla, '🦋', 'Polilla activa');
+    agregarRiesgo(riesgos_plaga.xylella, '🦠', 'Xylella - Riesgo crítico');
+    agregarRiesgo(riesgos_plaga.repilo, '🍄', 'Repilo activo');
 
     if (alertas.length === 0) {
       alertasPanel.innerHTML = `<p class="panel-msg" style="color: #22c55e;">✅ Sin alertas activas. Condiciones normales.</p>`;

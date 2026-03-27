@@ -20,6 +20,7 @@ db.exec(`
     provincia TEXT,
     variedad TEXT,
     tipo TEXT DEFAULT 'calor',
+    fenologia TEXT DEFAULT '',
     activa INTEGER DEFAULT 1,
     last_notified_at INTEGER DEFAULT 0,
     created_at INTEGER

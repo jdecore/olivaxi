@@ -38,12 +38,33 @@ const { title = "olivaξ" } = Astro.props;
       <div class="nav-left">
         <a href="/" class="logo">🫒 olivaξ</a>
       </div>
-      <div class="nav-center">
+      
+      <!-- Desktop nav -->
+      <div class="nav-center desktop-nav">
         <a href="/">Inicio</a>
         <a href="/consejero">Consejero</a>
         <a href="/variedades">Variedades</a>
+        <a href="/agua-suelos">Agua y Suelos</a>
         <a href="/plagas">Plagas</a>
       </div>
+
+      <!-- Mobile hamburger -->
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Dropdown menu -->
+      <div class="nav-dropdown" id="nav-dropdown">
+        <a href="/">🏠 Inicio</a>
+        <a href="/consejero">💬 Consejero</a>
+        <a href="/variedades">🫒 Variedades</a>
+        <a href="/agua-suelos">💧 Agua y Suelos</a>
+        <a href="/plagas">🔬 Plagas</a>
+        <a href="/alertas">🔔 Activar alertas</a>
+      </div>
+      
       <div class="nav-right">
         <a href="/alertas" class="btn-alerta-pill">🔔 Activar alerta</a>
       </div>
@@ -65,6 +86,23 @@ const { title = "olivaξ" } = Astro.props;
       (function() {
         const nav = document.querySelector('nav');
         let lastY = 0;
+
+        // Hamburger menu toggle
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const dropdown = document.getElementById('nav-dropdown');
+        
+        hamburgerBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hamburgerBtn.classList.toggle('active');
+          dropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !hamburgerBtn?.contains(e.target)) {
+            dropdown.classList.remove('active');
+            hamburgerBtn?.classList.remove('active');
+          }
+        });
         
         window.addEventListener('scroll', () => {
           const y = window.scrollY;
@@ -79,6 +117,23 @@ const { title = "olivaξ" } = Astro.props;
       })();
 
       document.addEventListener('astro:after-swap', () => {
+        // Hamburger menu toggle (re-init after navigation)
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const dropdown = document.getElementById('nav-dropdown');
+        
+        hamburgerBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hamburgerBtn.classList.toggle('active');
+          dropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !hamburgerBtn?.contains(e.target)) {
+            dropdown.classList.remove('active');
+            hamburgerBtn?.classList.remove('active');
+          }
+        });
+
         const nav = document.querySelector('nav');
         let lastY = 0;
         window.addEventListener('scroll', () => {
@@ -175,6 +230,95 @@ const { title = "olivaξ" } = Astro.props;
   .nav-center { 
     display: flex; 
     gap: 8px;
+  }
+
+  .desktop-nav {
+    display: flex;
+  }
+
+  @media (max-width: 768px) {
+    .desktop-nav { display: none; }
+    .nav-right { display: none; }
+  }
+
+  .hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    background: var(--color-sal);
+    border: 2px solid var(--color-aceituna);
+    border-radius: 8px;
+    cursor: pointer;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .hamburger-btn span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--color-aceituna);
+    border-radius: 1px;
+    transition: all 0.3s ease;
+  }
+
+  .hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(4px, 4px);
+  }
+
+  .hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(4px, -4px);
+  }
+
+  @media (max-width: 768px) {
+    .hamburger-btn { display: flex; }
+  }
+
+  .nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: #1a1a1a;
+    border: 2px solid var(--color-aceituna);
+    border-radius: 12px;
+    padding: 12px 0;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 200;
+  }
+
+  .nav-dropdown.active {
+    display: block;
+    animation: dropdownFade 0.2s ease;
+  }
+
+  @keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .nav-dropdown a {
+    display: block;
+    padding: 10px 20px;
+    color: #F7F4EE;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .nav-dropdown a:hover {
+    background: rgba(212, 232, 73, 0.15);
+    color: #D4E849;
   }
 
   .nav-center a {

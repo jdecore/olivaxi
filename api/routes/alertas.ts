@@ -63,6 +63,7 @@ alertas.post("/", async (c) => {
   const provinciaRaw = body.provincia || '';
   const variedadRaw = body.variedad || '';
   const tipoRaw = body.tipo || 'condiciones_optimas';
+  const fenologiaRaw = body.fenologia || '';
 
   // Validación
   if (!nombreRaw || !emailRaw || !provinciaRaw) {
@@ -74,6 +75,7 @@ alertas.post("/", async (c) => {
   const provincia = sanitizeStr(provinciaRaw, 50);
   const variedad = sanitizeStr(variedadRaw, 30);
   const tipo = VALID_TIPOS.includes(tipoRaw) ? sanitizeStr(tipoRaw, 30) : 'condiciones_optimas';
+  const fenologia = fenologiaRaw ? sanitizeStr(fenologiaRaw, 20) : '';
 
   if (!isValidEmail(email)) {
     return c.json({ error: "Email inválido" }, 400);
@@ -112,9 +114,9 @@ alertas.post("/", async (c) => {
   }
 
   const insert = db.query(
-    "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, activa, created_at) VALUES (?, ?, ?, ?, ?, 1, ?)"
+    "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
   );
-  insert.run(nombre, email, provincia, variedad || '', tipo, Date.now());
+  insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
 
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   console.log("[ALERTAS] GMAIL_PASS presente:", !!gmailPass);
@@ -131,6 +133,7 @@ alertas.post("/", async (c) => {
         html: `<p>Hola <strong>${nombre}</strong>,</p>
 <p>Tu alerta está activa en olivaξ para <strong>${provincia}</strong>.</p>
 ${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
+${fenologia ? `<p>Fase fenológica: <strong>${fenologia}</strong></p>` : ''}
 <p>Te avisaremos cuando las condiciones climáticas afecten a tu cultivo de olivo.</p>
 <p><strong>Consejos para condiciones actuales:</strong></p>
 <ul>${consejos.map(c => `<li>${c}</li>`).join('') || '<li>✅ Sin acciones necesarias</li>'}</ul>

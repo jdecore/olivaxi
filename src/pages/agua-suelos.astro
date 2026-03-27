@@ -1,0 +1,255 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Agua y Suelos - olivaξ">
+  <style is:global>
+    .agua-hero {
+      background: var(--color-aceituna);
+      color: var(--color-sal);
+      padding: 120px 1rem 4rem;
+      text-align: center;
+    }
+
+    .agua-hero h1 {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .agua-hero p {
+      color: rgba(247,244,238,0.8);
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 1.1rem;
+    }
+
+    .agua-section {
+      background: var(--color-sal);
+      padding: 3rem 1rem;
+    }
+
+    .agua-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .agua-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .agua-grid { grid-template-columns: 1fr; }
+    }
+
+    .agua-card {
+      background: var(--color-white-surface);
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1.5rem;
+    }
+
+    .agua-card h2 {
+      font-size: 1.25rem;
+      color: var(--color-aceituna);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .agua-card p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .agua-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+
+    .agua-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-muted);
+      font-size: 0.9rem;
+    }
+
+    .agua-list li:last-child { border-bottom: none; }
+
+    .agua-stat {
+      display: inline-block;
+      background: var(--color-limon);
+      color: var(--color-aceituna);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 8px;
+      margin-bottom: 4px;
+    }
+
+    .agua-tip {
+      background: rgba(212, 232, 73, 0.15);
+      border: 1px solid var(--color-limon);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .agua-tip-title {
+      font-weight: 700;
+      color: var(--color-aceituna);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .agua-tip p {
+      font-size: 0.85rem;
+      color: var(--color-muted);
+    }
+
+    .agua-full {
+      grid-column: 1 / -1;
+    }
+
+    .agua-full .agua-card {
+      background: var(--color-aceituna);
+      color: var(--color-sal);
+    }
+
+    .agua-full .agua-card h2 {
+      color: var(--color-sal);
+    }
+
+    .agua-full .agua-card p {
+      color: rgba(247,244,238,0.8);
+    }
+
+    .agua-full .agua-list li {
+      color: rgba(247,244,238,0.8);
+      border-color: rgba(247,244,238,0.2);
+    }
+  </style>
+
+  <section class="agua-hero">
+    <h1>💧 Agua y Suelos</h1>
+    <p>Gestión eficiente del agua y cuidado del suelo para olivares resilientes al cambio climático</p>
+  </section>
+
+  <section class="agua-section">
+    <div class="agua-container">
+      <div class="agua-grid">
+        <div class="agua-card">
+          <h2>💧 Gestión del Agua</h2>
+          <p>El olivo es tolerante a la sequía, pero el cambio climático está alterando los patrones de precipitación. Una gestión eficiente del agua es crucial.</p>
+          
+          <div class="agua-tip">
+            <div class="agua-tip-title">📊 Necesidades hídricas</div>
+            <p>Un olivo adulto necesita 1.000-1.500 mm/año. El riego deficitario puede reducir el consumo hasta 40% sin pérdidas significativas de rendimiento.</p>
+          </div>
+        </div>
+
+        <div class="agua-card">
+          <h2>🪨 Tipos de Suelo</h2>
+          <p>El olivo se adapta a diversos suelos, pero prospera en profundo, bien drenado y con buena capacidad de retención de agua.</p>
+          
+          <ul class="agua-list">
+            <li><span class="agua-stat">ÓPTIMO</span> Franco-arcilloso con buen drenaje</li>
+            <li><span class="agua-stat">BUENO</span> Suelos calcáreos (hasta 40% caliza)</li>
+            <li><span class="agua-stat">LIMITADO</span> Suelos muy arcillosos (>50%)</li>
+            <li><span class="agua-stat">PROBLEMA</span> Suelos encharcadizos</li>
+          </ul>
+        </div>
+
+        <div class="agua-card">
+          <h2>🌱 Materia Orgánica</h2>
+          <p>La materia orgánica mejora la estructura del suelo, la capacidad de retención de agua y la disponibilidad de nutrientes.</p>
+          
+          <ul class="agua-list">
+            <li>✅ Objetivo: >2% materia orgánica</li>
+            <li>📈 Medios actuales: 0.5-1.5%</li>
+            <li>🧪 Enmienda: Compost, estiércol, biochar</li>
+            <li>🌿 Cubiertas vegetales incrementan 0.5%/año</li>
+          </ul>
+
+          <div class="agua-tip">
+            <div class="agua-tip-title">💡 Dato clave</div>
+            <p>Cada 1% de materia orgánica aumenta la capacidad de retención de agua en 20.000 litros/ha.</p>
+          </div>
+        </div>
+
+        <div class="agua-card">
+          <h2>🔬 Análisis de Suelo</h2>
+          <p>Antes de fertilizar o enmendar, realiza un análisis de suelo para conocer los niveles de nutrientes y pH.</p>
+          
+          <ul class="agua-list">
+            <li><span class="agua-stat">pH</span> Óptimo: 6.5-8.5</li>
+            <li><span class="agua-stat">N</span> Nitrógeno: 20-40 ppm</li>
+            <li><span class="agua-stat">P</span> Fósforo: 10-25 ppm</li>
+            <li><span class="agua-stat">K</span> Potasio: 150-300 ppm</li>
+          </ul>
+        </div>
+
+        <div class="agua-card">
+          <h2>🛠️ Riego por Goteo</h2>
+          <p>El sistema de riego por goteo es el más eficiente para olivares. Permite un control preciso del agua y la fertilización.</p>
+          
+          <ul class="agua-list">
+            <li>💧 Caudal recomendado: 4 L/h/árbol</li>
+            <li>⏱️ Frecuencia: 2-3 veces/semana</li>
+            <li>📏 Laterales: 1 por hilera</li>
+            <li>🔧 Goteros: 2-4 por árbol</li>
+          </ul>
+
+          <div class="agua-tip">
+            <div class="agua-tip-title">⚡ Ahorro</div>
+            <p>El goteo consume 30-40% menos agua que el riego por gravedad.</p>
+          </div>
+        </div>
+
+        <div class="agua-card">
+          <h2>🧪 Calidad del Agua</h2>
+          <p>La calidad del agua de riego afecta directamente la salud del olivo y la calidad del aceite.</p>
+          
+          <ul class="agua-list">
+            <li><span class="agua-stat">CE</span> Conductividad: &lt;4 dS/m</li>
+            <li><span class="agua-stat">SAR</span> Sodio: &lt;10 meq/L</li>
+            <li><span class="agua-stat">CL</span> Cloruros: &lt;400 mg/L</li>
+            <li><span class="agua-stat">pH</span> Agua: 6.5-8.0</li>
+          </ul>
+        </div>
+
+        <div class="agua-card agua-full">
+          <h2>🛡️ Prácticas de Conservación</h2>
+          <p>Técnicas recomendadas para mejorar la infiltración y retención de agua en el suelo:</p>
+          
+          <ul class="agua-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 20px;">
+            <li><strong>🌿 Cubiertas vegetales</strong><br/>Entre filas, reducen escorrentía 50%</li>
+            <li><strong>⬛ Biochar</strong><br/>Aumenta retención de agua 3x</li>
+            <li><strong>🪵 Mulching</strong><br/>Mantillo de paja o restos de poda</li>
+            <li><strong>🪨 Laboreo mínimo</strong><br/>Conservar estructura del suelo</li>
+            <li><strong>📐 Contour farming</strong><br/>Cultivo siguiendo curvas de nivel</li>
+            <li><strong>💧 Zanjas de infiltración</strong><br/>Captura agua de escorrentía</li>
+          </ul>
+        </div>
+
+        <div class="agua-card">
+          <h2>🌡️ Adaptación al Cambio Climático</h2>
+          <p>Estrategias para gestionar el estrés hídrico:</p>
+          
+          <ul class="agua-list">
+            <li>📅 Riego deficitario controlado</li>
+            <li>🌳 Poda para reducir área foliar</li>
+            <li>🛡️ Protectores solares para frutos</li>
+            <li>📊 Monitorización con sensores</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

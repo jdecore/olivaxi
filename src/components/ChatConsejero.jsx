@@ -34,6 +34,25 @@ export default function ChatConsejero() {
   const [typingMessageId, setTypingMessageId] = createSignal(null);
   const [chatStarted, setChatStarted] = createSignal(false); // Para contar desde primera pregunta real
   const [showMemoryModal, setShowMemoryModal] = createSignal(false);
+  const [activeSkill, setActiveSkill] = createSignal(null);
+  
+  const SKILLS = [
+    { id: 'drought', label: '🏜️ Sequía', desc: 'Gestión del estrés hídrico' },
+    { id: 'calor', label: '🔥 Calor', desc: 'Protección contra olas de calor' },
+    { id: 'frio', label: '❄️ Frío', desc: 'Protección contra heladas' },
+    { id: 'humedad', label: '💧 Humedad', desc: 'Enfermedades fúngicas' },
+    { id: 'plagas', label: '🐛 Plagas', desc: 'Control de insectos' },
+    { id: 'fenologia', label: '🌱 Fenología', desc: 'Ciclos de crecimiento' },
+  ];
+
+  const SKILL_PROMPTS = {
+    drought: 'Eres un experto en gestión del estrés hídrico en olivares. Enfoca tus respuestas en técnicas de riego, cubiertas vegetales, y manejo del suelo para conservar agua.',
+    calor: 'Eres un experto en protección térmica de olivares. Enfoca tus respuestas en estrategias de sombreo, riego temprano, y protección contra olas de calor extremas.',
+    frio: 'Eres un experto en protección contra heladas en olivares. Enfoca tus respuestas en técnicas de protección, momento de poda, y prevención de daños por frío.',
+    humedad: 'Eres un experto en enfermedades fúngicas del olivo. Enfoca tus respuestas en repilo, aceituna jabonosa, control de humedad, y tratamientos preventivos.',
+    plaga: 'Eres un experto en control de plagas del olivo. Enfoca tus respuestas en mosca, polilla, tuberculosis, y control integrado de plagas.',
+    fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: brotación, floración, cuaje, endurecimiento del hueso, envero, recolección.',
+  };
   
   let typingInterval;
   let messagesEndRef;
@@ -161,7 +180,8 @@ export default function ChatConsejero() {
     scrollToBottom();
 
     try {
-      const res = await fetch(apiUrl('/api/chat'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mensaje: pregunta, provincia: provincia() }) });
+      const skillPrompt = activeSkill() ? SKILL_PROMPTS[activeSkill()] : '';
+      const res = await fetch(apiUrl('/api/chat'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt }) });
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -240,6 +260,15 @@ export default function ChatConsejero() {
     const map = { regar: `¿Debo regar hoy en ${prov} con ${clima.temperatura}°C y riesgo ${clima.riesgo}?`, clima: `¿Cómo afecta el clima actual (${clima.temperatura}°C, riesgo ${clima.riesgo}) a los olivares en ${prov}?`, semana: `¿Qué debo hacer esta semana en mis olivares de ${prov} considerando que hay ${clima.temperatura}°C y riesgo ${clima.riesgo}?` };
     setInput(map[tipo]);
     enviarPregunta();
+  };
+
+  const selectSkill = (skillId) => {
+    if (activeSkill() === skillId) {
+      setActiveSkill(null);
+    } else {
+      setActiveSkill(skillId);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'bot', text: `🔧 Skill activado: ${SKILLS.find(s => s.id === skillId)?.label}. ${SKILLS.find(s => s.id === skillId)?.desc}. Pregunta lo que necesites sobre este tema.` }]);
+    }
   };
 
   const t = () => theme();
@@ -404,6 +433,41 @@ export default function ChatConsejero() {
         }
         .quick-btn:hover {
           background: #E8EDE0;
+        }
+        .skills-bar {
+          display: flex;
+          gap: 8px;
+          margin-top: 16px;
+          flex-wrap: wrap;
+        }
+        .skill-btn {
+          background: #F4F1EA;
+          border: 1.5px solid #D4DFC4;
+          border-radius: 20px;
+          padding: 8px 14px;
+          font-size: 12px;
+          color: #2D4A1E;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+        }
+        .skill-btn:hover {
+          background: #E8EDE0;
+        }
+        .skill-btn.active {
+          background: #D4E849;
+          border-color: #A8C890;
+          color: #1C1C1C;
+        }
+        .skill-label {
+          font-weight: 600;
+        }
+        .skill-desc {
+          font-size: 10px;
+          opacity: 0.8;
         }
         .new-q-btn {
           background: #F0F7EC;
@@ -640,6 +704,17 @@ export default function ChatConsejero() {
                     <button class="quick-btn" onClick={() => quickQuestion('regar')}>💧 ¿Debo regar hoy?</button>
                     <button class="quick-btn" onClick={() => quickQuestion('clima')}>🌡️ ¿Cómo afecta este clima?</button>
                     <button class="quick-btn" onClick={() => quickQuestion('semana')}>📅 ¿Qué hago esta semana?</button>
+                  </div>
+                  <div class="skills-bar">
+                    <For each={SKILLS}>{(skill) => (
+                      <button 
+                        class={`skill-btn ${activeSkill() === skill.id ? 'active' : ''}`} 
+                        onClick={() => selectSkill(skill.id)}
+                      >
+                        <span class="skill-label">{skill.label}</span>
+                        <span class="skill-desc">{skill.desc}</span>
+                      </button>
+                    )}</For>
                   </div>
                 </Show>
               </div>

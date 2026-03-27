@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { ICONOS_ALERTAS } from '../lib/variedades';
 ---
 
 <Layout title="Alertas - olivaξ">
@@ -56,6 +57,20 @@ import Layout from '../layouts/Layout.astro';
         <label for="tipo">Tipo de alerta</label>
         <select id="tipo">
           <option value="">Selecciona...</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="fenologia">Fase fenológica (opcional)</label>
+        <select id="fenologia">
+          <option value="">No específica</option>
+          <option value="reposo">🌑 Reposo (Nov-Ene)</option>
+          <option value="brotacion">🌱 Brotación (Feb-Mar)</option>
+          <option value="floracion">🌸 Floración (Abr-May)</option>
+          <option value="cuaje">🫒 Cuaje (May-Jun)</option>
+          <option value="desarrollo">📈 Desarrollo fruto (Jun-Ago)</option>
+          <option value="envero">🍇 Envero (Sep-Oct)</option>
+          <option value="cosecha">🧺 Cosecha (Oct-Nov)</option>
         </select>
       </div>
 
@@ -179,39 +194,14 @@ import Layout from '../layouts/Layout.astro';
 </style>
 
 <script>
+  import { ICONOS_ALERTAS } from '../lib/variedades';
+  
   const btn = document.getElementById("btn-submit");
   const msg = document.getElementById("mensaje");
   const form = document.getElementById("form-alerta");
   const selectProvincia = document.getElementById("provincia") as HTMLSelectElement;
   const selectVariedad = document.getElementById("variedad") as HTMLSelectElement;
   const selectTipo = document.getElementById("tipo") as HTMLSelectElement;
-
-  const VARIEDADES: Record<string, any> = {
-    cornicabra: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } },
-    picual: { clima: { frio: { nivel: "alta" }, calor: { nivel: "muy-alta" }, sequia: { nivel: "media" }, humedad_alta: { nivel: "baja" } } },
-    arbequina: { clima: { frio: { nivel: "muy-alta" }, calor: { nivel: "media" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    hojiblanca: { clima: { frio: { nivel: "media" }, calor: { nivel: "alta" }, sequia: { nivel: "media-alta" }, humedad_alta: { nivel: "media" } } },
-    manzanilla: { clima: { frio: { nivel: "media" }, calor: { nivel: "media-alta" }, sequia: { nivel: "baja" }, humedad_alta: { nivel: "baja" } } },
-    empeltre: { clima: { frio: { nivel: "alta" }, calor: { nivel: "media-alta" }, sequia: { nivel: "muy-alta" }, humedad_alta: { nivel: "media" } } }
-  };
-
-  const ALERTAS_TIPO: Record<string, { label: string; icono: string }> = {
-    ola_calor: { label: "🔥 Ola de calor extrema", icono: "🔥" },
-    calor_critico: { label: "🔥 Calor crítico para tu variedad", icono: "🔥" },
-    helada: { label: "❄️ Helada", icono: "❄️" },
-    helada_critica: { label: "❄️ Helada crítica para tu variedad", icono: "❄️" },
-    estres_hidrico: { label: "🏜️ Estrés hídrico", icono: "🏜️" },
-    sequia_severa: { label: "🏜️ Sequía severa para tu variedad", icono: "🏜️" },
-    sequia_extrema: { label: "🏜️ Sequía extrema", icono: "🏜️" },
-    alta_humedad: { label: "🦠 Alta humedad - vigilancia de hongos", icono: "🦠" },
-    hongos_criticos: { label: "🦠 Riesgo hongos crítico para tu variedad", icono: "🦠" },
-    inundacion: { label: "🌊 Inundación", icono: "🌊" },
-    mosca: { label: "🦟 Mosca del olivo activa", icono: "🦟" },
-    polilla: { label: "🦋 Polilla del olivo activa", icono: "🦋" },
-    xylella: { label: "🦠 Xylella fastidiosa - Riesgo crítico", icono: "🦠" },
-    repilo: { label: "🍄 Repilo activo", icono: "🍄" },
-    condiciones_optimas: { label: "✅ Condiciones óptimas", icono: "✅" }
-  };
 
   async function calcularTipoAlerta(provincia: string, variedad: string) {
     try {
@@ -222,52 +212,30 @@ import Layout from '../layouts/Layout.astro';
       
       if (!datosProv) return [];
 
-      const variedadData = VARIEDADES[variedad];
+      const riesgos_variedad = datosProv.riesgos_variedad?.[variedad];
+      const riesgos_olivar = datosProv.riesgos_olivar || {};
+      const riesgos_plaga = datosProv.riesgos_plaga || {};
       const alertas: string[] = [];
 
-      const temp = datosProv.temperatura || 0;
-      const humedad = datosProv.humedad || 0;
-      const lluvia = datosProv.lluvia || 0;
-      const riesgos_plaga = datosProv.riesgos_plaga || {};
+      // Riesgos de la variedad
+      if (riesgos_variedad?.nivel === 'crítico') alertas.push("calor_critico");
+      if (riesgos_variedad?.nivel === 'medio') alertas.push("calor_critico");
 
-      if (variedadData?.clima?.calor?.nivel === "baja" && temp > 35) {
-        alertas.push("calor_critico");
-      } else if (temp > 38) {
-        alertas.push("ola_calor");
-      }
+      // Riesgos del olivar
+      if (riesgos_olivar?.calor?.nivel === 'alto') alertas.push("ola_calor");
+      if (riesgos_olivar?.frio?.nivel === 'alto') alertas.push("helada");
+      if (riesgos_olivar?.baja_humedad?.nivel === 'alto') alertas.push("sequia_extrema");
+      if (riesgos_olivar?.alta_humedad?.nivel === 'alto') alertas.push("alta_humedad");
+      if (riesgos_olivar?.baja_lluvia?.nivel === 'alto') alertas.push("sequia_extrema");
+      if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') alertas.push("inundacion");
 
-      if (variedadData?.clima?.frio?.nivel === "baja" && temp < 5) {
-        alertas.push("helada_critica");
-      } else if (temp < 0) {
-        alertas.push("helada");
-      }
+      // Riesgos de plagas
+      if (riesgos_plaga?.mosca?.nivel === 'alto') alertas.push("mosca");
+      if (riesgos_plaga?.polilla?.nivel === 'alto') alertas.push("polilla");
+      if (riesgos_plaga?.xylella?.nivel === 'alto') alertas.push("xylella");
+      if (riesgos_plaga?.repilo?.nivel === 'alto') alertas.push("repilo");
 
-      if (variedadData?.clima?.sequia?.nivel === "baja" && humedad < 30) {
-        alertas.push("sequia_severa");
-      } else if (humedad < 20) {
-        alertas.push("estres_hidrico");
-      }
-
-      if (lluvia < 0.5 && humedad < 30) {
-        alertas.push("sequia_extrema");
-      }
-
-      if (variedadData?.clima?.humedad_alta?.nivel === "baja" && humedad > 80) {
-        alertas.push("hongos_criticos");
-      } else if (humedad > 85) {
-        alertas.push("alta_humedad");
-      }
-
-      if (lluvia > 20) {
-        alertas.push("inundacion");
-      }
-
-      if (riesgos_plaga?.mosca?.nivel === "alto") alertas.push("mosca");
-      if (riesgos_plaga?.polilla?.nivel === "alto") alertas.push("polilla");
-      if (riesgos_plaga?.xylella?.nivel === "alto") alertas.push("xylella");
-      if (riesgos_plaga?.repilo?.nivel === "alto") alertas.push("repilo");
-
-      return alertas;
+      return [...new Set(alertas)];
     } catch (e) {
       console.error("Error calculating alert:", e);
       return [];
@@ -287,13 +255,13 @@ import Layout from '../layouts/Layout.astro';
     if (alertas.length === 0) {
       const opt = document.createElement("option");
       opt.value = "condiciones_optimas";
-      opt.textContent = ALERTAS_TIPO.condiciones_optimas.label;
+      opt.textContent = ICONOS_ALERTAS.condiciones_optimas.label;
       selectTipo.appendChild(opt);
     } else {
       alertas.forEach((alerta) => {
         const opt = document.createElement("option");
         opt.value = alerta;
-        opt.textContent = ALERTAS_TIPO[alerta]?.label || alerta;
+        opt.textContent = ICONOS_ALERTAS[alerta]?.label || alerta;
         selectTipo.appendChild(opt);
       });
     }
@@ -331,6 +299,7 @@ import Layout from '../layouts/Layout.astro';
     const provincia = (document.getElementById("provincia") as HTMLSelectElement).value;
     const variedad = (document.getElementById("variedad") as HTMLSelectElement).value;
     const tipo = (document.getElementById("tipo") as HTMLSelectElement).value;
+    const fenologia = (document.getElementById("fenologia") as HTMLSelectElement).value;
 
     if (!nombre || !email || !provincia) {
       msg.textContent = "⚠️ Por favor completa los campos obligatorios.";
@@ -347,7 +316,7 @@ import Layout from '../layouts/Layout.astro';
       const res = await fetch(`${apiBase}/api/alertas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, provincia, variedad, tipo }),
+        body: JSON.stringify({ nombre, email, provincia, variedad, tipo, fenologia }),
       });
 
       if (res.ok) {
