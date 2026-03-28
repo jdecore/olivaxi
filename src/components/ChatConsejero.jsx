@@ -48,9 +48,9 @@ export default function ChatConsejero() {
 
   const getProvinciaFromStorage = () => {
     try {
-      const saved = localStorage.getItem('oliva_provincia');
+      const saved = localStorage.getItem('olivaxi_provincia');
       if (saved) return saved;
-      const savedVariedad = localStorage.getItem('oliva_variedad');
+      const savedVariedad = localStorage.getItem('olivaxi_variedad');
       if (savedVariedad) return 'Jaén';
     } catch {}
     return null;
