@@ -279,21 +279,23 @@ export default function ChatConsejero() {
       <style>{`
         .chat-container {
           width: 100%;
-          min-height: 100vh;
+          height: 100vh;
           display: flex;
           flex-direction: column;
           background: #f5efe8;
-          padding: 40px 20px;
+          padding: 20px 16px;
+          box-sizing: border-box;
+          overflow: hidden;
         }
         .chat-hero {
           text-align: center;
-          margin-bottom: 16px;
+          margin-bottom: 12px;
           flex-shrink: 0;
         }
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 32px;
+          font-size: 24px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
@@ -302,16 +304,16 @@ export default function ChatConsejero() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          max-height: calc(100vh - 150px);
           overflow: hidden;
+          min-height: 0;
         }
         .province-select-card {
-          max-width: 480px;
-          margin: 0 auto 20px;
+          max-width: 400px;
+          margin: 0 auto 12px;
           background: #fff;
-          border-radius: 20px;
-          padding: 24px 28px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          border-radius: 16px;
+          padding: 16px 20px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .province-dropdown {
           width: 100%;
@@ -332,12 +334,12 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
         }
         .skills-card {
-          max-width: 500px;
-          margin: 0 auto 16px;
+          max-width: 420px;
+          margin: 0 auto 12px;
           background: #fff;
-          border-radius: 16px;
-          padding: 16px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          border-radius: 14px;
+          padding: 12px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
           flex-shrink: 0;
         }
         .skills-grid {
@@ -347,18 +349,18 @@ export default function ChatConsejero() {
           justify-content: center;
         }
         .skill-btn {
-          padding: 10px 18px;
-          border-radius: 24px;
-          border: 1px solid #e0e0e0;
-          background: transparent;
-          color: #666;
-          font-size: 14px;
+          padding: 6px 12px;
+          border-radius: 18px;
+          border: none;
+          background: #D4E849;
+          color: #1C1C1C;
+          font-size: 12px;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.15s;
         }
         .skill-btn:hover {
-          border-color: #1C1C1C;
-          color: #1C1C1C;
+          background: #c5d93e;
         }
         .skill-btn.selected {
           background: #1C1C1C;
@@ -375,11 +377,12 @@ export default function ChatConsejero() {
           overflow-y: hidden;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          max-width: 600px;
+          gap: 8px;
+          max-width: 500px;
           width: 100%;
           margin: 0 auto;
-          padding-bottom: 16px;
+          padding-bottom: 8px;
+          min-height: 0;
         }
         .msg-row {
           display: flex;
@@ -460,13 +463,13 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 500px;
+          max-width: 400px;
           width: 100%;
-          margin: 0 auto 12px;
-          padding: 8px 12px;
+          margin: 0 auto 8px;
+          padding: 6px 10px;
           background: #fff;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border-radius: 10px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .chat-input-wrapper.responding {
@@ -492,20 +495,20 @@ export default function ChatConsejero() {
         .active-mode {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
+          gap: 6px;
+          margin-bottom: 6px;
           justify-content: center;
         }
         .active-mode-badge {
           background: #1C1C1C;
           color: #fff;
-          padding: 6px 14px;
-          border-radius: 20px;
-          font-size: 13px;
+          padding: 4px 10px;
+          border-radius: 16px;
+          font-size: 12px;
           font-weight: 500;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
         }
         .active-mode-clear {
           background: transparent;
