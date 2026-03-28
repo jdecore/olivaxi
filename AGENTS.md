@@ -288,7 +288,9 @@ npm run build  # Pasa correctamente (6 páginas)
 ```
 
 ### Pendientes:
-- Ninguno crítico
+- **Logo SVG**: El usuario proporcionará un SVG detallado con viewBox "0 0 1720 580" que debe reemplazar el SVG placeholder actual en `src/layouts/Layout.astro` líneas 40-46
+  - El SVG debe estilizarse para matching con el navbar (tamaño, colores dark/light)
+  - Actualmente hay un SVG inline temporal simple
 
 ### Mejoras futuras sugeridas:
 1. Añadir datos dinámicos de precios del aceite
@@ -326,6 +328,83 @@ npm run build  # Pasa correctamente (6 páginas)
 ### alertas.astro
 - Formulario neobrutalista
 - Estilo distintivo con bordes cuadrados y sombras offset
+
+---
+
+## 🔧 Estado de Implementación del Logo
+
+### 2026-03-27 - Implementación del Logo SVG
+
+**Trabajo realizado:**
+
+1. ✅ **Navbar flotante mejorada**
+   - Diseño flotante rectangular con border-radius: 16px
+   - Márgenes de ~2cm de los bordes (top: 16px, left/right: 24px, bottom: 16px)
+   - Fondo blanco/gris según theme
+   - Distribución simétrica: logo | nav links | theme toggle + botón alertas
+
+2. ✅ **Orden del navbar (izquierda a derecha)**
+   - Logo SVG (reemplazando emoji 🫒)
+   - Inicio → Consejero → Variedades → Agua y Suelos → Plagas
+   - Theme toggle button (☀️)
+   - Botón "Activar alertas" (color lima/lime #D4E849)
+
+3. ✅ **Logo SVG temporal**
+   - Ubicación: `src/layouts/Layout.astro` líneas 40-46
+   - SVG inline simple con ramas de olivo y aceitunas
+   - Usa `currentColor` para adaptarse al tema
+   - Las aceitunas usan variable CSS `--color-limon`
+
+4. ✅ **Archivos eliminados**
+   - Eliminados: public/logo.png, public/logo-32.png, public/favicon.ico
+   - (El usuario proporciona un SVG detallado que debe reemplazar el placeholder)
+
+5. ✅ **Build verificado**
+   - `npm run build` pasa correctamente
+
+**Próximo paso pendiente:**
+- El usuario proporcionará un SVG detallado (viewBox "0 0 1720 580") para reemplazar el SVG placeholder en Layout.astro líneas 40-46
+- El SVG debe estilizarse para matching con el navbar (tamaño, colores dark/light)
+
+---
+
+## 📌 Guía para Continuar el Trabajo
+
+### Estado actual del proyecto
+
+El proyecto está en un estado funcional con:
+- ✅ Frontend Astro funcionando en puerto 4321
+- ✅ Backend Bun funcionando en puerto 3000
+- ✅ Sistema de clima, riesgo y alertas operativo
+- ✅ Navbar con logo SVG temporal (placeholder simple)
+
+### Para continuar desde donde se quedó:
+
+1. **Obtener el SVG del logo**: El usuario debe proporcionar el SVG detallado del logo de olivo (viewBox "0 0 1720 580")
+
+2. **Reemplazar el SVG temporal**: Editar `src/layouts/Layout.astro` líneas 40-46, reemplazar el SVG inline actual con el nuevo SVG proporcionado
+
+3. **Estilizar el SVG**: 
+   - Ajustar el tamaño para que se vea bien en el navbar (aproximadamente 40-50px de alto)
+   - Asegurar que use `currentColor` o variables CSS para adaptarse al theme claro/oscuro
+   - Verificar que las aceitunas usen `--color-limon` (#D4E849)
+
+4. **Verificar el build**:
+   ```bash
+   npm run build
+   ```
+
+5. **Probar en navegador**: 
+   - Verificar que el logo se vea correctamente en modo claro y oscuro
+   - Verificar que el navbar mantenga su diseño flotante y proporciones
+
+### Archivos relevantes
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/layouts/Layout.astro` | Layout principal - navbar y logo en líneas 36-78, CSS del navbar en líneas ~209-240 |
+| `src/layouts/Layout.astro:40-46` | SVG placeholder del logo a reemplazar |
+| `src/styles/global.css` o `<style>` en Layout | Variables CSS de theme (--color-limon, etc.) |
 
 ---
 

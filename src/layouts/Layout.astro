@@ -233,16 +233,108 @@ const { title = "olivaξ" } = Astro.props;
     padding: 0 24px;
   }
 
+  .nav-center.desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .nav-center.desktop-nav a {
+    color: var(--color-aceituna);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-center.desktop-nav a:hover {
+    color: var(--color-limon);
+  }
+
+  @media (max-width: 900px) {
+    .nav-center.desktop-nav {
+      display: none;
+    }
+  }
+
+  .nav-dropdown {
+    display: none;
+    flex-direction: column;
+    padding: 16px 24px;
+    background: var(--color-white-surface);
+    border-top: 2px solid var(--color-border);
+    border-radius: 0 0 14px 14px;
+  }
+
+  .nav-dropdown.active {
+    display: flex;
+  }
+
+  .nav-dropdown a {
+    color: var(--color-aceituna);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-dropdown a:last-child {
+    border-bottom: none;
+  }
+
+  @media (min-width: 901px) {
+    .nav-dropdown {
+      display: none !important;
+    }
+    .hamburger-btn {
+      display: none;
+    }
+  }
+
+  .hamburger-btn {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .hamburger-btn span {
+    width: 24px;
+    height: 2px;
+    background: var(--color-aceituna);
+    transition: 0.3s;
+  }
+
+  .hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
   .nav-left .logo {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--color-white);
+    color: var(--color-aceituna);
     font-weight: 600;
     font-size: 1.1rem;
     text-decoration: none;
     font-family: 'Outfit', system-ui, sans-serif;
     white-space: nowrap;
+  }
+
+  .nav-left .logo svg {
+    fill: var(--color-aceituna);
   }
 
   .nav-left .logo .logo-icon {
