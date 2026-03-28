@@ -58,7 +58,6 @@ export default function ChatConsejero() {
   const [titleTyping, setTitleTyping] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
-  const [newMessageIds, setNewMessageIds] = createSignal(new Set());
   
   let typingInterval;
   let messagesEndRef;
@@ -223,7 +222,6 @@ export default function ChatConsejero() {
       { id: botId - 1, role: 'user', text: pregunta }, 
       { id: botId, role: 'bot', text: '', isWaiting: true }
     ]);
-    setNewMessageIds(prev => new Set(prev).add(botId));
     setIsLoading(true);
     scrollToBottom(true);
 
@@ -285,11 +283,6 @@ export default function ChatConsejero() {
     setIsLoading(false);
     stopTypingAnimation();
     setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false } : m));
-    setNewMessageIds(prev => {
-      const next = new Set(prev);
-      next.delete(botId);
-      return next;
-    });
     scrollToBottom(true);
   };
 
@@ -572,15 +565,6 @@ export default function ChatConsejero() {
           align-items: flex-start;
           gap: 6px;
           width: 100%;
-          will-change: transform, opacity;
-        }
-        .msg-row.animating {
-          animation: msgSlideIn 0.3s ease-out forwards;
-          opacity: 0;
-        }
-        @keyframes msgSlideIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
         }
         .msg-row.user {
           justify-content: flex-end;
@@ -882,7 +866,7 @@ export default function ChatConsejero() {
         <div class="chat-with-input">
           <div class="chat-messages">
             <For each={msgs()}>{(msg) => (
-              <div class={`msg-row ${newMessageIds().has(msg.id) ? 'animating' : ''}`}>
+              <div class="msg-row">
                 <Show when={msg.role === 'bot'} fallback={
                   <div class="msg-bubble user">{msg.text}</div>
                 }>
