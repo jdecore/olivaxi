@@ -89,6 +89,24 @@ export default function ChatConsejero() {
     const handleThemeChange = () => setMessages([...messages()]);
     window.addEventListener('modoOscuroChange', handleThemeChange);
     onCleanup(() => window.removeEventListener('modoOscuroChange', handleThemeChange));
+    
+    const handleStorageChange = () => {
+      const prov = getProvinciaFromStorage();
+      if (prov && prov !== provincia()) {
+        seleccionarProvincia(prov);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(() => {
+      const prov = getProvinciaFromStorage();
+      if (prov && prov !== provincia()) {
+        seleccionarProvincia(prov);
+      }
+    }, 1000);
+    onCleanup(() => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    });
   });
 
   createEffect(() => {
@@ -276,11 +294,11 @@ export default function ChatConsejero() {
           letter-spacing: -0.02em;
         }
         .province-select-card {
-          max-width: 400px;
+          max-width: 480px;
           margin: 0 auto 20px;
           background: #fff;
           border-radius: 20px;
-          padding: 16px 20px;
+          padding: 24px 28px;
           box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
         .province-dropdown {
@@ -478,16 +496,23 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
           color: #1C1C1C;
         }
+        .skill-btn {
+          padding: 12px 20px;
+          border-radius: 24px;
+          border: none;
+          background: #D4E849;
+          color: #1C1C1C;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.15s;
         }
         .skill-btn:hover {
-          border-color: #1C1C1C;
-          color: #1C1C1C;
+          background: #c5d93e;
+          transform: translateY(-1px);
         }
         .skill-btn.selected {
           background: #1C1C1C;
-          border-color: #1C1C1C;
           color: #fff;
         }
         .bubble {
@@ -537,6 +562,42 @@ export default function ChatConsejero() {
         </div>
       </Show>
 
+      <Show when={activeSkill()}>
+        <div class="chat-messages">
+          <For each={msgs()}>{(msg) => (
+            <div class={`msg-row ${msg.role} ${!msg.isWaiting ? 'bubble' : ''}`}>
+              <Show when={msg.role === 'bot'} fallback={
+                <div class="msg-bubble user">{msg.text}</div>
+              }>
+                <div class="msg-bubble bot">
+                  <Show when={msg.isWaiting}>
+                    <div class="typing-dots">
+                      <span class="dot1"></span>
+                      <span class="dot2"></span>
+                      <span class="dot3"></span>
+                    </div>
+                  </Show>
+                  <Show when={!msg.isWaiting}>
+                    <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
+                  </Show>
+                </div>
+              </Show>
+            </div>
+          )}</For>
+          
+          <Show when={isAtLimit() && !isLoading()}>
+            <div class="limit-message">
+              <span>Llegaste al límite de memoria 🧹</span>
+              <button class="limit-btn" onClick={limpiarChat}>
+                🤖🧹 Limpiar chat
+              </button>
+            </div>
+          </Show>
+          
+          <div ref={messagesEndRef}></div>
+        </div>
+      </Show>
+
       <div class="input-section">
         <Show when={activeSkill()}>
           <div class="active-mode">
@@ -560,40 +621,6 @@ export default function ChatConsejero() {
             disabled={isLoading() || isAtLimit()} 
           />
         </div>
-      </div>
-
-      <div class="chat-messages">
-        <For each={msgs()}>{(msg) => (
-          <div class={`msg-row ${msg.role} ${!msg.isWaiting ? 'bubble' : ''}`}>
-            <Show when={msg.role === 'bot'} fallback={
-              <div class="msg-bubble user">{msg.text}</div>
-            }>
-              <div class="msg-bubble bot">
-                <Show when={msg.isWaiting}>
-                  <div class="typing-dots">
-                    <span class="dot1"></span>
-                    <span class="dot2"></span>
-                    <span class="dot3"></span>
-                  </div>
-                </Show>
-                <Show when={!msg.isWaiting}>
-                  <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
-                </Show>
-              </div>
-            </Show>
-          </div>
-        )}</For>
-        
-        <Show when={isAtLimit() && !isLoading()}>
-          <div class="limit-message">
-            <span>Llegaste al límite de memoria 🧹</span>
-            <button class="limit-btn" onClick={limpiarChat}>
-              🤖🧹 Limpiar chat
-            </button>
-          </div>
-        </Show>
-        
-        <div ref={messagesEndRef}></div>
       </div>
     </div>
   );
