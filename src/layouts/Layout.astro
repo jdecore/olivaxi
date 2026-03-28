@@ -39,7 +39,7 @@ const { title = "olivaξ" } = Astro.props;
       <div class="navbar-inner">
         <div class="nav-left">
           <a href="/" class="logo">
-            <img src="/logo.svg" alt="olivaξ" width="24" height="24" />
+            <img src="/logo.svg" alt="olivaξ" width="32" height="32" />
             <span>olivaξ</span>
           </a>
         </div>
@@ -226,8 +226,8 @@ const { title = "olivaξ" } = Astro.props;
     white-space: nowrap;
   }
 
-  .nav-left .logo svg {
-    color: var(--color-limon);
+  .nav-left .logo img {
+    filter: invert(87%) sepia(81%) saturate(338%) hue-rotate(41deg) brightness(95%) contrast(98%);
   }
 
   [data-theme="light"] .nav-left .logo {

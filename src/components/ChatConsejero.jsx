@@ -311,7 +311,7 @@ export default function ChatConsejero() {
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 20px;
+          font-size: 28px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
@@ -359,7 +359,7 @@ export default function ChatConsejero() {
           margin: 0 auto 4px;
           background: #fff;
           border-radius: 10px;
-          padding: 8px;
+          padding: 12px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
         }
