@@ -550,6 +550,7 @@ export default function ChatConsejero() {
           display: flex;
           align-items: flex-start;
           gap: 6px;
+          width: 100%;
           animation: msgSlideIn 0.4s ease-out forwards;
           opacity: 0;
         }
@@ -560,9 +561,12 @@ export default function ChatConsejero() {
         .msg-row.user {
           justify-content: flex-end;
         }
+        .msg-row.bot {
+          justify-content: flex-start;
+        }
         .msg-bubble {
-          padding: 10px 16px;
-          max-width: 85%;
+          padding: 12px 20px;
+          max-width: 95%;
           font-size: 15px;
           line-height: 1.5;
         }
@@ -625,15 +629,16 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 1200px;
+          max-width: 100%;
           width: 100%;
-          margin: 0 auto 4px;
+          margin: 0;
           padding: 12px 20px;
           background: #fff;
           border-radius: 16px;
           border: 2px solid #1C1C1C;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
           transition: transform 0.3s ease, opacity 0.3s ease;
+          box-sizing: border-box;
         }
         .chat-input-wrapper.responding {
           transform: translateY(4px);
