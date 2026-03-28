@@ -64,7 +64,9 @@ chat.post("/", async (c) => {
   const provincia = provinciaRaw.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, '').trim().slice(0, 50);
   const variedad = (bodyRaw.variedad || '').replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ]/g, '').slice(0, 20);
   const historialRaw = bodyRaw.historial || [];
-  const historial = Array.isArray(historialRaw) ? historialRaw.slice(-3).join(' | ') : '';
+  const historial = Array.isArray(historialRaw) 
+    ? historialRaw.filter((m): m is string => typeof m === 'string').slice(-3).join(' | ')
+    : '';
   
   // Resolver alias de skill (ej: 'plagas' -> 'plaga')
   const resolvedSkill = SKILL_ALIASES[skillRaw] || skillRaw;
@@ -84,15 +86,6 @@ chat.post("/", async (c) => {
 
   const provinciaInfo = climaHoy.find((p: any) => p.provincia === provincia) || climaHoy[0];
   const provinciaNombre = provinciaInfo?.provincia || provincia || 'Andalucía';
-
-  // Optimizado: solo datos de la provincia actual
-  const datosProvincia = {
-    temperatura: provinciaInfo?.temperatura,
-    humedad: provinciaInfo?.humedad,
-    lluvia: provinciaInfo?.lluvia,
-    estado: provinciaInfo?.estado,
-    riesgo: provinciaInfo?.riesgo,
-  };
 
   // Construir el systemPrompt base - OPTIMIZADO con historial ligero
   const temp = provinciaInfo?.temperatura ?? '';
@@ -123,11 +116,6 @@ Responde en español, máximo 2 párrafos, sé práctico.`;
   // Añadir systemPrompt personalizado del frontend (para casos específicos)
   if (systemPromptRaw) {
     basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${temp}°C, ${hum}% humedad\n${contextoVariedad}`;
-  }
-
-  // Añadir systemPrompt personalizado del frontend (para casos específicos)
-  if (systemPromptRaw) {
-    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${JSON.stringify(datosProvincia)}`;
   }
 
   const systemPrompt = basePrompt;

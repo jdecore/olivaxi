@@ -20,6 +20,14 @@ export default defineConfig({
       minify: 'esbuild',
       target: 'esnext'
     },
+    server: {
+      host: '0.0.0.0',
+      allowedHosts: ['olivaxi.duckdns.org']
+    },
+    preview: {
+      host: '0.0.0.0',
+      allowedHosts: ['olivaxi.duckdns.org']
+    },
     define: {
       'process.env': {}
     }

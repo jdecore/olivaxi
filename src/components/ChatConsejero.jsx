@@ -59,8 +59,7 @@ export default function ChatConsejero() {
     if (savedProv) {
       setProvincia(savedProv);
       try {
-        const res = await fetch(apiUrl('/api/clima'));
-        const data = await res.json();
+        const data = await getClimaData(true); // Forzar refresh en init
         const provData = data.find((p) => p.provincia === savedProv);
         if (provData) setClimaActual(provData);
       } catch {}
@@ -70,8 +69,7 @@ export default function ChatConsejero() {
   const seleccionarProvincia = async (prov) => {
     setProvincia(prov);
     try {
-      const res = await fetch(apiUrl('/api/clima'));
-      const data = await res.json();
+      const data = await getClimaData();
       const provData = data.find((p) => p.provincia === prov);
       if (provData) setClimaActual(provData);
     } catch {}
@@ -130,6 +128,25 @@ export default function ChatConsejero() {
 
   const getVariedad = () => {
     try { return localStorage.getItem('olivaxi_variedad') || ''; } catch { return ''; }
+  };
+
+  // Cache en memoria para clima (evita llamadas innecesarias a Open-Meteo)
+  let climaCache = null;
+  let climaCacheTime = 0;
+  const CLIMA_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+  const getClimaData = async (forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && climaCache && now - climaCacheTime < CLIMA_CACHE_TTL) {
+      return climaCache;
+    }
+    try {
+      const res = await fetch(apiUrl('/api/clima'));
+      const data = await res.json();
+      climaCache = data;
+      climaCacheTime = now;
+      return data;
+    } catch { return climaCache || []; }
   };
 
   const enviarPregunta = async () => {
