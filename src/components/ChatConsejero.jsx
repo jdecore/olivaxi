@@ -110,7 +110,7 @@ export default function ChatConsejero() {
     onCleanup(() => window.removeEventListener('modoOscuroChange', handleThemeChange));
     
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.mode-pill')) {
+      if (!e.target.closest('.mode-pill-inline')) {
         setShowModeDropdown(false);
       }
     });
@@ -387,6 +387,47 @@ export default function ChatConsejero() {
           width: 100%;
           box-sizing: border-box;
         }
+        .mode-pill-inline {
+          position: relative;
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .mode-pill-inline .mode-pill-button {
+          padding: 6px 14px;
+          font-size: 12px;
+          border: 2px solid #1C1C1C;
+          border-radius: 20px;
+          background: #D4E849;
+          color: #1C1C1C;
+          cursor: pointer;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+        .mode-pill-inline .mode-pill-button:hover {
+          background: #c5d93e;
+        }
+        .mode-pill-inline .mode-pill-dropdown {
+          position: absolute;
+          bottom: 100%;
+          left: 0;
+          margin-bottom: 8px;
+          background: #fff;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          display: none;
+          min-width: 220px;
+          z-index: 100;
+          overflow: hidden;
+        }
+        .mode-pill-inline .mode-pill-dropdown.show {
+          display: block;
+        }
         .mode-pill-container {
           display: flex;
           justify-content: center;
@@ -531,20 +572,7 @@ export default function ChatConsejero() {
         }
         .input-section {
           max-width: 600px;
-          margin: 0 auto 20px;
           width: 100%;
-        }
-        .chat-messages {
-          flex: 1;
-          overflow-y: hidden;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          max-width: 350px;
-          width: 100%;
-          margin: 0 auto;
-          padding-bottom: 4px;
-          min-height: 0;
         }
         .msg-row {
           display: flex;
@@ -887,13 +915,13 @@ export default function ChatConsejero() {
           </div>
 
           <div class="input-area">
-            <div class="mode-pill-container">
-              <div class="mode-pill">
+            <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
+              <div class="mode-pill-inline">
                 <button 
                   class="mode-pill-button"
                   onClick={() => setShowModeDropdown(!showModeDropdown())}
                 >
-                  {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : 'Seleccionar modo ▼'}
+                  {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Modo'}
                 </button>
                 <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
                   <For each={SKILLS}>{(skill) => (
@@ -909,9 +937,6 @@ export default function ChatConsejero() {
                   )}</For>
                 </div>
               </div>
-            </div>
-          
-            <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
               <input 
                 class="chat-input" 
                 type="text" 
