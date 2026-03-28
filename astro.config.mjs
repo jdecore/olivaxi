@@ -1,4 +1,3 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 import solid from '@astrojs/solid-js';
 
@@ -21,15 +20,12 @@ export default defineConfig({
       minify: 'esbuild',
       target: 'esnext'
     },
-    server: {
-      allowedHosts: true
-    },
-    preview: {
-      allowedHosts: true
-    },
     define: {
       'process.env': {}
     }
+  },
+  preview: {
+    allowedHosts: ['olivaxi.duckdns.org']
   },
   devToolbar: {
     enabled: false
