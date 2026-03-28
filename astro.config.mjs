@@ -9,7 +9,10 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'always',
     assetsInlineLimit: 2048,
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      external: ['leaflet']
+    }
   },
   compressHTML: true,
   vite: {
@@ -17,6 +20,9 @@ export default defineConfig({
       cssMinify: true,
       minify: 'esbuild',
       target: 'esnext'
+    },
+    define: {
+      'process.env': {}
     }
   },
   devToolbar: {
