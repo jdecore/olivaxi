@@ -233,14 +233,18 @@ export default function ChatConsejero() {
   const selectSkill = (skillId) => {
     if (activeSkill() === skillId) {
       setActiveSkill(null);
+      setInputExpanded(false);
     } else {
       setActiveSkill(skillId);
+      setInputExpanded(true);
     }
   };
 
   const t = () => ({ bg: '#fff', text: '#1C1C1C', muted: '#6B6B5E', accent: '#D4E849', inputBg: '#f7f5f0' });
   const msgs = () => messages();
 
+  const [inputExpanded, setInputExpanded] = createSignal(false);
+  
   const allModes = () => ['Auto', ...SKILLS.map(s => s.label)];
   
   return (
@@ -348,9 +352,13 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 700px;
+          max-width: 500px;
           width: 100%;
           margin: 24px auto 0;
+          transition: max-width 0.3s ease;
+        }
+        .chat-input-wrapper.expanded {
+          max-width: 700px;
         }
         .chat-input {
           width: 100%;
@@ -375,6 +383,16 @@ export default function ChatConsejero() {
           margin-top: 8px;
           gap: 8px;
           flex-wrap: wrap;
+          transition: opacity 0.2s ease, max-height 0.3s ease;
+        }
+        .chat-input-wrapper.expanded .chat-toolbar {
+          opacity: 0;
+          max-height: 0;
+          overflow: hidden;
+        }
+        .chat-input-wrapper:not(.expanded) .chat-toolbar {
+          opacity: 1;
+          max-height: 100px;
         }
         .mode-btn {
           padding: 8px 14px;
@@ -447,21 +465,21 @@ export default function ChatConsejero() {
         <div ref={messagesEndRef}></div>
       </div>
 
-      <div class="chat-input-wrapper">
+      <div class={`chat-input-wrapper ${inputExpanded() ? 'expanded' : ''}`}>
         <input 
           class="chat-input" 
           type="text" 
           value={input()} 
           onInput={(e) => setInput(e.target.value)} 
           onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-          placeholder={`Message ${allModes().join(' · ')}`}
+          placeholder={inputExpanded() ? "Escribe tu mensaje..." : `Message ${allModes().join(' · ')}`}
           disabled={isLoading() || isAtLimit()} 
         />
         
         <div class="chat-toolbar">
           <button 
             class={`mode-btn ${!activeSkill() ? 'active' : ''}`} 
-            onClick={() => setActiveSkill(null)}
+            onClick={() => { setActiveSkill(null); setInputExpanded(false); }}
           >
             Auto
           </button>
