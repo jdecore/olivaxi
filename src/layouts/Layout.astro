@@ -190,17 +190,13 @@ const { title = "olivaξ" } = Astro.props;
 
   .navbar {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 16px;
+    left: 16px;
+    right: 16px;
     z-index: 100;
     background-color: var(--color-white-surface);
-    border-bottom: 1px solid var(--color-border);
-    opacity: 0.3;
-    transition: opacity 0.3s ease;
-  }
-
-  .navbar:hover {
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
     opacity: 1;
   }
 
@@ -227,7 +223,7 @@ const { title = "olivaξ" } = Astro.props;
   }
 
   .nav-left .logo img {
-    border-radius: 50%;
+    border-radius: 4px;
   }
 
   footer {
