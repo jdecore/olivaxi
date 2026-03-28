@@ -349,22 +349,18 @@ npm run build  # Pasa correctamente (6 páginas)
    - Theme toggle button (☀️)
    - Botón "Activar alertas" (color lima/lime #D4E849)
 
-3. ✅ **Logo SVG temporal**
-   - Ubicación: `src/layouts/Layout.astro` líneas 40-46
-   - SVG inline simple con ramas de olivo y aceitunas
-   - Usa `currentColor` para adaptarse al tema
-   - Las aceitunas usan variable CSS `--color-limon`
+3. ✅ **Logo SVG implementado**
+   - Archivo: `/public/logo.svg`
+   - Usado en `src/layouts/Layout.astro` líneas 39-42
+   - Altura: 36px en el navbar
+   - Dos variantes de color: ramas en `currentColor`, aceitunas en `#D4E849`
 
-4. ✅ **Archivos eliminados**
-   - Eliminados: public/logo.png, public/logo-32.png, public/favicon.ico
-   - (El usuario proporciona un SVG detallado que debe reemplazar el placeholder)
+4. ✅ **Responsive del navbar**
+   - Desktop (>900px): muestra nav links horizontal +隐藏 hamburger
+   - Móvil (≤900px):隐藏 nav links, muestra hamburger + dropdown
 
 5. ✅ **Build verificado**
    - `npm run build` pasa correctamente
-
-**Próximo paso pendiente:**
-- El usuario proporcionará un SVG detallado (viewBox "0 0 1720 580") para reemplazar el SVG placeholder en Layout.astro líneas 40-46
-- El SVG debe estilizarse para matching con el navbar (tamaño, colores dark/light)
 
 ---
 
@@ -376,35 +372,26 @@ El proyecto está en un estado funcional con:
 - ✅ Frontend Astro funcionando en puerto 4321
 - ✅ Backend Bun funcionando en puerto 3000
 - ✅ Sistema de clima, riesgo y alertas operativo
-- ✅ Navbar con logo SVG temporal (placeholder simple)
+- ✅ Navbar con logo SVG implementado (/public/logo.svg)
 
 ### Para continuar desde donde se quedó:
 
-1. **Obtener el SVG del logo**: El usuario debe proporcionar el SVG detallado del logo de olivo (viewBox "0 0 1720 580")
+El proyecto está completo. Si necesitas hacer cambios:
 
-2. **Reemplazar el SVG temporal**: Editar `src/layouts/Layout.astro` líneas 40-46, reemplazar el SVG inline actual con el nuevo SVG proporcionado
-
-3. **Estilizar el SVG**: 
-   - Ajustar el tamaño para que se vea bien en el navbar (aproximadamente 40-50px de alto)
-   - Asegurar que use `currentColor` o variables CSS para adaptarse al theme claro/oscuro
-   - Verificar que las aceitunas usen `--color-limon` (#D4E849)
-
-4. **Verificar el build**:
+1. **Modificar el logo**: Editar `/public/logo.svg`
+2. **Modificar el navbar**: Editar `src/layouts/Layout.astro` líneas 36-78
+3. **Verificar el build**:
    ```bash
    npm run build
    ```
-
-5. **Probar en navegador**: 
-   - Verificar que el logo se vea correctamente en modo claro y oscuro
-   - Verificar que el navbar mantenga su diseño flotante y proporciones
 
 ### Archivos relevantes
 
 | Archivo | Descripción |
 |---------|-------------|
-| `src/layouts/Layout.astro` | Layout principal - navbar y logo en líneas 36-78, CSS del navbar en líneas ~209-240 |
-| `src/layouts/Layout.astro:40-46` | SVG placeholder del logo a reemplazar |
-| `src/styles/global.css` o `<style>` en Layout | Variables CSS de theme (--color-limon, etc.) |
+| `src/layouts/Layout.astro` | Layout principal - navbar en líneas 36-78, CSS del navbar en líneas ~230-320 |
+| `public/logo.svg` | Logo SVG del navbar |
+| `<style>` en Layout | Variables CSS de theme (--color-limon, etc.) |
 
 ---
 

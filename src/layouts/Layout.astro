@@ -37,12 +37,7 @@ const { title = "olivaξ" } = Astro.props;
       <div class="navbar-inner">
         <div class="nav-left">
           <a href="/" class="logo">
-            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <path fill="currentColor" d="M50 5 C30 15 15 35 10 55 C8 62 12 70 20 75 C25 78 32 78 38 75 C42 73 45 68 48 62 C50 70 52 73 55 75 C60 78 68 78 75 72 C82 66 85 55 80 42 C78 35 72 28 65 25 C58 22 52 22 50 5z M30 85 C25 90 15 90 12 82 C10 75 15 68 22 65 C28 62 35 68 40 75 C42 78 38 82 30 85z M70 85 C75 90 85 90 88 82 C90 75 85 68 78 65 C72 62 65 68 60 75 C58 78 62 82 70 85z"/>
-              <ellipse fill="var(--color-limon)" cx="50" cy="50" rx="12" ry="15"/>
-              <ellipse fill="var(--color-limon)" cx="35" cy="75" rx="8" ry="10"/>
-              <ellipse fill="var(--color-limon)" cx="65" cy="75" rx="8" ry="10"/>
-            </svg>
+            <img src="/logo.svg" alt="olivaξ" class="logo-img" />
             <span>olivaξ</span>
           </a>
         </div>
@@ -333,8 +328,9 @@ const { title = "olivaξ" } = Astro.props;
     white-space: nowrap;
   }
 
-  .nav-left .logo svg {
-    fill: var(--color-aceituna);
+  .nav-left .logo-img {
+    height: 36px;
+    width: auto;
   }
 
   .nav-left .logo .logo-icon {
