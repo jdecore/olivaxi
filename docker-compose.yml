@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_URL: http://45.90.237.135:3001
+        PUBLIC_API_URL: http://api:3000
     ports:
       - "8080:4321"
     depends_on:
@@ -26,5 +26,4 @@ services:
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - BREVO_API_KEY=${BREVO_API_KEY:-}
-      - PUBLIC_API_URL=http://localhost:3000
     restart: unless-stopped

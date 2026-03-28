@@ -2,7 +2,7 @@
 
 ## 📋 Resumen
 
-Proyecto Astro para monitoreo climático de olivares españoles. Combina datos climáticos en tiempo real con análisis específico por variedad de olivo para ayudar a agricultores a tomar decisiones prácticas contra el cambio climático.
+Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos climáticos en tiempo real con análisis específico por variedad de olivo para ayudar a agricultores a tomar decisiones prácticas contra el cambio climático.
 
 **Características principales:**
 - Mapa de calor interactivo con riesgo personalizado por variedad
@@ -10,7 +10,6 @@ Proyecto Astro para monitoreo climático de olivares españoles. Combina datos c
 - Catálogo de 6 variedades de olivo con análisis climático
 - Sistema de alertas personalizado por provincia y variedad
 - Comparador visual de variedades
-- Carrusel de cards premium (Mercado, Clima, Recomendación)
 
 ---
 
@@ -20,23 +19,20 @@ Proyecto Astro para monitoreo climático de olivares españoles. Combina datos c
 
 | Tecnología | Descripción |
 |------------|-------------|
-| **Bun** | Runtime de JavaScript ultrarrápido (escrito en Zig) - 3x más rápido que Node.js |
-| **Hono** | Framework web minimalista y ultrarrápido para Bun/Cloudflare Workers |
-| **SQLite (bun:sqlite)** | Base de datos embebida, sin servidor, ideal para proyectos pequeños |
-| **Open-Meteo API** | API gratuita de datos climáticos (no requiere API key) |
-| **Groq/Gemini/OpenRouter** | LLMs para el chatbot con sistema de fallback automático |
-| **Nodemailer** | Librería para envío de emails (Gmail SMTP) |
+| **Bun** | Runtime de JavaScript ultrarrápido |
+| **Hono** | Framework web minimalista para Bun |
+| **SQLite (bun:sqlite)** | Base de datos embebida |
+| **Open-Meteo API** | API gratuita de datos climáticos |
+| **Groq/Gemini/OpenRouter** | LLMs con rotación automática |
 
 ### Frontend
 
 | Tecnología | Descripción |
 |------------|-------------|
-| **Astro** | Framework moderno que genera HTML estático, hydrate solo componentes interactivos |
-| **React** | Librería UI para el chatbot y componentes dinámicos |
-| **Leaflet** | Librería de mapas open-source (ligera vs Google Maps) |
-| **CartoDB** | Tiles de mapas (Light/Dark) gratuitos para Leaflet |
-| **CSS Variables** | Theme system para modo claro/oscuro |
-| **ClientRouter** | Navegación SPA de Astro (transiciones suaves) |
+| **Astro 6.x** | Framework moderno (build estático) |
+| **SolidJS** | Solo framework UI (sin React) |
+| **Leaflet** | Librería de mapas open-source |
+| **CartoDB** | Tiles de mapas gratuitos |
 
 ---
 
@@ -47,81 +43,104 @@ olivaxi/
 ├── api/                          # Backend Bun/Hono
 │   ├── index.ts                  # Servidor principal (puerto 3000)
 │   ├── routes/
-│   │   ├── clima.ts             # GET /api/clima (datos + riesgos por variedad)
-│   │   ├── chat.ts              # POST /api/chat (streaming SSE + provider)
-│   │   └── alertas.ts           # POST /api/alertas (guarda variedad)
+│   │   ├── clima.ts             # GET /api/clima (cache 6h)
+│   │   ├── chat.ts              # POST /api/chat (streaming SSE)
+│   │   ├── alertas.ts           # POST /api/alertas
+│   │   └── analisis.ts          # Análisis provincial
 │   ├── services/
-│   │   └── llmRotation.ts       # Fallback Groq/Gemini/OpenRouter
+│   │   ├── llmRotation.ts       # Fallback Groq/Gemini/OpenRouter
+│   │   └── cronAlertas.ts       # CRON de alertas cada 15min
 │   ├── db/
 │   │   └── sqlite.ts            # Base de datos SQLite
 │   └── data/
-│       └── provincias.ts        # 10 provincias olivareras españolas
+│       └── provincias.ts        # 10 provincias olivareras
 ├── src/
 │   ├── components/
-│   │   ├── MapaCalor.astro      # Mapa Leaflet con riesgo automático por variedad
-│   │   ├── ChatConsejero.jsx    # Chat con streaming SSE
-│   │   ├── ThemeToggle.astro    # Toggle tema claro/oscuro
-│   │   └── ComparadorVariedades.astro # Comparador visual
+│   │   ├── MapaCalor.astro      # Mapa Leaflet
+│   │   ├── ChatConsejero.jsx    # Chat SolidJS
+│   │   └── ThemeToggle.astro    # Toggle tema
 │   ├── layouts/
-│   │   └── Layout.astro         # Layout base con CSS variables + navbar redondeada
+│   │   └── Layout.astro         # Layout base
 │   ├── lib/
-│   │   ├── api.ts               # Funciones helper
-│   │   └── variedades.ts        # Datos compartidos de variedades
+│   │   ├── api.ts               # Helper API
+│   │   ├── state.ts             # Estado compartido
+│   │   └── variedades.ts        # Datos variedades
 │   └── pages/
-│       ├── index.astro           # Homepage (bento grid + mapa + cards premium)
-│       ├── consejero.astro      # Chat (client:only="react")
-│       ├── variedades.astro     # Catálogo variedades (estilo neobrutalista)
-│       ├── alertas.astro        # Formulario alertas (estilo neobrutalista)
-│       ├── plagas.astro         # Página de plagas
-│       └── agua-suelos.astro    # Página agua y suelos
-├── .env                          # Variables de entorno
-└── astro.config.mjs              # Config Astro
+│       ├── index.astro           # Homepage
+│       ├── consejero.astro      # Chat
+│       ├── variedades.astro      # Catálogo
+│       ├── alertas.astro         # Formulario alertas
+│       ├── plagas.astro         # Info plagas
+│       └── agua-suelos.astro     # Info agua/suelos
+├── astro.config.mjs              # Config Astro 6
+├── vite.config.js                # Vite config
+├── Dockerfile                    # Multi-stage build
+└── docker-compose.yml            # Dokploy config
 ```
 
 ---
 
-## 📊 Datos del Sistema
+## ⚠️ NOTAS CRÍTICAS - Errores resueltos
 
-### Datos de Open-Meteo (usados)
+### 1. ViewTransitions/ClientRouter NO EXISTE en Astro 6
+- **Error**: `"ClientRouter" is not exported by "astro:transitions"`
+- **Solución**: Eliminar imports de ViewTransitions/ClientRouter del Layout.astro
+- **Más info**: Astro 6 ya no usa ViewTransitions, el sistema de transiciones cambió
 
-| Campo | Descripción | Ejemplo |
-|-------|-------------|---------|
-| `temperatura` | Temperatura actual °C | 32.5 |
-| `humedad` | Humedad relativa % | 45 |
-| `lluvia` | Precipitación mm | 0 |
-| `suelo_temp` | Temp. suelo 0cm | 28.3 |
-| `suelo_humedad` | Humedad suelo 0-1cm | 0.25 |
-| `evapotranspiracion` | ET0 diaria mm | 4.2 |
+### 2. allowedHosts para DuckDNS (PROBLEMA ACTIVO)
+- **Error**: `Blocked request. This host ("olivaxi.duckdns.org") is not allowed.`
+- **Solución**: Usar flag CLI `--allowedHosts` en el CMD del Dockerfile:
+```dockerfile
+CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
+```
+- **No funciona**: preview.allowedHosts en astro.config.mjs ni vite.config.js
+- **SÍ funciona**: --allowedHosts como argumento CLI
 
-### Datos calculados por el backend
+### 3. Leaflet no encontrado en build
+- **Error**: `Rollup failed to resolve import "leaflet"`
+- **Solución**: Agregar leaflet a dependencies en package.json:
+```json
+"leaflet": "^1.9.4"
+```
 
-| Campo | Descripción |
-|-------|-------------|
-| `riesgo` | Nivel general (alto/medio/bajo) basado en 6 condiciones |
-| `estado` | Estado térmico (Frío/Fresco/Templado/Cálido/Calor/Extremo) |
-| `riesgos_olivar` | 6 condiciones: frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia |
-| `riesgos_plaga` | 4 plagas: mosca, polilla, xylella, repilo |
-| `riesgos_variedad` | Score de riesgo (0-10) por cada una de las 6 variedades |
+---
 
-### Rangos agronómicos por variedad
+## 📊 API Endpoints
 
-| Variedad | Frío | Calor | Humedad alta | Sequía |
-|----------|------|-------|--------------|--------|
-| **Cornicabra** | -10°C | 40°C | <80% | Muy alta |
-| **Picual** | -7°C | 40°C | <75% | Buena |
-| **Arbequina** | -5°C | 35°C | <70% | Baja |
-| **Hojiblanca** | -3°C | 38°C | <75% | Media-alta |
-| **Manzanilla** | -3°C | 38°C | <70% | Baja |
-| **Empeltre** | -5°C | 38°C | <75% | Muy alta |
+### GET /api/clima
+- **Cache**: 6 horas en SQLite
+- **Provincias**: 10 en paralelo (Promise.all)
+- **Retorna**: temperatura, humedad, lluvia, riesgos_olivar, riesgos_plaga, riesgos_variedad, estado, riesgo
 
-### Base de datos SQLite
+### POST /api/chat
+- **Streaming**: SSE (Server-Sent Events)
+- **Rotación**: Groq → Gemini → OpenRouter (automático)
+- **Retry**: Delay 1.5s entre proveedores
+- **Timeout**: 45s por request
 
-```sql
--- clima_cache: datos climáticos cacheados (TTL 6 horas)
-clima_cache(id, datos JSON, cached_at)
+### POST /api/alertas
+- **Storage**: SQLite
+- **Email**: Requiere GMAIL_APP_PASSWORD
 
--- alertas: usuarios registrados para alertas
-alertas(id, nombre, email, provincia, variedad, tipo, activa, last_notified_at, created_at)
+---
+
+## 🚀 Cómo ejecutar
+
+### Frontend (Astro)
+```bash
+npm run dev        # Desarrollo puerto 4321
+npm run build      # Build producción
+npm run preview    # Preview local
+```
+
+### Backend (Bun)
+```bash
+bun run api/index.ts   # Puerto 3000
+```
+
+### Test local con host específico
+```bash
+bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.org
 ```
 
 ---
@@ -130,269 +149,116 @@ alertas(id, nombre, email, provincia, variedad, tipo, activa, last_notified_at, 
 
 | Elemento | Light Mode | Dark Mode |
 |----------|------------|-----------|
-| Background | #F7F4EE (Sal crema) | #000000 |
-| Primary text | #1C1C1C (Aceituna) | #F7F4EE |
-| Muted text | #4a4a40 | #a0a095 |
-| Borders | #1C1C1C | #F7F4EE |
+| Background | #F7F4EE | #000000 |
+| Primary text | #1C1C1C | #F7F4EE |
 | Accent/Limon | #D4E849 | #D4E849 |
-| White surface | #FFFFFF | #1a1a1a |
-
-### Colores de riesgo del mapa
-
-| Nivel | Score | Color |
-|-------|-------|-------|
-| Óptimo | 0 | #16a34a (verde oscuro) |
-| Bajo | 1-3 | #22c55e (verde) |
-| Medio | 4-6 | #f59e0b (ámbar) |
-| Crítico | 7+ | #ef4444 (rojo) |
-
----
-
-## 🚀 Cómo ejecutar
-
-### Frontend (Astro)
-```bash
-npm run dev      # Puerto 4321
-npm run build   # Build producción
-```
-
-### Backend (Bun)
-```bash
-bun run api/index.ts   # Puerto 3000
-```
-
-### Variables de entorno (.env)
-```
-PUBLIC_API_URL=http://localhost:3000
-GROQ_KEY=tu_key
-GEMINI_KEY=tu_key
-OPENROUTER_KEY=tu_key
-GMAIL_USER=tu_email@gmail.com
-GMAIL_APP_PASSWORD=tu_password
-```
-
----
-
-## 📄 API Endpoints
-
-### GET /api/clima
-Retorna array de provincias con datos completos:
-```json
-{
-  "provincia": "Jaén",
-  "lat": 37.77,
-  "lon": -3.79,
-  "temperatura": 32,
-  "humedad": 45,
-  "lluvia": 0,
-  "riesgo": "medio",
-  "estado": "Cálido",
-  "riesgos_olivar": { "frio": {...}, "calor": {...}, ... },
-  "riesgos_plaga": { "mosca": {...}, "polilla": {...}, ... },
-  "riesgos_variedad": {
-    "picual": { "score": 5, "nivel": "medio", "detalle": ["🔥 Calor sensible"] },
-    ...
-  }
-}
-```
-
-### POST /api/chat
-Streaming SSE con chunks de texto + provider info
-
-### POST /api/alertas
-Body:
-```json
-{ "nombre": "...", "email": "...", "provincia": "Jaén", "variedad": "picual", "tipo": "calor_critico" }
-```
-
----
-
-## 🔗 Rutas del Frontend
-
-| Ruta | Descripción |
-|------|-------------|
-| `/` | Homepage con bento grid, mapa (60%) + sidebar (40%), mapa destacado, cards premium, top 3 riesgos |
-| `/consejero` | Chat con IA (streaming SSE) |
-| `/variedades` | Catálogo neobrutalista con comparador visual y filtros climáticos |
-| `/alertas` | Formulario de alertas personalizado (estilo neobrutalista) |
-| `/plagas` | Información sobre plagas |
-| `/agua-suelos` | Página de agua y suelos |
-
----
-
-## 📝 Historial de Cambios Recientes
-
-### 2026-03-27 - Optimización de código + UI
-
-**Cambios implementados:**
-
-1. ✅ **Código unificado**
-   - Nuevo archivo `src/lib/variedades.ts` con VARIEDADES, ICONOS_ALERTAS, PLAGAS_INFO
-   - Eliminado duplicación en MapaCalor.astro, alertas.astro
-   - Cálculos solo en backend, frontend solo renderiza
-
-2. ✅ **Eliminación de código muerto**
-   - Eliminados componentes sin usar: AlertasClimaticas.astro, AlertasPlagas.astro, AnalisisOlivar.astro, RankingRiesgo.astro
-   - Eliminado archivo sin usar: src/data/variedades.json
-   - Eliminado CSS sin usar: ThemeToggle.module.css
-
-3. ✅ **Cards premium (carrusel)**
-   - 3 cards: MERCADO, CLIMA, RECOMENDACIÓN
-   - Diseño estilo carta con bordes y sombras
-   - Carrusel horizontal con flechas de navegación
-   - Dots indicadores
-
-4. ✅ **Mapa más alto**
-   - Aumentado a 580px para igualar panel de alertas
-   - Responsive: 350px tablet, 280px móvil
-
-5. ✅ **Formulario alertas neobrutalista**
-   - Bordes cuadrados, border negro 3px
-   - Sombra offset (6px 6px 0 #1C1C1C)
-   - Botón con efecto hover
-   - Labels en mayúsculas
-
-6. ✅ **Espacios reducidos**
-   - Hero: padding y min-height reducidos
-   - Bento grid: gap y margin reducidos
-
-7. ✅ **Optimización móvil completa**
-   - Homepage: mapa adaptativo, cards carrusel
-   - Alertas: formulario responsive
-   - Variedades: grid 1 columna, filtros compactos
-
----
-
-### 2026-03-26 - Sistema de riesgo automático
-
-1. ✅ **Backend (api/routes/clima.ts)**
-   - Rangos agronómicos actualizados por variedad (basados en investigación)
-   - Funciones con umbrales exactos: frío (-10°C a -3°C), calor (35°C a 40°C), humedad (70-80%)
-
-2. ✅ **Frontend (MapaCalor.astro)**
-   - Eliminado botón manual ⚠️ de riesgo
-   - Colores cambian automáticamente según variedad seleccionada
-   - Zoom automático a provincia
-
-3. ✅ **Navbar**
-   - Estilo redondeado (border-radius: 50px)
-   - Fondo blanco, distribución simétrica
 
 ---
 
 ## 📋 Estado Actual
 
-### Último comando ejecutado:
-```bash
-npm run build  # Pasa correctamente (6 páginas)
+### Build stats:
+- **Tamaño**: 424KB (muy ligero para VPS)
+- **Tiempo**: ~3 segundos
+- **Páginas**: 6
+
+### Deploy actual:
+- **Web**: https://olivaxi.duckdns.org
+- **API**: Puerto 3000 (vía Traefik)
+
+### Funcionando:
+- ✅ Mapa de calor
+- ✅ Chat con LLM
+- ✅ Sistema de alertas
+- ✅ Catálogo variedades
+- ✅ Tema light/dark
+- ⚠️allowedHosts requiere CLI flag
+
+---
+
+## 🔧 Configuración Dokploy
+
+### docker-compose.yml
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "4321:4321"
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
 ```
 
-### Pendientes:
-- **Logo SVG**: El usuario proporcionará un SVG detallado con viewBox "0 0 1720 580" que debe reemplazar el SVG placeholder actual en `src/layouts/Layout.astro` líneas 40-46
-  - El SVG debe estilizarse para matching con el navbar (tamaño, colores dark/light)
-  - Actualmente hay un SVG inline temporal simple
+### Dockerfile (CRÍTICO - allowedHosts)
+```dockerfile
+FROM oven/bun:latest AS base
+WORKDIR /app
 
-### Mejoras futuras sugeridas:
-1. Añadir datos dinámicos de precios del aceite
-2. Pronóstico 7 días
-3. Datos de viento, UV
-4. Notificaciones push
-5. Widget de tendencia semanal
+FROM base AS deps
+COPY package.json ./
+RUN bun install --frozen-lockfile
 
----
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN bun run build
 
-## 🔧 Componentes del Mapa
+FROM base AS runner
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.astro ./node_modules/.astro
 
-### MapaCalor.astro
-- Filtros: 🌡️ temperatura, 💧 humedad, 🌧️ lluvia
-- Colores automáticos según variedad
-- Leaflet con CartoDB dark/light tiles dinámico
-- CircleMarkers con animación
-- Tooltip muestra datos climáticos + riesgo por variedad
-- Zoom a provincia en evento `provincia-seleccionada`
-
-### index.astro (Homepage)
-- Hero minimalista (40vh, padding compactado)
-- Bento grid: mapa (60%) + sidebar (40%)
-- Sidebar: selector provincia, selector variedad, alertas en tiempo real
-- Mapa destacado (580px) después del top 3
-- Premium cards carrusel (Mercado, Clima, Recomendación)
-- localStorage para persistir selección de provincia/variedad
-
-### variedades.astro
-- Header neobrutalista con borde limón
-- Grid de tarjetas con shadow offset
-- Filtros por condiciones climáticas
-- Comparador visual entre 2 variedades
-
-### alertas.astro
-- Formulario neobrutalista
-- Estilo distintivo con bordes cuadrados y sombras offset
+EXPOSE 4321
+CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
+```
 
 ---
 
-## 🔧 Estado de Implementación del Logo
+## 🔑 Variables de Entorno
 
-### 2026-03-27 - Implementación del Logo SVG
+```env
+# API Keys para Chat
+GROQ_KEY=tu_key_de_groq
+GEMINI_KEY=tu_key_de_gemini
+OPENROUTER_KEY=tu_key_de_openrouter
 
-**Trabajo realizado:**
+# Email para alertas
+GMAIL_USER=tu_email@gmail.com
+GMAIL_APP_PASSWORD=tu_password
 
-1. ✅ **Navbar flotante mejorada**
-   - Diseño flotante rectangular con border-radius: 16px
-   - Márgenes de ~2cm de los bordes (top: 16px, left/right: 24px, bottom: 16px)
-   - Fondo blanco/gris según theme
-   - Distribución simétrica: logo | nav links | theme toggle + botón alertas
-
-2. ✅ **Orden del navbar (izquierda a derecha)**
-   - Logo SVG (reemplazando emoji 🫒)
-   - Inicio → Consejero → Variedades → Agua y Suelos → Plagas
-   - Theme toggle button (☀️)
-   - Botón "Activar alertas" (color lima/lime #D4E849)
-
-3. ✅ **Logo SVG implementado**
-   - Archivo: `/public/logo.svg`
-   - Usado en `src/layouts/Layout.astro` líneas 39-42
-   - Altura: 36px en el navbar
-   - Dos variantes de color: ramas en `currentColor`, aceitunas en `#D4E849`
-
-4. ✅ **Responsive del navbar**
-   - Desktop (>900px): muestra nav links horizontal +隐藏 hamburger
-   - Móvil (≤900px):隐藏 nav links, muestra hamburger + dropdown
-
-5. ✅ **Build verificado**
-   - `npm run build` pasa correctamente
+# URL del backend
+PUBLIC_API_URL=http://localhost:3000
+```
 
 ---
 
-## 📌 Guía para Continuar el Trabajo
+## 🧪 Testing
 
-### Estado actual del proyecto
+```bash
+# Test API clima
+curl http://localhost:3000/api/clima | jq '.[0]'
 
-El proyecto está en un estado funcional con:
-- ✅ Frontend Astro funcionando en puerto 4321
-- ✅ Backend Bun funcionando en puerto 3000
-- ✅ Sistema de clima, riesgo y alertas operativo
-- ✅ Navbar con logo SVG implementado (/public/logo.svg)
+# Test API chat
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"mensaje":"hola","provincia":"Jaén"}'
 
-### Para continuar desde donde se quedó:
-
-El proyecto está completo. Si necesitas hacer cambios:
-
-1. **Modificar el logo**: Editar `/public/logo.svg`
-2. **Modificar el navbar**: Editar `src/layouts/Layout.astro` líneas 36-78
-3. **Verificar el build**:
-   ```bash
-   npm run build
-   ```
-
-### Archivos relevantes
-
-| Archivo | Descripción |
-|---------|-------------|
-| `src/layouts/Layout.astro` | Layout principal - navbar en líneas 36-78, CSS del navbar en líneas ~230-320 |
-| `public/logo.svg` | Logo SVG del navbar |
-| `<style>` en Layout | Variables CSS de theme (--color-limon, etc.) |
+# Test frontend con DuckDNS header
+curl -H "Host: olivaxi.duckdns.org" http://localhost:4321/
+```
 
 ---
 
-*Documentación actualizada: 2026-03-27*
+## 📝 Notas para el siguiente agente
+
+1. **NO usar ViewTransitions/ClientRouter** - Obsoleto en Astro 6
+2. **Para allowedHosts usar CLI flag** - La config no funciona, solo el flag
+3. **SolidJS funciona bien** - Solo instalar en package.json
+4. **Ecosistema compartido** - Ya hay evento olivaxi-state-change pero no está implementado completamente
+5. **Build muy ligero** - 424KB, ideal para VPS pequeños
+
+---
+
+*Documentación actualizada: 2026-03-28*
+*Proyecto: olivaξ - Monitor Climático de Olivares*
