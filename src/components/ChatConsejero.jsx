@@ -356,9 +356,6 @@ export default function ChatConsejero() {
           max-width: 600px;
           margin: 0 auto 20px;
           width: 100%;
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          animation-delay: 0.2s;
-          opacity: 0;
         }
         .chat-messages {
           flex: 1;
@@ -369,39 +366,11 @@ export default function ChatConsejero() {
           max-width: 700px;
           width: 100%;
           margin: 0 auto;
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
         .msg-row {
           display: flex;
           align-items: flex-start;
           gap: 10px;
-          animation: fadeInMessage 0.4s ease forwards;
-          opacity: 0;
-        }
-        .msg-row:nth-child(1) { animation-delay: 0.1s; }
-        .msg-row:nth-child(2) { animation-delay: 0.2s; }
-        .msg-row:nth-child(3) { animation-delay: 0.3s; }
-        .msg-row:nth-child(4) { animation-delay: 0.4s; }
-        .msg-row:nth-child(5) { animation-delay: 0.5s; }
-        @keyframes fadeInMessage {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
         .msg-row.user {
           justify-content: flex-end;
@@ -546,16 +515,9 @@ export default function ChatConsejero() {
           background: #1C1C1C;
           color: #fff;
         }
-        .bubble {
-          animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
-        }
         @keyframes bounce {
           0%, 100% { transform: translateY(0); opacity: 0.4; }
           50% { transform: translateY(-6px); opacity: 1; }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
