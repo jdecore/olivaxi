@@ -142,7 +142,7 @@ export default function ChatConsejero() {
         if (provData) setClimaActual(provData);
       } catch {}
       
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'bot', text: `Perfecto, tengo información de ${provMatch}. ¿Qué quieres saber sobre tu olivar?` }]);
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'bot', text: `Perfecto, tengo información de ${provMatch}.` }]);
       scrollToBottom();
       return true;
     }
@@ -258,18 +258,6 @@ export default function ChatConsejero() {
           background: #f5efe8;
           padding: 40px 20px;
         }
-        .chat-greeting {
-          text-align: center;
-          margin-bottom: 32px;
-        }
-        .chat-greeting h1 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-weight: 800;
-          font-size: 42px;
-          color: #000;
-          margin: 0;
-          letter-spacing: -0.02em;
-        }
         .chat-messages {
           flex: 1;
           overflow-y: auto;
@@ -377,6 +365,78 @@ export default function ChatConsejero() {
         .chat-input:disabled {
           opacity: 0.6;
         }
+        .active-mode {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          justify-content: center;
+        }
+        .active-mode-badge {
+          background: #1C1C1C;
+          color: #fff;
+          padding: 8px 16px;
+          border-radius: 24px;
+          font-size: 14px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .active-mode-clear {
+          background: transparent;
+          border: 1px solid #ccc;
+          color: #666;
+          padding: 8px 14px;
+          border-radius: 24px;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .active-mode-clear:hover {
+          border-color: #1C1C1C;
+          color: #1C1C1C;
+        }
+        .initial-card {
+          max-width: 600px;
+          margin: 20px auto 0;
+          background: #fff;
+          border-radius: 24px;
+          padding: 32px 28px;
+          text-align: center;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .initial-card p {
+          font-size: 16px;
+          color: #333;
+          margin: 0 0 24px;
+          line-height: 1.6;
+        }
+        .skills-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: center;
+        }
+        .skill-btn {
+          padding: 10px 18px;
+          border-radius: 24px;
+          border: 1px solid #e0e0e0;
+          background: transparent;
+          color: #666;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .skill-btn:hover {
+          border-color: #1C1C1C;
+          color: #1C1C1C;
+        }
+        .skill-btn.selected {
+          background: #1C1C1C;
+          border-color: #1C1C1C;
+          color: #fff;
+        }
         .bubble {
           animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
         }
@@ -390,8 +450,49 @@ export default function ChatConsejero() {
         }
       `}</style>
 
-      <div class="chat-greeting">
-        <h1>¿Qué modo quieres usar?</h1>
+      <Show when={!provincia()}>
+        <div class="initial-card">
+          <p>¡Hola! Soy Olivo 🫒, tu Consejero del olivar. Para ayudarte mejor, ¿de qué provincia es tu olivar?</p>
+        </div>
+      </Show>
+
+      <Show when={provincia() && !activeSkill() && msgs().length <= 1}>
+        <div class="initial-card">
+          <p>¿Qué modo quieres usar?</p>
+          <div class="skills-grid">
+            <For each={SKILLS}>{(skill) => (
+              <button 
+                class={`skill-btn ${activeSkill() === skill.id ? 'selected' : ''}`}
+                onClick={() => selectSkill(skill.id)}
+              >
+                {skill.label}
+              </button>
+            )}</For>
+          </div>
+        </div>
+      </Show>
+
+      <Show when={activeSkill()}>
+        <div class="active-mode">
+          <div class="active-mode-badge">
+            {SKILLS.find(s => s.id === activeSkill())?.label}
+          </div>
+          <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
+            Cambiar
+          </button>
+        </div>
+      </Show>
+
+      <div class={`chat-input-wrapper ${inputExpanded() ? 'expanded' : ''}`}>
+        <input 
+          class="chat-input" 
+          type="text" 
+          value={input()} 
+          onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
+          onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+          placeholder="Escribe tu mensaje..."
+          disabled={isLoading() || isAtLimit()} 
+        />
       </div>
 
       <div class="chat-messages">
@@ -426,18 +527,6 @@ export default function ChatConsejero() {
         </Show>
         
         <div ref={messagesEndRef}></div>
-      </div>
-
-      <div class={`chat-input-wrapper ${inputExpanded() ? 'expanded' : ''}`}>
-        <input 
-          class="chat-input" 
-          type="text" 
-          value={input()} 
-          onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
-          onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-          placeholder="Escribe tu mensaje..."
-          disabled={isLoading() || isAtLimit()} 
-        />
       </div>
     </div>
   );
