@@ -279,11 +279,11 @@ export default function ChatConsejero() {
       <style>{`
         .chat-container {
           width: 100%;
-          height: 100vh;
+          height: 100%;
           display: flex;
           flex-direction: column;
           background: #f5efe8;
-          padding: 20px 16px;
+          padding: 16px;
           box-sizing: border-box;
           overflow: hidden;
         }
