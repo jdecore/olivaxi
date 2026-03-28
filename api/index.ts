@@ -93,6 +93,7 @@ setInterval(async () => {
 
 Bun.serve({
   port: 3000,
+  hostname: '0.0.0.0',
   idleTimeout: 120,
   fetch: app.fetch,
 });

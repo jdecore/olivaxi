@@ -4,13 +4,9 @@ WORKDIR /app
 
 COPY api/package.json ./
 COPY api/bun.lock ./
-RUN bun install
+RUN bun install --frozen-lockfile
 
-COPY api/data ./data
-COPY api/routes ./routes
-COPY api/services ./services
-COPY api/db ./db
-COPY api/index.ts ./
+COPY api/ ./
 
 EXPOSE 3000
 

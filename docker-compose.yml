@@ -6,9 +6,7 @@ services:
       args:
         PUBLIC_API_URL: https://api.olivaxi.duckdns.org
     ports:
-      - "8080:4321"
-    depends_on:
-      - api
+      - "4321:4321"
     restart: unless-stopped
 
   api:
@@ -16,7 +14,7 @@ services:
       context: .
       dockerfile: api/Dockerfile
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
       - ./api/olivaxi.db:/app/olivaxi.db
     environment:
