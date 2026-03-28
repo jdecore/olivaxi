@@ -8,6 +8,17 @@ const PROVINCIAS = [
 
 const formatText = (text) => text?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') || '';
 
+const getInitialProvincia = () => {
+  if (typeof window === 'undefined') return '';
+  try {
+    const saved = localStorage.getItem('olivaxi_provincia');
+    if (saved) return saved;
+    const savedVariedad = localStorage.getItem('olivaxi_variedad');
+    if (savedVariedad) return 'Jaén';
+  } catch {}
+  return '';
+};
+
 const SKILLS = [
   { id: 'calor', label: '🔥 Calor' },
   { id: 'drought', label: '🏜️ Sequía' },
@@ -30,7 +41,7 @@ export default function ChatConsejero() {
   const MAX_MESSAGES = 20;
   
   const [messages, setMessages] = createSignal([]);
-  const [provincia, setProvincia] = createSignal('');
+  const [provincia, setProvincia] = createSignal(getInitialProvincia());
   const [input, setInput] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
