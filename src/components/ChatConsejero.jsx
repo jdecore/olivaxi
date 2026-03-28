@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, Show } from 'solid-js';
+import { createSignal, onMount, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
 import OlivaxiState from '../lib/state';
 
