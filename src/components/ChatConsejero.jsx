@@ -406,6 +406,14 @@ export default function ChatConsejero() {
           text-align: center;
           box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
+        .initial-title {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 800;
+          font-size: 32px;
+          color: #000;
+          margin: 0 0 24px;
+          letter-spacing: -0.02em;
+        }
         .initial-card p {
           font-size: 16px;
           color: #333;
@@ -458,7 +466,7 @@ export default function ChatConsejero() {
 
       <Show when={provincia() && !activeSkill() && msgs().length <= 1}>
         <div class="initial-card">
-          <p>¿Qué modo quieres usar?</p>
+          <h2 class="initial-title">¿Qué modo quieres usar?</h2>
           <div class="skills-grid">
             <For each={SKILLS}>{(skill) => (
               <button 
