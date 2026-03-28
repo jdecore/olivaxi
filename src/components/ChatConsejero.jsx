@@ -278,18 +278,27 @@ export default function ChatConsejero() {
           flex-direction: column;
           background: #f5efe8;
           padding: 40px 20px;
+          overflow: hidden;
         }
         .chat-hero {
           text-align: center;
-          margin-bottom: 24px;
+          margin-bottom: 16px;
+          flex-shrink: 0;
         }
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 42px;
+          font-size: 32px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
+        }
+        .chat-with-input {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          max-height: calc(100vh - 150px);
+          overflow: hidden;
         }
         .province-select-card {
           max-width: 480px;
@@ -319,16 +328,17 @@ export default function ChatConsejero() {
         }
         .skills-card {
           max-width: 500px;
-          margin: 0 auto 20px;
+          margin: 0 auto 16px;
           background: #fff;
-          border-radius: 20px;
-          padding: 24px;
+          border-radius: 16px;
+          padding: 16px;
           box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          flex-shrink: 0;
         }
         .skills-grid {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 8px;
           justify-content: center;
         }
         .skill-btn {
@@ -360,10 +370,11 @@ export default function ChatConsejero() {
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 16px;
-          max-width: 700px;
+          gap: 12px;
+          max-width: 600px;
           width: 100%;
           margin: 0 auto;
+          padding-bottom: 16px;
         }
         .msg-row {
           display: flex;
@@ -438,16 +449,20 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 600px;
+          max-width: 500px;
           width: 100%;
-          margin: 16px auto 0;
+          margin: 0 auto 12px;
+          padding: 8px 12px;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .chat-input {
           width: 100%;
-          height: 48px;
+          height: 36px;
           border: none;
           background: transparent;
-          font-size: 15px;
+          font-size: 14px;
           color: #1C1C1C;
           outline: none;
           padding: 0;
@@ -462,15 +477,15 @@ export default function ChatConsejero() {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 12px;
+          margin-bottom: 8px;
           justify-content: center;
         }
         .active-mode-badge {
           background: #1C1C1C;
           color: #fff;
-          padding: 8px 16px;
-          border-radius: 24px;
-          font-size: 14px;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 13px;
           font-weight: 500;
           display: flex;
           align-items: center;
@@ -491,19 +506,18 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .skill-btn {
-          padding: 12px 20px;
-          border-radius: 24px;
+          padding: 8px 16px;
+          border-radius: 20px;
           border: none;
           background: #D4E849;
           color: #1C1C1C;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.15s;
         }
         .skill-btn:hover {
           background: #c5d93e;
-          transform: translateY(-1px);
         }
         .skill-btn.selected {
           background: #1C1C1C;
@@ -549,44 +563,8 @@ export default function ChatConsejero() {
         </div>
       </Show>
 
-      <Show when={activeSkill()}>
-        <div class="chat-messages">
-          <For each={msgs()}>{(msg) => (
-            <div class={`msg-row ${msg.role} ${!msg.isWaiting ? 'bubble' : ''}`}>
-              <Show when={msg.role === 'bot'} fallback={
-                <div class="msg-bubble user">{msg.text}</div>
-              }>
-                <div class="msg-bubble bot">
-                  <Show when={msg.isWaiting}>
-                    <div class="typing-dots">
-                      <span class="dot1"></span>
-                      <span class="dot2"></span>
-                      <span class="dot3"></span>
-                    </div>
-                  </Show>
-                  <Show when={!msg.isWaiting}>
-                    <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
-                  </Show>
-                </div>
-              </Show>
-            </div>
-          )}</For>
-          
-          <Show when={isAtLimit() && !isLoading()}>
-            <div class="limit-message">
-              <span>Llegaste al límite de memoria 🧹</span>
-              <button class="limit-btn" onClick={limpiarChat}>
-                🤖🧹 Limpiar chat
-              </button>
-            </div>
-          </Show>
-          
-          <div ref={messagesEndRef}></div>
-        </div>
-      </Show>
-
-      <div class="input-section">
-        <Show when={activeSkill()}>
+      <Show when={provincia() && activeSkill()}>
+        <div class="chat-with-input">
           <div class="active-mode">
             <div class="active-mode-badge">
               {SKILLS.find(s => s.id === activeSkill())?.label}
@@ -607,8 +585,42 @@ export default function ChatConsejero() {
               disabled={isLoading() || isAtLimit()} 
             />
           </div>
-        </Show>
-      </div>
+
+          <div class="chat-messages">
+            <For each={msgs()}>{(msg) => (
+              <div class="msg-row">
+                <Show when={msg.role === 'bot'} fallback={
+                  <div class="msg-bubble user">{msg.text}</div>
+                }>
+                  <div class="msg-bubble bot">
+                    <Show when={msg.isWaiting}>
+                      <div class="typing-dots">
+                        <span class="dot1"></span>
+                        <span class="dot2"></span>
+                        <span class="dot3"></span>
+                      </div>
+                    </Show>
+                    <Show when={!msg.isWaiting}>
+                      <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
+                    </Show>
+                  </div>
+                </Show>
+              </div>
+            )}</For>
+            
+            <Show when={isAtLimit() && !isLoading()}>
+              <div class="limit-message">
+                <span>Llegaste al límite de memoria 🧹</span>
+                <button class="limit-btn" onClick={limpiarChat}>
+                  🤖🧹 Limpiar chat
+                </button>
+              </div>
+            </Show>
+            
+            <div ref={messagesEndRef}></div>
+          </div>
+        </div>
+      </Show>
     </div>
   );
 }
