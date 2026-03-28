@@ -20,6 +20,7 @@ const getInitialProvincia = () => {
 };
 
 const SKILLS = [
+  { id: 'libre', label: '💬 Libre', condition: 'conversación general', color: '#f5efe8' },
   { id: 'calor', label: '🔥 Calor', condition: 'altas temperaturas', color: '#FFE4D6' },
   { id: 'drought', label: '🏜️ Sequía', condition: 'estrés hídrico', color: '#FFF3E0' },
   { id: 'frio', label: '❄️ Frío', condition: 'bajas temperaturas', color: '#E3F2FD' },
@@ -561,21 +562,21 @@ export default function ChatConsejero() {
           justify-content: flex-end;
         }
         .msg-bubble {
-          padding: 6px 10px;
-          max-width: 72%;
-          font-size: 12px;
-          line-height: 1.4;
+          padding: 10px 16px;
+          max-width: 85%;
+          font-size: 15px;
+          line-height: 1.5;
         }
         .msg-bubble.bot {
           background: #fff;
-          border-radius: 4px 12px 12px 12px;
+          border-radius: 4px 16px 16px 16px;
           color: #1C1C1C;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .msg-bubble.user {
           background: #1C1C1C;
           color: #F7F4EE;
-          border-radius: 14px 4px 14px 14px;
+          border-radius: 16px 4px 16px 16px;
           width: fit-content;
           word-break: break-word;
         }
@@ -625,14 +626,14 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 1000px;
+          max-width: 1200px;
           width: 100%;
           margin: 0 auto 4px;
-          padding: 8px 12px;
+          padding: 12px 20px;
           background: #fff;
-          border-radius: 12px;
+          border-radius: 16px;
           border: 2px solid #1C1C1C;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
           transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .chat-input-wrapper.responding {
@@ -641,10 +642,10 @@ export default function ChatConsejero() {
         }
         .chat-input {
           width: 100%;
-          height: 30px;
+          height: 36px;
           border: none;
           background: transparent;
-          font-size: 15px;
+          font-size: 16px;
           color: #1C1C1C;
           outline: none;
           padding: 0;
