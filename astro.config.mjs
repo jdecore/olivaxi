@@ -6,10 +6,6 @@ export default defineConfig({
   integrations: [
     solid({ include: ['**/ChatConsejero.jsx'] })
   ],
-  prefetch: {
-    prefetchAll: false,
-    defaultStrategy: 'hover'
-  },
   build: {
     inlineStylesheets: 'always',
     assetsInlineLimit: 2048,
@@ -20,24 +16,11 @@ export default defineConfig({
     build: {
       cssMinify: true,
       minify: 'esbuild',
-      target: 'es2020',
-      rollupOptions: {
-        output: {
-          manualChunks: (id) => {
-            if (id.includes('node_modules')) return 'vendor';
-          }
-        }
-      }
-    },
-    optimizeDeps: {
-      exclude: ['solid-js']
+      target: 'esnext'
     }
   },
   devToolbar: {
     enabled: false
   },
-  server: {
-    port: 3000
-  },
-  output: 'static'
+  prefetch: false
 });
