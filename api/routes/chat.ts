@@ -10,12 +10,19 @@ const RATE_WINDOW = 60 * 1000;
 
 // Skills disponibles para el chat
 const SKILL_PROMPTS: Record<string, string> = {
+  libre: '',  // Sin skill específico - conversación general
   drought: 'Eres un experto en gestión del estrés hídrico en olivares. Enfoca tus respuestas en técnicas de riego, cubiertas vegetales, y manejo del suelo para conservar agua. Da recomendaciones específicas para la situación actual.',
   calor: 'Eres un experto en protección térmica de olivares. Enfoca tus respuestas en estrategias de sombreo, riego temprano, protección contra olas de calor extremas, y mulch. Considera la variedad del usuario si se menciona.',
   frio: 'Eres un experto en protección contra heladas en olivares. Enfoca tus respuestas en técnicas de protección, momento de poda, prevención de daños por frío, y manejo de árboles dañados.',
   humedad: 'Eres un experto en enfermedades fúngicas del olivo. Enfoca tus respuestas en repilo, aceituna jabonosa, verticilosis, control de humedad, y tratamientos preventivos con fungicidas.',
   plaga: 'Eres un experto en control de plagas del olivo. Enfoca tus respuestas en mosca del olivo, polilla, tuberculosis, barrenillo, y control integrado de plagas (IPM).',
   fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: reposo (nov-ene), brotación (feb-mar), floración (abr-may), cuaje (may-jun), endurecimiento del hueso (jun-ago), envero (sep-oct), y recolección (oct-nov).',
+};
+
+// Soporta both 'plaga' and 'plagas' para compatibilidad
+const SKILL_ALIASES: Record<string, string> = {
+  plaga: 'plaga',
+  plagas: 'plaga',
 };
 
 function checkRateLimit(ip: string): boolean {
@@ -55,7 +62,9 @@ chat.post("/", async (c) => {
 
   const mensaje = mensajeRaw.replace(/[<>'";]/g, '').trim().slice(0, 1000);
   const provincia = provinciaRaw.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, '').trim().slice(0, 50);
-  const skill = SKILL_PROMPTS[skillRaw] || '';
+  // Resolver alias de skill (ej: 'plagas' -> 'plaga')
+  const resolvedSkill = SKILL_ALIASES[skillRaw] || skillRaw;
+  const skill = SKILL_PROMPTS[resolvedSkill] || '';
 
   if (mensaje.length < 2) {
     return c.json({ error: "Mensaje demasiado corto" }, 400);

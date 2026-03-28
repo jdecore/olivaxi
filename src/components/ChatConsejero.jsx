@@ -57,6 +57,7 @@ export default function ChatConsejero() {
   const [titleFullText, setTitleFullText] = createSignal('');
   const [titleTyping, setTitleTyping] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
+  const [showCleanMenu, setShowCleanMenu] = createSignal(false);
   
   let typingInterval;
   let messagesEndRef;
@@ -112,6 +113,9 @@ export default function ChatConsejero() {
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.mode-pill-inline')) {
         setShowModeDropdown(false);
+      }
+      if (!e.target.closest('.clean-btn-wrapper')) {
+        setShowCleanMenu(false);
       }
     });
     
@@ -282,6 +286,29 @@ export default function ChatConsejero() {
     stopTypingAnimation();
     setActiveSkill(null);
     initChat();
+  };
+
+  const nuevoChat = () => {
+    setMessages([]);
+    setInput('');
+    setActiveSkill(null);
+    setTitleText('');
+    setTitleTyping(false);
+    setIsLoading(false);
+  };
+
+  const descargarChat = () => {
+    const chatContent = messages().map(m => 
+      `${m.role === 'user' ? 'Tú' : 'Olivo'}:\n${m.text}\n`
+    ).join('\n');
+    
+    const blob = new Blob([chatContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `olivaxi-chat-${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const selectSkill = (skillId) => {
@@ -617,6 +644,44 @@ export default function ChatConsejero() {
           background: #D4E849;
           transform: scale(1.05);
         }
+        .clean-menu {
+          position: absolute;
+          bottom: 100%;
+          right: 0;
+          margin-bottom: 8px;
+          background: #fff;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          display: none;
+          min-width: 180px;
+          z-index: 100;
+          overflow: hidden;
+        }
+        .clean-menu.show {
+          display: block;
+        }
+        .clean-option {
+          padding: 10px 14px;
+          font-size: 13px;
+          color: #1C1C1C;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+          transition: background 0.15s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .clean-option:last-child {
+          border-bottom: none;
+        }
+        .clean-option:hover {
+          background: #D4E849;
+        }
+        .clean-btn-wrapper {
+          position: relative;
+          display: inline-flex;
+        }
         .chat-input {
           flex: 1;
           height: 36px;
@@ -835,9 +900,19 @@ export default function ChatConsejero() {
                   disabled={isLoading() || isAtLimit()} 
                 />
               </div>
-              <button class="clean-btn" onClick={limpiarChat} title="Limpiar chat">
-                🧹
-              </button>
+              <div class="clean-btn-wrapper">
+                <button class="clean-btn" onClick={() => setShowCleanMenu(!showCleanMenu())} title="Limpiar chat">
+                  🧹
+                </button>
+                <div class={`clean-menu ${showCleanMenu() ? 'show' : ''}`}>
+                  <div class="clean-option" onClick={() => { descargarChat(); setShowCleanMenu(false); }}>
+                    📥 Descargar chat
+                  </div>
+                  <div class="clean-option" onClick={() => { nuevoChat(); setShowCleanMenu(false); }}>
+                    ✨ Nuevo chat
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
