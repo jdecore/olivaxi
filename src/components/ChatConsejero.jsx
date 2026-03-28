@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, Show, createEffect } from 'solid-js';
+import { createSignal, onMount, onCleanup, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
 
 const PROVINCIAS = [
@@ -137,12 +137,6 @@ export default function ChatConsejero() {
       clearInterval(interval);
       window.removeEventListener('storage', handleStorageChange);
     });
-  });
-
-  createEffect(() => {
-    if (messagesEndRef && messages().length > 0) {
-      messagesEndRef.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
   });
 
   const scrollToBottom = (smooth = false) => {
