@@ -33,175 +33,39 @@ const variedadSeleccionada = Astro.props.variedad || '';
 </div>
 
 <style>
-  #mapa-container {
-    position: relative;
-    height: 380px;
-    width: 100%;
-    border: 2px solid var(--color-sal);
-    border-radius: 4px;
-    overflow: hidden;
-  }
+  #mapa-container { position: relative; height: 380px; width: 100%; border: 2px solid var(--color-sal); border-radius: 4px; overflow: hidden; }
   #mapa { height: 100%; width: 100%; border-radius: 4px; z-index: 1; position: relative; }
-  :global(.leaflet-map-pane) { z-index: 1 !important; }
-  :global(.leaflet-marker-pane) { z-index: 2 !important; }
-  :global(.leaflet-overlay-pane) { z-index: 3 !important; }
-  :global(.leaflet-shadow-pane) { z-index: 4 !important; }
-  :global(.leaflet-tile-pane) { z-index: 1 !important; }
-  :global(.leaflet-marker-icon) { z-index: 10 !important; }
-  .mapa-filters {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 99;
-    display: flex;
-    align-items: flex-start;
-    background: var(--color-muted-bg);
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: 2px solid var(--color-sal);
-  }
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .filter-btn {
-    padding: 4px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1.5px solid var(--color-sal);
-    border-radius: 6px;
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 36px;
-  }
+  .mapa-filters { position: absolute; top: 10px; left: 10px; z-index: 99; display: flex; align-items: flex-start; background: var(--color-muted-bg); padding: 6px 8px; border-radius: 4px; border: 2px solid var(--color-sal); }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-btn { padding: 4px 8px; font-size: 12px; font-weight: 600; border: 1.5px solid var(--color-sal); border-radius: 6px; background: var(--color-limon); color: var(--color-aceituna); cursor: pointer; transition: all 0.2s; min-width: 36px; }
   .filter-btn:hover { background: #c5d93e; }
   .filter-btn.active { background: #FFFFFF; color: var(--color-aceituna); border-color: var(--color-aceituna); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  .mapa-loading {
-    position: absolute;
-    inset: 0;
-    background: var(--color-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
+  .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
   .mapa-loading.hidden { display: none; }
-  .skeleton-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .skeleton-loader {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    z-index: 10;
-  }
-  .skeleton-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--color-muted);
-    border-top-color: var(--color-limon);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .skeleton-text {
-    font-size: 13px;
-    color: var(--color-muted);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .skeleton-dots::after {
-    content: '';
-    animation: dots 1.5s steps(4, end) infinite;
-  }
-  .skeleton-provinces {
-    position: absolute;
-    inset: 0;
-  }
-  .sk-p {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    background: var(--color-muted);
-    border-radius: 50%;
-    animation: breathe 2s ease-in-out infinite;
-    transform: translate(-50%, -50%);
-    opacity: 0.4;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  @keyframes dots {
-    0% { content: ''; }
-    25% { content: '.'; }
-    50% { content: '..'; }
-    75% { content: '...'; }
-  }
-  @keyframes breathe {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
-    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.6; }
-  }
-  @keyframes skeletonPulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.5; }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.15; }
-    50% { transform: scale(1.1); opacity: 0.25; }
-  }
+  .skeleton-container { position: relative; width: 100%; height: 100%; }
+  .skeleton-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 10; }
+  .skeleton-spinner { width: 40px; height: 40px; border: 3px solid var(--color-muted); border-top-color: var(--color-limon); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .skeleton-text { font-size: 13px; color: var(--color-muted); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+  .skeleton-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+  .skeleton-provinces { position: absolute; inset: 0; }
+  .sk-p { position: absolute; width: 18px; height: 18px; background: var(--color-muted); border-radius: 50%; animation: breathe 2s ease-in-out infinite; transform: translate(-50%, -50%); opacity: 0.4; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+  @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; } 50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.6; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   .marker-fadeIn { animation: fadeIn 0.35s ease-out forwards; opacity: 0; }
-  .marker-pulse { animation: pulse 2s ease-in-out infinite; }
-  .mapa-legend {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-muted-bg);
-    border: 2px solid var(--color-sal);
-    border-radius: 4px;
-    padding: 4px 10px;
-    font-size: 10px;
-    font-family: -apple-system, sans-serif;
-    z-index: 99;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    max-width: 90%;
-  }
+  .mapa-legend { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--color-muted-bg); border: 2px solid var(--color-sal); border-radius: 4px; padding: 4px 10px; font-size: 10px; font-family: -apple-system, sans-serif; z-index: 99; display: flex; gap: 8px; justify-content: center; max-width: 90%; }
   .legend-item { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .legend-label { color: var(--color-aceituna); white-space: nowrap; }
-  :global(.leaflet-container) { background: var(--color-bg); }
-  :global(.leaflet-control-loading) { display: none !important; }
-  :global(.leaflet-loader) { display: none !important; }
-  @media (prefers-reduced-motion: reduce) {
-    .marker-fadeIn { animation: none; opacity: 1; }
-    .marker-pulse { animation: none; }
-    .skeleton-spinner, .sk-p { animation: none; }
-  }
-  @media (max-width: 768px) {
-    .marker-fadeIn { animation-duration: 0.2s; }
-  }
+  .maplibregl-popup-content { font-family: -apple-system, sans-serif !important; padding: 8px 12px !important; border-radius: 6px !important; }
+  @media (prefers-reduced-motion: reduce) { .marker-fadeIn { animation: none; opacity: 1; } .skeleton-spinner, .sk-p { animation: none; } }
+  @media (max-width: 768px) { .marker-fadeIn { animation-duration: 0.2s; } }
 </style>
 
-<script>
-  import 'leaflet';
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
 
+<script>
   const getColorByTemperatura = (temp) => {
     if (temp < 10) return '#74B9FF';
     if (temp < 20) return '#55EFC4';
@@ -229,7 +93,6 @@ const variedadSeleccionada = Astro.props.variedad || '';
   const getMarkerRadius = (humedad) => 8 + (humedad / 100) * 8;
 
   const getColor = (provincia, filtro, variedad) => {
-    // Si hay variedad seleccionada, usar colores de riesgo por variedad automáticamente
     if (variedad && provincia.riesgos_variedad?.[variedad]) {
       return getColorByRiesgoVariedad(provincia, variedad);
     }
@@ -242,7 +105,6 @@ const variedadSeleccionada = Astro.props.variedad || '';
   };
 
   const getLeyenda = (filtro, variedad) => {
-    // Si hay variedad seleccionada, mostrar leyenda de riesgo por variedad
     if (variedad) {
       return [
         { label: 'Óptimo (0)', color: '#16a34a' },
@@ -253,147 +115,46 @@ const variedadSeleccionada = Astro.props.variedad || '';
     }
     const legends = {
       temperatura: [
-        { label: '<10°C', color: '#74B9FF' },
-        { label: '10-20°C', color: '#55EFC4' },
-        { label: '20-28°C', color: '#A8D8A8' },
-        { label: '28-35°C', color: '#FDCB6E' },
-        { label: '35-38°C', color: '#E17055' },
-        { label: '>38°C', color: '#D63031' },
+        { label: '<10°C', color: '#74B9FF' }, { label: '10-20°C', color: '#55EFC4' },
+        { label: '20-28°C', color: '#A8D8A8' }, { label: '28-35°C', color: '#FDCB6E' },
+        { label: '35-38°C', color: '#E17055' }, { label: '>38°C', color: '#D63031' },
       ],
       humedad: [
-        { label: '<20%', color: '#D63031' },
-        { label: '20-40%', color: '#E17055' },
-        { label: '40-60%', color: '#FDCB6E' },
-        { label: '60-80%', color: '#55EFC4' },
+        { label: '<20%', color: '#D63031' }, { label: '20-40%', color: '#E17055' },
+        { label: '40-60%', color: '#FDCB6E' }, { label: '60-80%', color: '#55EFC4' },
         { label: '>80%', color: '#74B9FF' },
       ],
       precipitacion: [
-        { label: '0mm', color: '#FDCB6E' },
-        { label: '<2mm', color: '#55EFC4' },
-        { label: '2-10mm', color: '#74B9FF' },
-        { label: '>10mm', color: '#0984e3' },
+        { label: '0mm', color: '#FDCB6E' }, { label: '<2mm', color: '#55EFC4' },
+        { label: '2-10mm', color: '#74B9FF' }, { label: '>10mm', color: '#0984e3' },
       ],
     };
     return legends[filtro] || [];
   };
 
-  const getTooltipContent = (provincia, color, filtro, variedad, riesgosVariedad) => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
-    const mutedColor = isDark ? '#a0a095' : '#4a4a40';
-    const bg = isDark ? '#000' : '#F7F4EE';
-    const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 120px;`;
-
-    // Si hay variedad seleccionada, mostrar tooltip de riesgo por variedad
-    if (variedad && provincia.riesgos_variedad?.[variedad]) {
-      return getTooltipRiesgoVariedad(provincia, variedad);
-    }
-
-    const contenido = {
-      temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
-      humedad: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>${provincia.suelo_humedad !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">🌱 Suelo: ${(provincia.suelo_humedad * 100).toFixed(0)}%</div>` : ''}`,
-      precipitacion: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>${provincia.evapotranspiracion !== undefined ? `<div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">💨 ET0: ${provincia.evapotranspiracion.toFixed(1)}mm</div>` : ''}`,
-    };
-
-    let tooltipContent = `<div style="${base}">${contenido[filtro] || ''}</div>`;
-
-    if (variedad && riesgosVariedad && riesgosVariedad.length > 0) {
-      const riesgoColors = { alto: '#ef4444', medio: '#f59e0b', bajo: '#22c55e' };
-      const alertsHtml = riesgosVariedad.slice(0, 2).map(r => {
-        const nivelColor = riesgoColors[r.nivel] || '#f59e0b';
-        return `<div style="font-size: 10px; color: ${nivelColor}; margin-top: 4px;">⚠️ ${r.icon} ${r.texto}</div>`;
-      }).join('');
-      
-      tooltipContent = `<div style="${base}">${contenido[filtro] || ''}<div style="margin-top: 6px; border-top: 1px solid ${mutedColor}; padding-top: 4px;">${alertsHtml}</div></div>`;
-    }
-
-    return tooltipContent;
-  };
-
   function getColorByRiesgoVariedad(provincia, variedad) {
-    if (!variedad) {
-      return getColorByTemperatura(provincia.temperatura);
-    }
-
-    // Usar datos del backend directamente
+    if (!variedad) return getColorByTemperatura(provincia.temperatura);
     const riesgoData = provincia.riesgos_variedad?.[variedad];
     const score = riesgoData?.score || 0;
     const nivel = riesgoData?.nivel || 'óptimo';
-
     if (nivel === 'crítico' || score >= 7) return "#ef4444";
     if (nivel === 'medio' || score >= 4) return "#f59e0b";
     if (nivel === 'bajo' || score >= 1) return "#22c55e";
     return "#16a34a";
   }
 
-  function getTooltipRiesgoVariedad(provincia, variedad) {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
-    const mutedColor = isDark ? '#a0a095' : '#4a4a40';
-    const bg = isDark ? '#000' : '#F7F4EE';
-    const base = `font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600; color: ${textColor}; background: ${bg}; border: 2px solid #F7F4EE; border-radius: 4px; padding: 6px 10px; min-width: 140px;`;
-
-    const riesgoData = provincia.riesgos_variedad?.[variedad];
-    const score = riesgoData?.score || 0;
-    const nivel = riesgoData?.nivel || 'óptimo';
-    const detalle = riesgoData?.detalle || [];
-
-    const color = getColorByRiesgoVariedad(provincia, variedad);
-
-    return `
-      <div style="${base}">
-        <div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div>
-        <div style="color: ${color}; font-size: 13px; font-weight: 700;">
-          ⚠️ Riesgo: ${nivel.toUpperCase()} (${score}/10)
-        </div>
-        <div style="margin-top: 6px; font-size: 11px; color: ${mutedColor}; border-top: 1px solid ${mutedColor}; padding-top: 4px;">
-          ${detalle.length > 0 ? detalle.map(d => `• ${d}`).join('<br>') : '✅ Condiciones óptimas para tu variedad'}
-        </div>
-        <div style="margin-top: 4px; font-size: 10px; color: ${mutedColor};">
-          🌡️ ${provincia.temperatura}°C | 💧 ${provincia.humedad}%
-        </div>
-      </div>
-    `;
-  }
-
-  let map, markersLayer, datos = [], filtroActual = 'temperatura', variedadActual = '';
+  let map, datos = [], filtroActual = 'temperatura', variedadActual = '';
+  let markers = [];
   const container = document.getElementById('mapa-container');
-  if (container?.dataset.variedad) {
-    variedadActual = container.dataset.variedad;
-  } else if (typeof window !== 'undefined' && window.__mapaVariedad) {
-    variedadActual = window.__mapaVariedad;
-  }
-
-  // Listen for variety changes
-  if (typeof window !== 'undefined') {
-    window.addEventListener('variedad-seleccionada', (e) => {
-      variedadActual = e.detail?.variedad || '';
-      if (container) container.dataset.variedad = variedadActual;
-      renderMarkers();
-      updateLegend();
-    });
-
-    window.addEventListener('provincia-seleccionada', (e) => {
-      const provincia = e.detail?.provincia;
-      if (!provincia || !map) return;
-      const provData = datos.find(p => p.provincia === provincia);
-      if (provData && provData.lat && provData.lon) {
-        map.setView([provData.lat, provData.lon], 8, { animate: true, duration: 0.5 });
-      }
-    });
-  }
+  if (container?.dataset.variedad) variedadActual = container.dataset.variedad;
+  else if (window.__mapaVariedad) variedadActual = window.__mapaVariedad;
 
   const initMap = async () => {
     const mapaDiv = document.getElementById('mapa');
     const container = document.getElementById('mapa-container');
     const apiBase = container?.dataset.apiUrl || 'http://localhost:3000';
     const loadingEl = document.getElementById('mapa-loading');
-
     if (!mapaDiv || map) return;
-
-    if (mapaDiv._leaflet_id) {
-      mapaDiv.remove();
-    }
 
     try {
       const res = await fetch(`${apiBase}/api/clima`);
@@ -410,126 +171,109 @@ const variedadSeleccionada = Astro.props.variedad || '';
     }
 
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const tileUrl = isDark 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    const style = isDark 
+      ? 'https://tiles.openfreemap.org/styles/darkmatter'
+      : 'https://tiles.openfreemap.org/styles/liberty';
 
-    map = L.map('mapa', {
-      center: [40.0, -3.5],
+    const maplibregl = window.maplibregl || (await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default;
+
+    map = new maplibregl.Map({
+      container: 'mapa',
+      style: style,
+      center: [-3.5, 40.0],
       zoom: 6,
       minZoom: 5,
       maxZoom: 10,
-      maxBounds: [[27, -20], [55, 15]],
-      zoomControl: false,
-      preferCanvas: true
+      attributionControl: false
     });
 
-    L.tileLayer(tileUrl, { 
-      attribution: '© CartoDB',
-      zIndex: 1
-    }).addTo(map);
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
 
-    markersLayer = L.layerGroup();
-    renderMarkers();
-    markersLayer.addTo(map);
-    
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 100);
-    
-    if (loadingEl) loadingEl.classList.add('hidden');
-    updateLegend();
+    map.on('load', () => {
+      renderMarkers(maplibregl);
+      if (loadingEl) loadingEl.classList.add('hidden');
+      updateLegend();
+    });
   };
 
-  const renderMarkers = () => {
-    if (!markersLayer) return;
-    markersLayer.clearLayers();
+  const renderMarkers = (maplibregl) => {
+    if (!map || !map.isStyleLoaded()) return;
+    markers.forEach(m => m.remove());
+    markers = [];
 
     datos.forEach((provincia, index) => {
-      // Usar el filtro seleccionado + variedad para el color
       const color = getColor(provincia, filtroActual, variedadActual);
       const radius = getMarkerRadius(provincia.humedad);
       const isExtremo = provincia.estado === 'Extremo' && filtroActual === 'temperatura';
-      
-      // Calcular riesgos para el tooltip usando datos del backend
       const riesgosBackend = provincia.riesgos_variedad?.[variedadActual];
       const tieneAlto = riesgosBackend?.nivel === 'crítico' || riesgosBackend?.score >= 7;
-      const tieneMedio = riesgosBackend?.nivel === 'medio' || (riesgosBackend?.score >= 4 && riesgosBackend?.score < 7);
 
-      if (isExtremo || tieneAlto) {
-        const pulse = L.circleMarker([provincia.lat, provincia.lon], {
-          radius: radius + 8,
-          fillColor: color,
-          fillOpacity: 0.15,
-          color: color,
-          weight: 0,
-          interactive: false,
-          className: 'marker-pulse'
-        });
-        setTimeout(() => pulse.addTo(markersLayer), index * 50);
-      }
+      const el = document.createElement('div');
+      el.className = `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`;
+      el.style.cssText = `width: ${radius * 2}px; height: ${radius * 2}px; background: ${color}; border: 2.5px solid ${color}; border-radius: 50%; opacity: 0.9; cursor: pointer; position: relative;`;
+      if (isExtremo || tieneAlto) el.style.boxShadow = `0 0 0 8px ${color}26`;
+      el.style.animationDelay = `${index * 50}ms`;
 
-      const circle = L.circleMarker([provincia.lat, provincia.lon], {
-        radius,
-        fillColor: color,
-        color,
-        fillOpacity: 0.9,
-        weight: 2.5,
-        className: `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`
+      const popup = new maplibregl.Popup({ offset: [0, -10], closeButton: false })
+        .setHTML(getTooltipContent(provincia, color, filtroActual, variedadActual, []));
+
+      el.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: provincia.provincia } }));
       });
 
-      circle.bindTooltip(getTooltipContent(provincia, color, filtroActual, variedadActual, []), {
-        className: 'olivax-tooltip',
-        direction: 'top',
-        offset: [0, -10]
-      });
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([provincia.lon, provincia.lat])
+        .setPopup(popup)
+        .addTo(map);
 
-      circle.on('click', () => {
-        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { 
-          detail: { provincia: provincia.provincia } 
-        }));
-      });
-
-      setTimeout(() => circle.addTo(markersLayer), index * 50);
+      markers.push(marker);
     });
+  };
+
+  const getTooltipContent = (provincia, color, filtro, variedad) => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
+    const mutedColor = isDark ? '#a0a095' : '#4a4a40';
+    const bg = isDark ? '#1a1a1a' : '#FFFFFF';
+    const base = `font-family: -apple-system, sans-serif; font-size: 12px; color: ${textColor}; background: ${bg}; border-radius: 6px; padding: 8px 10px;`;
+
+    if (variedad && provincia.riesgos_variedad?.[variedad]) {
+      const riesgoData = provincia.riesgos_variedad?.[variedad];
+      const score = riesgoData?.score || 0;
+      const nivel = riesgoData?.nivel || 'óptimo';
+      return `<div style="${base}"><div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">⚠️ Riesgo: ${nivel.toUpperCase()} (${score}/10)</div><div style="margin-top: 6px; font-size: 11px; color: ${mutedColor};">🌡️ ${provincia.temperatura}°C | 💧 ${provincia.humedad}%</div></div>`;
+    }
+
+    const contenido = {
+      temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
+      humedad: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>`,
+      precipitacion: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>`,
+    };
+    return `<div style="${base}">${contenido[filtro] || ''}</div>`;
   };
 
   const updateLegend = () => {
     const legendEl = document.getElementById('mapa-legend');
     if (!legendEl) return;
-    
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const textColor = isDark ? '#F7F4EE' : '#1C1C1C';
-    
-    legendEl.innerHTML = getLeyenda(filtroActual, variedadActual).map(item => `
-      <div class="legend-item">
-        <div class="legend-dot" style="background: ${item.color};"></div>
-        <span class="legend-label" style="color: ${textColor};">${item.label}</span>
-      </div>
-    `).join('');
+    legendEl.innerHTML = getLeyenda(filtroActual, variedadActual).map(item => `<div class="legend-item"><div class="legend-dot" style="background: ${item.color};"></div><span class="legend-label" style="color: ${textColor};">${item.label}</span></div>`).join('');
   };
 
   const init = async () => {
-    // Get variety from localStorage or window variable
     if (!variedadActual) {
-      try {
-        variedadActual = localStorage.getItem('olivaxi_variedad') || window.__mapaVariedad || '';
-      } catch (e) {}
+      try { variedadActual = localStorage.getItem('olivaxi_variedad') || window.__mapaVariedad || ''; } catch (e) {}
     }
-    if (container && variedadActual) {
-      container.dataset.variedad = variedadActual;
-    }
-
-    // Initialize map first
+    if (container && variedadActual) container.dataset.variedad = variedadActual;
     await initMap();
 
-    // Then set up event listeners
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         filtroActual = btn.dataset.filtro;
-        renderMarkers();
+        renderMarkers((await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default);
         updateLegend();
       });
     });
@@ -537,7 +281,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
     window.addEventListener('variedad-seleccionada', (e) => {
       variedadActual = e.detail?.variedad || '';
       if (container) container.dataset.variedad = variedadActual;
-      renderMarkers();
+      renderMarkers((await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default);
       updateLegend();
     });
 
@@ -546,37 +290,26 @@ const variedadSeleccionada = Astro.props.variedad || '';
       if (!provincia || !map) return;
       const provData = datos.find(p => p.provincia === provincia);
       if (provData && provData.lat && provData.lon) {
-        map.setView([provData.lat, provData.lon], 8, { animate: true, duration: 0.5 });
+        map.flyTo({ center: [provData.lon, provData.lat], zoom: 8, duration: 0.5 });
       }
     });
 
-    window.addEventListener('modoOscuroChange', (e) => {
+    window.addEventListener('modoOscuroChange', async (e) => {
       if (!map) return;
       const isDark = e.detail.modoOscuro;
-      const tileUrl = isDark 
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-      
-      map.eachLayer(layer => {
-        if (layer instanceof L.TileLayer) layer.setUrl(tileUrl);
+      const style = isDark ? 'https://tiles.openfreemap.org/styles/darkmatter' : 'https://tiles.openfreemap.org/styles/liberty';
+      map.setStyle(style);
+      map.once('styledata', () => {
+        const ml = (await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default;
+        renderMarkers(ml);
+        updateLegend();
       });
-      renderMarkers();
-      updateLegend();
     });
-
   };
 
-  const initAfterSwap = () => {
-    map = null;
-    datos = [];
-    setTimeout(() => init(), 100);
-  };
+  const initAfterSwap = () => { map = null; datos = []; markers = []; setTimeout(() => init(), 100); };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
   document.addEventListener('astro:after-swap', initAfterSwap);
 </script>

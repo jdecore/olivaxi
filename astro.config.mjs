@@ -8,10 +8,7 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'always',
     assetsInlineLimit: 2048,
-    emptyOutDir: true,
-    rollupOptions: {
-      external: ['leaflet']
-    }
+    emptyOutDir: true
   },
   compressHTML: true,
   vite: {
