@@ -56,6 +56,8 @@ export default function ChatConsejero() {
     return null;
   };
 
+  const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
+  
   const initChat = async () => {
     const savedProv = getProvinciaFromStorage();
     
@@ -67,16 +69,19 @@ export default function ChatConsejero() {
         const provData = data.find((p) => p.provincia === savedProv);
         if (provData) setClimaActual(provData);
       } catch {}
-      
-      setMessages([
-        { id: 1, role: 'bot', text: `¡Hola! Soy Olivo 🫒, tu Consejero del olivar. Estoy listo para ayudarte con tu olivar en ${savedProv}. ¿Qué quieres saber?` }
-      ]);
-    } else {
-      setMessages([
-        { id: 1, role: 'bot', text: '¡Hola! Soy Olivo 🫒, tu Consejero del olivar. Para ayudarte mejor, ¿de qué provincia es tu olivar?' }
-      ]);
     }
     setInitComplete(true);
+  };
+
+  const seleccionarProvincia = async (prov) => {
+    setProvincia(prov);
+    setShowProvinceDropdown(false);
+    try {
+      const res = await fetch(apiUrl('/api/clima'));
+      const data = await res.json();
+      const provData = data.find((p) => p.provincia === prov);
+      if (provData) setClimaActual(provData);
+    } catch {}
   };
 
   onMount(() => {
@@ -258,6 +263,82 @@ export default function ChatConsejero() {
           background: #f5efe8;
           padding: 40px 20px;
         }
+        .chat-hero {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+        .chat-hero h1 {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 800;
+          font-size: 42px;
+          color: #000;
+          margin: 0;
+          letter-spacing: -0.02em;
+        }
+        .province-select-card {
+          max-width: 400px;
+          margin: 0 auto 20px;
+          background: #fff;
+          border-radius: 20px;
+          padding: 16px 20px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .province-dropdown {
+          width: 100%;
+          padding: 12px 16px;
+          font-size: 16px;
+          border: 1px solid #e0e0e0;
+          border-radius: 12px;
+          background: #fff;
+          color: #333;
+          cursor: pointer;
+          outline: none;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 16px center;
+        }
+        .province-dropdown:focus {
+          border-color: #1C1C1C;
+        }
+        .skills-card {
+          max-width: 500px;
+          margin: 0 auto 20px;
+          background: #fff;
+          border-radius: 20px;
+          padding: 24px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .skills-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: center;
+        }
+        .skill-btn {
+          padding: 10px 18px;
+          border-radius: 24px;
+          border: 1px solid #e0e0e0;
+          background: transparent;
+          color: #666;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .skill-btn:hover {
+          border-color: #1C1C1C;
+          color: #1C1C1C;
+        }
+        .skill-btn.selected {
+          background: #1C1C1C;
+          border-color: #1C1C1C;
+          color: #fff;
+        }
+        .input-section {
+          max-width: 600px;
+          margin: 0 auto 20px;
+          width: 100%;
+        }
         .chat-messages {
           flex: 1;
           overflow-y: auto;
@@ -397,42 +478,6 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
           color: #1C1C1C;
         }
-        .initial-card {
-          max-width: 600px;
-          margin: 20px auto 0;
-          background: #fff;
-          border-radius: 24px;
-          padding: 32px 28px;
-          text-align: center;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        .initial-title {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-weight: 800;
-          font-size: 32px;
-          color: #000;
-          margin: 0 0 24px;
-          letter-spacing: -0.02em;
-        }
-        .initial-card p {
-          font-size: 16px;
-          color: #333;
-          margin: 0 0 24px;
-          line-height: 1.6;
-        }
-        .skills-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          justify-content: center;
-        }
-        .skill-btn {
-          padding: 10px 18px;
-          border-radius: 24px;
-          border: 1px solid #e0e0e0;
-          background: transparent;
-          color: #666;
-          font-size: 14px;
           cursor: pointer;
           transition: all 0.15s;
         }
@@ -458,15 +503,27 @@ export default function ChatConsejero() {
         }
       `}</style>
 
+      <div class="chat-hero">
+        <h1>¿Qué modo quieres usar?</h1>
+      </div>
+
       <Show when={!provincia()}>
-        <div class="initial-card">
-          <p>¡Hola! Soy Olivo 🫒, tu Consejero del olivar. Para ayudarte mejor, ¿de qué provincia es tu olivar?</p>
+        <div class="province-select-card">
+          <select 
+            class="province-dropdown"
+            value=""
+            onChange={(e) => seleccionarProvincia(e.target.value)}
+          >
+            <option value="" disabled>Selecciona tu provincia</option>
+            <For each={PROVINCIAS}>{(prov) => (
+              <option value={prov}>{prov}</option>
+            )}</For>
+          </select>
         </div>
       </Show>
 
-      <Show when={provincia() && !activeSkill() && msgs().length <= 1}>
-        <div class="initial-card">
-          <h2 class="initial-title">¿Qué modo quieres usar?</h2>
+      <Show when={provincia() && !activeSkill()}>
+        <div class="skills-card">
           <div class="skills-grid">
             <For each={SKILLS}>{(skill) => (
               <button 
@@ -480,27 +537,29 @@ export default function ChatConsejero() {
         </div>
       </Show>
 
-      <Show when={activeSkill()}>
-        <div class="active-mode">
-          <div class="active-mode-badge">
-            {SKILLS.find(s => s.id === activeSkill())?.label}
+      <div class="input-section">
+        <Show when={activeSkill()}>
+          <div class="active-mode">
+            <div class="active-mode-badge">
+              {SKILLS.find(s => s.id === activeSkill())?.label}
+            </div>
+            <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
+              Cambiar
+            </button>
           </div>
-          <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
-            Cambiar
-          </button>
+        </Show>
+        
+        <div class={`chat-input-wrapper ${inputExpanded() || activeSkill() ? 'expanded' : ''}`}>
+          <input 
+            class="chat-input" 
+            type="text" 
+            value={input()} 
+            onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
+            onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+            placeholder="Escribe tu mensaje..."
+            disabled={isLoading() || isAtLimit()} 
+          />
         </div>
-      </Show>
-
-      <div class={`chat-input-wrapper ${inputExpanded() ? 'expanded' : ''}`}>
-        <input 
-          class="chat-input" 
-          type="text" 
-          value={input()} 
-          onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
-          onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-          placeholder="Escribe tu mensaje..."
-          disabled={isLoading() || isAtLimit()} 
-        />
       </div>
 
       <div class="chat-messages">
