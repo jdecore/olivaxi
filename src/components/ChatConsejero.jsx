@@ -241,59 +241,39 @@ export default function ChatConsejero() {
   const t = () => ({ bg: '#fff', text: '#1C1C1C', muted: '#6B6B5E', accent: '#D4E849', inputBg: '#f7f5f0' });
   const msgs = () => messages();
 
+  const allModes = () => ['Auto', ...SKILLS.map(s => s.label)];
+  
   return (
     <div class="chat-container">
       <style>{`
         .chat-container {
           width: 100%;
-          height: 100vh;
+          min-height: 100vh;
           display: flex;
           flex-direction: column;
-          background: #F9F8F4;
+          background: #f5efe8;
+          padding: 40px 20px;
         }
-        .chat-header {
-          background: #fff;
-          border-bottom: 1px solid #E8EDE0;
-          padding: 16px 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          flex-shrink: 0;
+        .chat-greeting {
+          text-align: center;
+          margin-bottom: 32px;
         }
-        .chat-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .chat-logo-icon {
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .chat-logo-icon svg {
-          width: 100%;
-          height: 100%;
-        }
-        .chat-title {
+        .chat-greeting h1 {
+          font-family: system-ui, -apple-system, sans-serif;
           font-weight: 700;
-          font-size: 18px;
-          color: #1C1C1C;
-        }
-        .chat-provider {
-          font-size: 12px;
-          color: #6B6B5E;
+          font-size: 22px;
+          color: #000;
+          margin: 0;
         }
         .chat-messages {
           flex: 1;
           overflow-y: auto;
-          padding: 24px 20px;
           display: flex;
           flex-direction: column;
           gap: 16px;
-          background: #F9F8F4;
+          max-width: 700px;
+          width: 100%;
+          margin: 0 auto;
         }
         .msg-row {
           display: flex;
@@ -303,21 +283,6 @@ export default function ChatConsejero() {
         .msg-row.user {
           justify-content: flex-end;
         }
-        .msg-avatar-small {
-          width: 32px;
-          height: 32px;
-          background: #1C1C1C;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .msg-avatar-small svg {
-          width: 18px;
-          height: 18px;
-          fill: #D4E849;
-        }
         .msg-bubble {
           padding: 14px 18px;
           max-width: 72%;
@@ -326,7 +291,6 @@ export default function ChatConsejero() {
         }
         .msg-bubble.bot {
           background: #fff;
-          border: 1px solid #E8EDE0;
           border-radius: 4px 18px 18px 18px;
           color: #1C1C1C;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06);
@@ -346,7 +310,7 @@ export default function ChatConsejero() {
         .typing-dots span {
           width: 8px;
           height: 8px;
-          background: #6B6B5E;
+          background: #999;
           border-radius: 50%;
         }
         .dot1 { animation: bounce 1.2s ease-in-out infinite; }
@@ -354,16 +318,17 @@ export default function ChatConsejero() {
         .dot3 { animation: bounce 1.2s ease-in-out 0.4s infinite; }
         .limit-message {
           background: #fff;
-          border: 1px solid #f59e0b;
           border-radius: 12px;
           padding: 16px 20px;
           text-align: center;
-          color: #b45309;
+          color: #666;
           font-weight: 500;
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 12px;
+          max-width: 700px;
+          margin: 0 auto;
         }
         .limit-btn {
           background: #1C1C1C;
@@ -383,10 +348,13 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          background: #f7f5f0;
-          border-top: 1px solid rgba(0,0,0,0.06);
-          padding: 12px 20px 16px;
-          flex-shrink: 0;
+          max-width: 700px;
+          width: 100%;
+          margin: 24px auto 0;
+          background: #fff;
+          border-radius: 24px;
+          padding: 20px 24px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         .chat-input {
           width: 100%;
@@ -399,7 +367,7 @@ export default function ChatConsejero() {
           padding: 0;
         }
         .chat-input::placeholder {
-          color: #6B6B5E;
+          color: #999;
         }
         .chat-input:disabled {
           opacity: 0.6;
@@ -407,100 +375,29 @@ export default function ChatConsejero() {
         .chat-toolbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
           margin-top: 12px;
-          gap: 12px;
-        }
-        .mode-btns {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
-          flex: 1;
+          gap: 8px;
         }
         .mode-btn {
-          padding: 6px 12px;
-          border-radius: 6px;
-          border: none;
+          padding: 8px 14px;
+          border-radius: 20px;
+          border: 1px solid #e0e0e0;
           background: transparent;
-          color: #6B6B5E;
+          color: #666;
           font-size: 13px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.15s;
-          display: flex;
-          align-items: center;
-          gap: 4px;
         }
         .mode-btn:hover {
-          background: rgba(0,0,0,0.05);
-          color: #1C1C1C;
+          border-color: #999;
+          color: #333;
         }
         .mode-btn.active {
-          background: #D4E849;
-          color: #1C1C1C;
-        }
-        .mode-btn-auto {
-          background: transparent;
-          border: 1px solid #ddd;
-        }
-        .mode-btn-auto:hover {
-          border-color: #D4E849;
-        }
-        .mode-btn-auto.active {
-          background: #D4E849;
-          border-color: #D4E849;
-        }
-        .active-mode-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 1;
-        }
-        .active-mode-badge {
-          background: #D4E849;
-          color: #1C1C1C;
-          padding: 6px 12px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .toolbar-right {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-        }
-        .send-btn {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          border: none;
-          background: #111;
+          background: #1C1C1C;
+          border-color: #1C1C1C;
           color: #fff;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.15s;
-        }
-        .send-btn:hover:not(:disabled) {
-          background: #D4E849;
-        }
-        .send-btn:hover:not(:disabled) svg {
-          fill: #111;
-        }
-        .send-btn:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-        }
-        .send-btn svg {
-          width: 18px;
-          height: 18px;
-          fill: #fff;
-          transition: fill 0.15s;
         }
         .bubble {
           animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
@@ -513,40 +410,15 @@ export default function ChatConsejero() {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
       `}</style>
 
-      <div class="chat-header">
-        <div class="chat-logo">
-          <div class="chat-logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="14" r="8" stroke="#1C1C1C" stroke-width="2"/>
-              <path d="M12 6C12 6 8 2 6 2C4 2 3 4 3 6C3 10 12 14 12 14" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 6C12 6 16 2 18 2C20 2 21 4 21 6C21 10 12 14 12 14" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="chat-title">Olivo</span>
-        </div>
-        <Show when={currentProvider()}>
-          <span class="chat-provider">· {currentProvider()}</span>
-        </Show>
+      <div class="chat-greeting">
+        <h1>¿Qué modo quieres usar?</h1>
       </div>
 
       <div class="chat-messages">
         <For each={msgs()}>{(msg) => (
           <div class={`msg-row ${msg.role} ${!msg.isWaiting ? 'bubble' : ''}`}>
-            <Show when={msg.role === 'bot'}>
-              <div class="msg-avatar-small">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="12" cy="14" r="8"/>
-                  <path d="M12 6C12 6 8 2 6 2C4 2 3 4 3 6C3 10 12 14 12 14" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 6C12 6 16 2 18 2C20 2 21 4 21 6C21 10 12 14 12 14" fill="none" stroke="currentColor" stroke-width="2"/>
-                </svg>
-              </div>
-            </Show>
             <Show when={msg.role === 'bot'} fallback={
               <div class="msg-bubble user">{msg.text}</div>
             }>
@@ -585,47 +457,25 @@ export default function ChatConsejero() {
           value={input()} 
           onInput={(e) => setInput(e.target.value)} 
           onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-          placeholder={provincia() ? `${SKILLS.map(s => s.label).join(' · ')}` : '¿De qué provincia es tu olivar?'}
+          placeholder={`Message ${allModes().join(' · ')}`}
           disabled={isLoading() || isAtLimit()} 
         />
         
         <div class="chat-toolbar">
-          <Show when={!activeSkill()} fallback={
-            <div class="active-mode-left">
-              <div class="active-mode-badge">
-                {SKILLS.find(s => s.id === activeSkill())?.label}
-              </div>
-              <button class={`mode-btn mode-btn-auto`} onClick={() => setActiveSkill(null)}>
-                Auto
-              </button>
-            </div>
-          }>
-            <div class="mode-btns">
-              <button class={`mode-btn mode-btn-auto ${!activeSkill() ? 'active' : ''}`} onClick={() => setActiveSkill(null)}>
-                Auto
-              </button>
-              <For each={SKILLS}>{(skill) => (
-                <button 
-                  class={`mode-btn ${activeSkill() === skill.id ? 'active' : ''}`} 
-                  onClick={() => selectSkill(skill.id)}
-                >
-                  {skill.label}
-                </button>
-              )}</For>
-            </div>
-          </Show>
-          
-          <div class="toolbar-right">
+          <button 
+            class={`mode-btn ${!activeSkill() ? 'active' : ''}`} 
+            onClick={() => setActiveSkill(null)}
+          >
+            Auto
+          </button>
+          <For each={SKILLS}>{(skill) => (
             <button 
-              class="send-btn" 
-              onClick={enviarPregunta} 
-              disabled={isLoading() || !input().trim() || isAtLimit()}
+              class={`mode-btn ${activeSkill() === skill.id ? 'active' : ''}`} 
+              onClick={() => selectSkill(skill.id)}
             >
-              <svg viewBox="0 0 24 24">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
+              {skill.label}
             </button>
-          </div>
+          )}</For>
         </div>
       </div>
     </div>
