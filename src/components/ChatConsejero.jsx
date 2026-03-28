@@ -334,10 +334,8 @@ export default function ChatConsejero() {
           height: 100%;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
           background: #f5efe8;
-          padding: 8px;
+          padding: 16px 24px;
           box-sizing: border-box;
           overflow: hidden;
           transition: background 0.5s ease;
@@ -379,13 +377,15 @@ export default function ChatConsejero() {
         }
         .input-area {
           flex-shrink: 0;
-          padding: 16px;
+          padding: 16px 24px;
           background: inherit;
           transition: background 0.5s ease;
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 8px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .mode-pill-container {
           display: flex;
@@ -449,11 +449,10 @@ export default function ChatConsejero() {
           overflow-y: hidden;
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          max-width: 100%;
+          gap: 8px;
           width: 100%;
-          margin: 0 auto;
-          padding-bottom: 4px;
+          padding: 0 24px;
+          box-sizing: border-box;
           min-height: 0;
           background: inherit;
           transition: background 0.5s ease;
