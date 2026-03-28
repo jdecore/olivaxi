@@ -14,6 +14,7 @@ const { title = "olivaξ" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="Monitoreo climático de olivares españoles - Protege tu olivar del cambio climático" />
+    <link rel="icon" type="image/png" href="/favicon.ico" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,7 +39,7 @@ const { title = "olivaξ" } = Astro.props;
       <div class="navbar-inner">
         <div class="nav-left">
           <a href="/" class="logo">
-            <span class="logo-icon">🌿</span>
+            <img src="/logo-32.png" alt="olivaξ" width="32" height="32" />
             <span>olivaξ</span>
           </a>
         </div>
@@ -225,192 +226,8 @@ const { title = "olivaξ" } = Astro.props;
     white-space: nowrap;
   }
 
-  .nav-left .logo .logo-icon {
-    font-size: 1.5rem;
-  }
-
-  [data-theme="light"] .nav-left .logo {
-    color: var(--color-aceituna);
-  }
-
-  .nav-center { 
-    display: flex; 
-    gap: 24px;
-  }
-
-  .desktop-nav {
-    display: flex;
-  }
-
-  @media (max-width: 900px) {
-    .desktop-nav { display: none; }
-    .nav-right { display: none; }
-  }
-
-  .hamburger-btn {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    gap: 5px;
-    padding: 6px;
-  }
-
-  .hamburger-btn span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    background: var(--color-aceituna);
-    border-radius: 1px;
-    transition: all 0.3s ease;
-  }
-
-  [data-theme="dark"] .hamburger-btn span {
-    background: var(--color-white);
-  }
-
-  .hamburger-btn.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-
-  .hamburger-btn.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .hamburger-btn.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
-  }
-
-  @media (max-width: 900px) {
-    .hamburger-btn { display: flex; }
-  }
-
-  .nav-dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--color-white-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: 12px 24px;
-    z-index: 200;
-  }
-
-  .nav-dropdown.active {
-    display: block;
-    animation: dropdownFade 0.2s ease;
-  }
-
-  @keyframes dropdownFade {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .nav-dropdown a {
-    display: block;
-    padding: 12px 16px;
-    color: var(--color-aceituna);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    border-radius: 6px;
-  }
-
-  [data-theme="dark"] .nav-dropdown a {
-    color: var(--color-white);
-  }
-
-  .nav-dropdown a:hover {
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-  }
-
-  .nav-center a {
-    color: #999;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: 'Outfit', system-ui, sans-serif;
-    padding: 8px 12px;
-    transition: color 0.15s ease;
-    white-space: nowrap;
-  }
-
-  .nav-center a:hover { 
-    color: var(--color-white);
-  }
-
-  [data-theme="light"] .nav-center a:hover {
-    color: var(--color-aceituna);
-  }
-
-  .nav-right {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .btn-primary {
-    background: var(--color-limon);
-    color: #000;
-    padding: 8px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    border: none;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-  }
-
-  .btn-primary:hover {
-    opacity: 0.85;
-    transform: translateY(-1px);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--color-limon);
-    color: var(--color-limon);
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    min-width: 100px;
-    min-height: 36px;
-  }
-
-  .btn-secondary:hover {
-    background: var(--color-limon);
-    color: #000;
-  }
-
-  .toggle-wrapper {
-    position: absolute;
-    top: 10px;
-    right: 24px;
-    z-index: 101;
-  }
-
-  @media (max-width: 600px) {
-    .navbar-inner {
-      padding: 0 16px;
-    }
-    .nav-left .logo span {
-      display: none;
-    }
-    .nav-left .logo {
-      gap: 0;
-    }
+  .nav-left .logo img {
+    border-radius: 50%;
   }
 
   footer {

@@ -359,9 +359,10 @@ export default function ChatConsejero() {
           margin: 0 auto 4px;
           background: #fff;
           border-radius: 10px;
-          padding: 12px;
+          padding: 16px 12px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
+          min-height: 90px;
         }
         .skills-grid {
           display: flex;
