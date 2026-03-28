@@ -152,17 +152,16 @@ export default function ChatConsejero() {
   };
 
   const startTypingAnimation = (botId, newText) => {
-    if (!typingMessageId()) {
+    if (!typingInterval) {
       setTypingMessageId(botId);
-      setFullText(newText);
+      setTypingText(newText);
       setDisplayedText('');
-      if (typingInterval) clearInterval(typingInterval);
       let charIndex = 0;
       const speed = 20;
       let lastScrollTime = 0;
       typingInterval = setInterval(() => {
-        if (charIndex < fullText().length) {
-          setDisplayedText(fullText().slice(0, charIndex + 1));
+        if (charIndex < typingText().length) {
+          setDisplayedText(typingText().slice(0, charIndex + 1));
           charIndex++;
           const now = Date.now();
           if (now - lastScrollTime > 100) {
@@ -176,7 +175,7 @@ export default function ChatConsejero() {
         }
       }, speed);
     } else {
-      setFullText(prev => prev + newText);
+      setTypingText(prev => prev + newText);
     }
   };
 
@@ -261,8 +260,15 @@ export default function ChatConsejero() {
               const json = JSON.parse(line.slice(6));
               if (json.provider && !firstChunk) { firstChunk = true; setCurrentProvider(json.provider); }
               if (json.texto) {
-                if (!firstChunk) { firstChunk = true; setIsLoading(false); setTypingMessageId(botId); setTypingText(''); }
-                setTypingText(prev => prev + json.texto);
+                if (!firstChunk) { 
+                  firstChunk = true; 
+                  setIsLoading(false); 
+                  setTypingMessageId(botId);
+                  setTypingText('');
+                  startTypingAnimation(botId, json.texto);
+                } else {
+                  setTypingText(prev => prev + json.texto);
+                }
                 scrollToBottom(true);
               }
               if (json.error) {
@@ -915,12 +921,19 @@ export default function ChatConsejero() {
           <div class="input-area">
             <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
               <div class="input-left">
-                <div class={`mode-pill-inline ${activeSkill() ? 'expanded' : ''}`}>
+                <div class={`mode-pill-inline ${showModeDropdown() ? 'expanded' : ''}`}>
                   <button 
                     class="mode-pill-button"
-                    onClick={() => setShowModeDropdown(!showModeDropdown())}
+                    onClick={() => {
+                      setShowModeDropdown(!showModeDropdown());
+                    }}
+                    ref={(el) => {
+                      if (!showModeDropdown() && activeSkill()) {
+                        setTimeout(() => el?.focus(), 100);
+                      }
+                    }}
                   >
-                    {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Modo'}
+                    {showModeDropdown() ? '🎯 Elegir modo' : (activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Elegir')}
                   </button>
                   <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
                     <For each={SKILLS}>{(skill) => (
@@ -944,6 +957,11 @@ export default function ChatConsejero() {
                   onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
                   placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
                   disabled={isLoading() || isAtLimit()} 
+                  ref={(el) => {
+                    if (activeSkill()) {
+                      setTimeout(() => el?.focus(), 100);
+                    }
+                  }}
                 />
               </div>
               <div class="clean-btn-wrapper">
