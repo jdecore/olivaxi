@@ -355,7 +355,7 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
         }
         .skills-card {
-          max-width: 500px;
+          max-width: 700px;
           margin: 0 auto 4px;
           background: #fff;
           border-radius: 10px;
