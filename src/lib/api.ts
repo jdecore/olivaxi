@@ -1,9 +1,14 @@
 export const apiUrl = (path: string) => {
-  // En producción usar la variable de entorno o el subdominio api
+  // En producción (DuckDNS) usar HTTP - Traefik termina SSL y redirige
   if (typeof window !== 'undefined') {
-    const envUrl = "https://api.olivaxi.duckdns.org";
-    if (envUrl) return `${envUrl}${path}`;
+    const host = window.location.hostname;
+    if (host.includes('duckdns.org') || host.includes('olivaxi')) {
+      return `http://api.olivaxi.duckdns.org${path}`;
+    }
+    // En desarrollo local
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return `http://localhost:3000${path}`;
+    }
   }
-  const baseUrl = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
-  return `${baseUrl}${path}`;
+  return `http://localhost:3000${path}`;
 };
