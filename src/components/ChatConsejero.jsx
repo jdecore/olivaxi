@@ -278,7 +278,6 @@ export default function ChatConsejero() {
           flex-direction: column;
           background: #f5efe8;
           padding: 40px 20px;
-          overflow: hidden;
         }
         .chat-hero {
           text-align: center;
