@@ -803,4 +803,9 @@ const varieties = [
       });
     });
   });
+
+  // Escuchar cambios de estado desde otras páginas (index, chat)
+  window.addEventListener('olivaxi-state-change', (e) => {
+    console.log('Variedades recibió cambio:', e.detail);
+  });
 </script>

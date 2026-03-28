@@ -15,47 +15,91 @@ const PROVIDERS = [
     name: "OpenRouter",
     url: "https://openrouter.ai/api/v1/chat/completions",
     key: process.env.OPENROUTER_KEY,
-    model: "openrouter/free",
+    model: "meta-llama/llama-3.1-8b-instruct",
   },
 ];
+
+const RETRY_DELAY = 1500;
+const TIMEOUT_MS = 45000;
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isRetriableError(error: any, response?: Response): boolean {
+  if (!response) return true;
+  
+  const status = response.status;
+  if (status === 401 || status === 403) return false;
+  if (status === 429) return true;
+  if (status >= 500 && status < 600) return true;
+  if (error?.message?.includes('aborted')) return true;
+  
+  return true;
+}
 
 export async function llamarLLMStream(
   messages: { role: string; content: string }[],
   onChunk: (texto: string, provider: string) => void
 ): Promise<void> {
-  const errors: Error[] = [];
+  const availableProviders = PROVIDERS.filter(p => p.key);
+  
+  if (availableProviders.length === 0) {
+    throw new Error("No hay API keys configuradas");
+  }
 
-  for (const provider of PROVIDERS) {
-    if (!provider.key) {
-      errors.push(new Error(`${provider.name} sin API key`));
-      continue;
-    }
+  for (let attempt = 0; attempt < availableProviders.length; attempt++) {
+    const provider = availableProviders[attempt];
+    
+    console.log(`[LLM] Intento ${attempt + 1}/${availableProviders.length}: ${provider.name}`);
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-      console.log('[LLM] Llamando a', provider.name);
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log(`[LLM] Timeout: ${provider.name}`);
+      }, TIMEOUT_MS);
 
       const response = await fetch(provider.url, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${provider.key}`,
+          "Authorization": `Bearer ${provider.key}`,
           "Content-Type": "application/json",
+          ...(provider.name === "OpenRouter" ? {
+            "HTTP-Referer": "https://olivaxi.es",
+            "X-Title": "olivaξ"
+          } : {})
         },
         body: JSON.stringify({
           model: provider.model,
           messages,
           stream: true,
-          max_tokens: 2000,
+          max_tokens: 1500,
+          temperature: 0.7,
         }),
-        signal: controller.signal,
+        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
 
-      if (!response.ok || !response.body) {
-        throw new Error(`${provider.name} error: ${response.status}`);
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => '');
+        const errorMsg = `${provider.name} error ${response.status}: ${errorBody.substring(0, 100)}`;
+        console.error(`[LLM] ${errorMsg}`);
+        
+        if (!isRetriableError({ message: errorMsg }, response)) {
+          throw new Error(errorMsg);
+        }
+        
+        if (attempt < availableProviders.length - 1) {
+          console.log(`[LLM] Esperando ${RETRY_DELAY}ms antes de reintentar...`);
+          await sleep(RETRY_DELAY);
+        }
+        continue;
+      }
+
+      if (!response.body) {
+        throw new Error(`${provider.name} sin body en respuesta`);
       }
 
       const reader = response.body.getReader();
@@ -64,7 +108,6 @@ export async function llamarLLMStream(
 
       while (true) {
         const { done, value } = await reader.read();
-        
         if (done) break;
 
         const decoded = decoder.decode(value, { stream: true });
@@ -84,20 +127,24 @@ export async function llamarLLMStream(
                 onChunk(content, provider.name);
               }
             } catch {
-              // Ignorar parse errors
+              // Ignorar parse errors de líneas no-JSON
             }
           }
         }
       }
 
-      console.log('[LLM] Stream completado con', provider.name);
+      console.log(`[LLM] Éxito con ${provider.name}`);
       return;
-    } catch (e) {
-      console.error('[LLM] Error:', e);
-      errors.push(e as Error);
-      continue;
+      
+    } catch (e: any) {
+      console.error(`[LLM] Fallo ${provider.name}:`, e.message);
+      
+      if (attempt < availableProviders.length - 1) {
+        console.log(`[LLM] Reintentando con siguiente proveedor en ${RETRY_DELAY}ms...`);
+        await sleep(RETRY_DELAY);
+      }
     }
   }
 
-  throw new Error(`Todos los LLM fallaron: ${errors.map((e) => e.message).join(", ")}`);
+  throw new Error("Todos los proveedores fallaron");
 }

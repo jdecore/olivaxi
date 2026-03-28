@@ -89,6 +89,13 @@ export default function ChatConsejero() {
       if (!e.target.closest('.mode-pill-inline')) setShowModeDropdown(false);
       if (!e.target.closest('.clean-btn-wrapper')) setShowCleanMenu(false);
     });
+    // Escuchar cambios de estado desde otras páginas
+    window.addEventListener('olivaxi-state-change', (e) => {
+      const { provincia, variedad } = e.detail;
+      if (provincia && provincia !== provincia()) {
+        seleccionarProvincia(provincia);
+      }
+    });
     const interval = setInterval(() => {
       const prov = getProvinciaFromStorage();
       if (prov && prov !== provincia()) seleccionarProvincia(prov);

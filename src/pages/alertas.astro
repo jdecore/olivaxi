@@ -377,4 +377,16 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       btn.disabled = false;
     }
   });
+
+  // Escuchar cambios de estado desde otras páginas (index, chat)
+  window.addEventListener('olivaxi-state-change', (e) => {
+    const { provincia, variedad } = e.detail;
+    if (provincia && provincia !== selectProvincia.value) {
+      selectProvincia.value = provincia;
+      actualizarTipoAlerta();
+    }
+    if (variedad && variedad !== selectVariedad.value) {
+      selectVariedad.value = variedad;
+    }
+  });
 </script>

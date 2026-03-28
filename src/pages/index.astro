@@ -1515,7 +1515,10 @@ let top3Riesgos = [];
     if (provincia) {
       guardarSeleccion('provincia', provincia);
       fetchAnalisisProvincia(provincia);
-      window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia } }));
+      // Emitir evento unificado para otras páginas
+      window.dispatchEvent(new CustomEvent('olivaxi-state-change', { 
+        detail: { provincia, variedad: selectVariedad?.value || null } 
+      }));
     }
   });
 
@@ -1524,8 +1527,10 @@ let top3Riesgos = [];
     const variedad = e.target.value;
     if (variedad) {
       guardarSeleccion('variedad', variedad);
-      // Update map with variety
-      window.dispatchEvent(new CustomEvent('variedad-seleccionada', { detail: { variedad } }));
+      // Emitir evento unificado para otras páginas
+      window.dispatchEvent(new CustomEvent('olivaxi-state-change', { 
+        detail: { provincia: selectProvincia?.value || null, variedad } 
+      }));
       
       const provincia = selectProvincia?.value;
       if (provincia) {
@@ -1535,6 +1540,18 @@ let top3Riesgos = [];
           if (provData) renderAlertasPanel(provData, variedad);
         });
       }
+    }
+  });
+
+  // Escuchar cambios de otras páginas
+  window.addEventListener('olivaxi-state-change', (e) => {
+    const { provincia, variedad } = e.detail;
+    if (provincia && provincia !== selectProvincia?.value) {
+      selectProvincia.value = provincia;
+      fetchAnalisisProvincia(provincia);
+    }
+    if (variedad && variedad !== selectVariedad?.value) {
+      selectVariedad.value = variedad;
     }
   });
 

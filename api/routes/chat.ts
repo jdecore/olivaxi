@@ -81,33 +81,39 @@ chat.post("/", async (c) => {
   const provinciaInfo = climaHoy.find((p: any) => p.provincia === provincia) || climaHoy[0];
   const provinciaNombre = provinciaInfo?.provincia || provincia || 'Andalucía';
 
-  // Construir el systemPrompt base
-  let basePrompt = `Eres Olivo, consejero experto en olivicultura española, especialmente Andalucía.
+  // Optimizado: solo datos de la provincia actual y resumen de otras
+  const datosProvincia = {
+    temperatura: provinciaInfo?.temperatura,
+    humedad: provinciaInfo?.humedad,
+    lluvia: provinciaInfo?.lluvia,
+    estado: provinciaInfo?.estado,
+    riesgo: provinciaInfo?.riesgo,
+    riesgos_olivar: provinciaInfo?.riesgos_olivar,
+    riesgos_plaga: provinciaInfo?.riesgos_plaga
+  };
+
+  // Construir el systemPrompt base - OPTIMIZADO
+  let basePrompt = `Eres Olivo, consejero experto en olivicultura española.
 Provincia actual: ${provinciaNombre}
-Datos climáticos actuales: ${JSON.stringify(climaHoy)}
-Reglas IMPORTANTES:
+Clima actual: ${JSON.stringify(datosProvincia)}
+Reglas:
 - Responde en español informal y cercano
 - Da consejos prácticos y útiles
-- NO hay límite de longitud, escribe TODO lo necesario
-- NUNCA termines una frase a mitad
-- SIEMPRE termina con un punto final completo
-- Máximo 5 párrafos`;
+- Máximo 3 párrafos
+- Sé conciso pero completo`;
 
   // Añadir skill específico si está activo
   if (skill) {
-    basePrompt = `Eres Olivo, consejero experto en olivicultura española.
+    basePrompt = `Eres Olivo, consejeros de olivicultura.
 ${skill}
-Provincia actual: ${provinciaNombre}
-Datos climáticos actuales: ${JSON.stringify(climaHoy)}
-Reglas:
-- Responde en español
-- Da consejos prácticos y específicos para el tema
-- Máximo 4 párrafos`;
+Provincia: ${provinciaNombre}
+Clima: ${JSON.stringify(datosProvincia)}
+Responde en español, máximo 2 párrafos, sé práctico.`;
   }
 
   // Añadir systemPrompt personalizado del frontend (para casos específicos)
   if (systemPromptRaw) {
-    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nDatos climáticos: ${JSON.stringify(climaHoy)}`;
+    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${JSON.stringify(datosProvincia)}`;
   }
 
   const systemPrompt = basePrompt;
