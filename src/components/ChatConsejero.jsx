@@ -70,6 +70,8 @@ export default function ChatConsejero() {
   const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
   
   const initChat = async () => {
+    setInitComplete(true);
+    
     const savedProv = getProvinciaFromStorage();
     
     if (savedProv) {
@@ -81,7 +83,6 @@ export default function ChatConsejero() {
         if (provData) setClimaActual(provData);
       } catch {}
     }
-    setInitComplete(true);
   };
 
   const seleccionarProvincia = async (prov) => {
