@@ -305,13 +305,13 @@ export default function ChatConsejero() {
         }
         .chat-hero {
           text-align: center;
-          margin-bottom: 14px;
+          margin-bottom: 18px;
           flex-shrink: 0;
         }
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 35px;
+          font-size: 75px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
@@ -363,7 +363,6 @@ export default function ChatConsejero() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
           min-height: 100px;
-          border: 2px solid #1C1C1C;
         }
         .skill-btn {
           padding: 8px 16px;
@@ -561,7 +560,7 @@ export default function ChatConsejero() {
         .skill-btn {
           padding: 8px 16px;
           border-radius: 20px;
-          border: 2px solid #1C1C1C;
+          border: none;
           background: #D4E849;
           color: #1C1C1C;
           font-size: 13px;
@@ -575,7 +574,6 @@ export default function ChatConsejero() {
         .skill-btn.selected {
           background: #1C1C1C;
           color: #fff;
-          border-color: #1C1C1C;
         }
         
         /* Loading Screen */
