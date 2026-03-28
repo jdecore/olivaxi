@@ -1,7 +1,11 @@
 export const apiUrl = (path: string) => {
-  // Usar la URL absoluta basada en la ubicación actual
+  // Usar variable de entorno en producción o fallback dinámico
+  const envUrl = "https://api.olivaxi.duckdns.org";
+  if (envUrl) {
+    return `${envUrl}${path}`;
+  }
+  // Fallback: usar la URL actual del navegador
   if (typeof window !== 'undefined') {
-    // Construir la URL base desde la ubicación actual del navegador
     const base = `${window.location.protocol}//${window.location.host}`;
     return `${base}/api${path}`;
   }
