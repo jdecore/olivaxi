@@ -311,7 +311,7 @@ export default function ChatConsejero() {
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 28px;
+          font-size: 35px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
@@ -355,7 +355,7 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
         }
         .skills-card {
-          max-width: 700px;
+          max-width: 950px;
           margin: 0 auto 4px;
           background: #fff;
           border-radius: 10px;
