@@ -570,37 +570,38 @@ export default function ChatConsejero() {
         <h1>¿Qué modo quieres usar?</h1>
       </div>
 
-      <Show when={!provincia()}>
-        <div class="province-select-card">
-          <select 
-            class="province-dropdown"
-            value=""
-            onChange={(e) => seleccionarProvincia(e.target.value)}
-          >
-            <option value="" disabled>Selecciona tu provincia</option>
-            <For each={PROVINCIAS}>{(prov) => (
-              <option value={prov}>{prov}</option>
-            )}</For>
-          </select>
-        </div>
-      </Show>
-
-      <Show when={provincia() && !activeSkill()}>
-        <div class="skills-card">
-          <div class="skills-grid">
-            <For each={SKILLS}>{(skill) => (
-              <button 
-                class={`skill-btn ${activeSkill() === skill.id ? 'selected' : ''}`}
-                onClick={() => selectSkill(skill.id)}
-              >
-                {skill.label}
-              </button>
-            )}</For>
+      <Show when={initComplete()}>
+        <Show when={!provincia()}>
+          <div class="province-select-card">
+            <select 
+              class="province-dropdown"
+              value=""
+              onChange={(e) => seleccionarProvincia(e.target.value)}
+            >
+              <option value="" disabled>Selecciona tu provincia</option>
+              <For each={PROVINCIAS}>{(prov) => (
+                <option value={prov}>{prov}</option>
+              )}</For>
+            </select>
           </div>
-        </div>
-      </Show>
+        </Show>
 
-      <Show when={provincia() && activeSkill()}>
+        <Show when={provincia() && !activeSkill()}>
+          <div class="skills-card">
+            <div class="skills-grid">
+              <For each={SKILLS}>{(skill) => (
+                <button 
+                  class={`skill-btn ${activeSkill() === skill.id ? 'selected' : ''}`}
+                  onClick={() => selectSkill(skill.id)}
+                >
+                  {skill.label}
+                </button>
+              )}</For>
+            </div>
+          </div>
+        </Show>
+
+        <Show when={provincia() && activeSkill()}>
         <div class="chat-with-input">
           <div class="chat-messages">
             <For each={msgs()}>{(msg) => (
@@ -659,6 +660,7 @@ export default function ChatConsejero() {
             </div>
           </div>
         </div>
+      </Show>
       </Show>
     </div>
   );
