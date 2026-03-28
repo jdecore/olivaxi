@@ -307,6 +307,11 @@ export default function ChatConsejero() {
           overflow: hidden;
           min-height: 0;
         }
+        .input-area {
+          flex-shrink: 0;
+          padding-top: 8px;
+          background: #f5efe8;
+        }
         .province-select-card {
           max-width: 400px;
           margin: 0 auto 12px;
@@ -584,27 +589,6 @@ export default function ChatConsejero() {
 
       <Show when={provincia() && activeSkill()}>
         <div class="chat-with-input">
-          <div class="active-mode">
-            <div class="active-mode-badge">
-              {SKILLS.find(s => s.id === activeSkill())?.label}
-            </div>
-            <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
-              Cambiar
-            </button>
-          </div>
-          
-          <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
-            <input 
-              class="chat-input" 
-              type="text" 
-              value={input()} 
-              onInput={(e) => setInput(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-              placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
-              disabled={isLoading() || isAtLimit()} 
-            />
-          </div>
-
           <div class="chat-messages">
             <For each={msgs()}>{(msg) => (
               <div class="msg-row">
@@ -637,6 +621,29 @@ export default function ChatConsejero() {
             </Show>
             
             <div ref={messagesEndRef}></div>
+          </div>
+
+          <div class="input-area">
+            <div class="active-mode">
+              <div class="active-mode-badge">
+                {SKILLS.find(s => s.id === activeSkill())?.label}
+              </div>
+              <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
+                Cambiar
+              </button>
+            </div>
+          
+            <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
+              <input 
+                class="chat-input" 
+                type="text" 
+                value={input()} 
+                onInput={(e) => setInput(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+                placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
+                disabled={isLoading() || isAtLimit()} 
+              />
+            </div>
           </div>
         </div>
       </Show>
