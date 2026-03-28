@@ -305,7 +305,7 @@ export default function ChatConsejero() {
         }
         .chat-hero {
           text-align: center;
-          margin-bottom: 4px;
+          margin-bottom: 14px;
           flex-shrink: 0;
         }
         .chat-hero h1 {
@@ -362,7 +362,19 @@ export default function ChatConsejero() {
           padding: 16px 12px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
-          min-height: 90px;
+          min-height: 100px;
+          border: 2px solid #1C1C1C;
+        }
+        .skill-btn {
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 2px solid #1C1C1C;
+          background: #D4E849;
+          color: #1C1C1C;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s;
         }
         .skills-grid {
           display: flex;
@@ -549,7 +561,7 @@ export default function ChatConsejero() {
         .skill-btn {
           padding: 8px 16px;
           border-radius: 20px;
-          border: none;
+          border: 2px solid #1C1C1C;
           background: #D4E849;
           color: #1C1C1C;
           font-size: 13px;
@@ -563,6 +575,7 @@ export default function ChatConsejero() {
         .skill-btn.selected {
           background: #1C1C1C;
           color: #fff;
+          border-color: #1C1C1C;
         }
         
         /* Loading Screen */
