@@ -1,35 +1,43 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 import solid from '@astrojs/solid-js';
 
 export default defineConfig({
   integrations: [
-    react({ include: [] }),
     solid({ include: ['**/ChatConsejero.jsx'] })
   ],
   prefetch: {
-    prefetchAll: true,
-    defaultStrategy: 'viewport',
-    cacheControl: 'immutable'
+    prefetchAll: false,
+    defaultStrategy: 'hover'
   },
   build: {
-    inlineStylesheets: 'auto',
-    assetsInlineLimit: 4096
+    inlineStylesheets: 'always',
+    assetsInlineLimit: 2048,
+    emptyOutDir: true
   },
-  compressHTML: false,
+  compressHTML: true,
   vite: {
     build: {
       cssMinify: true,
-      minify: 'terser',
+      minify: 'esbuild',
+      target: 'es2020',
       rollupOptions: {
         output: {
-          manualChunks: undefined
+          manualChunks: (id) => {
+            if (id.includes('node_modules')) return 'vendor';
+          }
         }
       }
+    },
+    optimizeDeps: {
+      exclude: ['solid-js']
     }
   },
   devToolbar: {
     enabled: false
-  }
+  },
+  server: {
+    port: 3000
+  },
+  output: 'static'
 });
