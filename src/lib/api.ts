@@ -1,11 +1,8 @@
 export const apiUrl = (path: string) => {
-  // En producción usar el subdominio api si está disponible
+  // En producción usar la variable de entorno o el subdominio api
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host.includes('duckdns.org')) {
-      // Usar subdominio api si está configurado, si no usar el mismo host
-      return `https://api.olivaxi.duckdns.org${path}`;
-    }
+    const envUrl = "https://api.olivaxi.duckdns.org";
+    if (envUrl) return `${envUrl}${path}`;
   }
   const baseUrl = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
   return `${baseUrl}${path}`;

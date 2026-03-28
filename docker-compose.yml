@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_URL: http://api:3000
+        PUBLIC_API_URL: https://api.olivaxi.duckdns.org
     ports:
       - "8080:4321"
     depends_on:
@@ -24,6 +24,4 @@ services:
       - GEMINI_KEY=${GEMINI_KEY}
       - OPENROUTER_KEY=${OPENROUTER_KEY}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
-      - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - BREVO_API_KEY=${BREVO_API_KEY:-}
     restart: unless-stopped
