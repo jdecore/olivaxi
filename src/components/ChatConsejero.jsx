@@ -456,6 +456,11 @@ export default function ChatConsejero() {
           background: #fff;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .chat-input-wrapper.responding {
+          transform: translateY(8px);
+          opacity: 0.7;
         }
         .chat-input {
           width: 100%;
@@ -574,14 +579,14 @@ export default function ChatConsejero() {
             </button>
           </div>
           
-          <div class="chat-input-wrapper">
+          <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
             <input 
               class="chat-input" 
               type="text" 
               value={input()} 
               onInput={(e) => setInput(e.target.value)} 
               onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-              placeholder="Escribe tu mensaje..."
+              placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
               disabled={isLoading() || isAtLimit()} 
             />
           </div>
