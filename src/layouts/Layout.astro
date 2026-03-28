@@ -1,5 +1,4 @@
 ---
-import ThemeToggle from '../components/ThemeToggle.astro';
 import { ClientRouter } from 'astro:transitions';
 interface Props {
   title?: string;
@@ -53,8 +52,8 @@ const { title = "olivaξ" } = Astro.props;
         </div>
 
         <div class="nav-right">
-          <a href="/alertas" class="btn-primary">Activar alertas</a>
-          <button class="btn-secondary"></button>
+          <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Cambiar tema">☀️</button>
+          <a href="/alertas" class="btn-alertas">Activar alertas</a>
         </div>
 
         <button class="hamburger-btn" id="hamburger-btn" aria-label="Menú">
@@ -73,10 +72,6 @@ const { title = "olivaξ" } = Astro.props;
         <a href="/alertas">Activar alertas</a>
       </div>
     </nav>
-
-    <div class="toggle-wrapper">
-      <ThemeToggle />
-    </div>
 
     <main>
       <slot />
@@ -98,6 +93,19 @@ const { title = "olivaξ" } = Astro.props;
           dropdown.classList.toggle('active');
         });
 
+        // Theme toggle
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const html = document.documentElement;
+        
+        themeBtn?.addEventListener('click', () => {
+          const current = html.getAttribute('data-theme') === 'dark';
+          const next = !current;
+          html.setAttribute('data-theme', next ? 'dark' : 'light');
+          localStorage.setItem('theme', next ? 'dark' : 'light');
+          themeBtn.textContent = next ? '🌙' : '☀️';
+          window.dispatchEvent(new CustomEvent('modoOscuroChange', { detail: { modoOscuro: next } }));
+        });
+
         document.addEventListener('click', (e) => {
           if (!dropdown.contains(e.target) && !hamburgerBtn?.contains(e.target)) {
             dropdown.classList.remove('active');
@@ -114,11 +122,22 @@ const { title = "olivaξ" } = Astro.props;
         // Hamburger menu toggle (re-init after navigation)
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const dropdown = document.getElementById('nav-dropdown');
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const html = document.documentElement;
         
         hamburgerBtn?.addEventListener('click', (e) => {
           e.stopPropagation();
           hamburgerBtn.classList.toggle('active');
           dropdown.classList.toggle('active');
+        });
+
+        themeBtn?.addEventListener('click', () => {
+          const current = html.getAttribute('data-theme') === 'dark';
+          const next = !current;
+          html.setAttribute('data-theme', next ? 'dark' : 'light');
+          localStorage.setItem('theme', next ? 'dark' : 'light');
+          themeBtn.textContent = next ? '🌙' : '☀️';
+          window.dispatchEvent(new CustomEvent('modoOscuroChange', { detail: { modoOscuro: next } }));
         });
 
         document.addEventListener('click', (e) => {
@@ -224,6 +243,47 @@ const { title = "olivaξ" } = Astro.props;
 
   .nav-left .logo img {
     border-radius: 4px;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .theme-toggle-btn {
+    background: var(--color-white-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .theme-toggle-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .btn-alertas {
+    background: var(--color-limon);
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-alertas:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--color-shadow);
   }
 
   footer {
