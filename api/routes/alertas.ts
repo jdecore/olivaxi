@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import nodemailer from "nodemailer";
 import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
+import { getClimaByProvincia } from "./clima";
 
 const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
 

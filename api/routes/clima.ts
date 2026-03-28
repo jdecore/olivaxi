@@ -453,4 +453,21 @@ clima.get("/", async (c) => {
   }
 });
 
+// Función para obtener clima de una provincia específica (usa cache)
+export function getClimaByProvincia(provincia: string) {
+  const data = getClimaDataCached();
+  return data.find((p: any) => p.provincia === provincia) || null;
+}
+
+// Obtener datos climáticos sin hacer llamadas API (usa cache interno)
+function getClimaDataCached() {
+  const cacheRow = db.query("SELECT datos FROM clima_cache WHERE id = 1").get() as { datos: string } | undefined;
+  if (cacheRow) {
+    try {
+      return JSON.parse(cacheRow.datos);
+    } catch {}
+  }
+  return [];
+}
+
 export default clima;

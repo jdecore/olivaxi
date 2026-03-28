@@ -1,5 +1,6 @@
 import { createSignal, onMount, onCleanup, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
+import OlivaxiState from '../lib/state';
 
 const PROVINCIAS = ['Jaén', 'Córdoba', 'Sevilla', 'Granada', 'Málaga', 'Badajoz', 'Toledo', 'Ciudad Real', 'Almería', 'Huelva'];
 
@@ -24,16 +25,10 @@ const SKILL_PROMPTS = {
 
 const formatText = (text) => text?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') || '';
 
-const getInitialProvincia = () => {
-  if (typeof window === 'undefined') return '';
-  try {
-    return localStorage.getItem('olivaxi_provincia') || (localStorage.getItem('olivaxi_variedad') ? 'Jaén' : '');
-  } catch { return ''; }
-};
-
 export default function ChatConsejero() {
   const [messages, setMessages] = createSignal([]);
-  const [provincia, setProvincia] = createSignal(getInitialProvincia());
+  const [provincia, setProvincia] = createSignal(OlivaxiState.getProvincia() || (OlivaxiState.getVariedad() ? 'Jaén' : ''));
+  const [variedad, setVariedad] = createSignal(OlivaxiState.getVariedad() || '');
   const [input, setInput] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
@@ -45,29 +40,26 @@ export default function ChatConsejero() {
   
   let messagesEndRef;
 
-  const getProvinciaFromStorage = () => {
-    try {
-      return localStorage.getItem('olivaxi_provincia') || (localStorage.getItem('olivaxi_variedad') ? 'Jaén' : null);
-    } catch { return null; }
-  };
-
   const getSkillColor = (skillId) => SKILLS.find(s => s.id === skillId)?.color || '#f5efe8';
 
   const initChat = async () => {
     setTimeout(() => setShowLoading(false), 1500);
-    const savedProv = getProvinciaFromStorage();
+    const savedProv = OlivaxiState.getProvincia();
+    const savedVar = OlivaxiState.getVariedad();
     if (savedProv) {
       setProvincia(savedProv);
       try {
-        const data = await getClimaData(true); // Forzar refresh en init
+        const data = await getClimaData(true);
         const provData = data.find((p) => p.provincia === savedProv);
         if (provData) setClimaActual(provData);
       } catch {}
     }
+    if (savedVar) setVariedad(savedVar);
   };
 
   const seleccionarProvincia = async (prov) => {
     setProvincia(prov);
+    OlivaxiState.setProvincia(prov);
     try {
       const data = await getClimaData();
       const provData = data.find((p) => p.provincia === prov);
@@ -87,18 +79,11 @@ export default function ChatConsejero() {
       if (!e.target.closest('.mode-pill-inline')) setShowModeDropdown(false);
       if (!e.target.closest('.clean-btn-wrapper')) setShowCleanMenu(false);
     });
-    // Escuchar cambios de estado desde otras páginas
-    window.addEventListener('olivaxi-state-change', (e) => {
-      const { provincia, variedad } = e.detail;
-      if (provincia && provincia !== provincia()) {
-        seleccionarProvincia(provincia);
-      }
+    // Escuchar cambios de estado (provincia y variedad) desde cualquier página
+    OlivaxiState.onChange((state) => {
+      if (state.provincia && state.provincia !== provincia()) seleccionarProvincia(state.provincia);
+      if (state.variedad && state.variedad !== variedad()) setVariedad(state.variedad);
     });
-    const interval = setInterval(() => {
-      const prov = getProvinciaFromStorage();
-      if (prov && prov !== provincia()) seleccionarProvincia(prov);
-    }, 1000);
-    onCleanup(() => clearInterval(interval));
   });
 
   const handleProvinciaInput = async (text) => {
@@ -122,12 +107,8 @@ export default function ChatConsejero() {
   };
 
   const saveHistorial = (msgs) => {
-    const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.text).slice(-3);
+      const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.text).slice(-3);
     try { localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs)); } catch {}
-  };
-
-  const getVariedad = () => {
-    try { return localStorage.getItem('olivaxi_variedad') || ''; } catch { return ''; }
   };
 
   // Cache en memoria para clima (evita llamadas innecesarias a Open-Meteo)
@@ -174,11 +155,10 @@ export default function ChatConsejero() {
     try {
       const skillPrompt = activeSkill() ? SKILL_PROMPTS[activeSkill()] : '';
       const historial = getHistorial();
-      const variedad = getVariedad();
       const res = await fetch(apiUrl('/api/chat'), { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt, historial, variedad }) 
+        body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt, historial, variedad: variedad() }) 
       });
       
       if (!res.ok) throw new Error('API error');
