@@ -266,8 +266,6 @@ export default function ChatConsejero() {
   const t = () => ({ bg: '#fff', text: '#1C1C1C', muted: '#6B6B5E', accent: '#D4E849', inputBg: '#f7f5f0' });
   const msgs = () => messages();
 
-  const [inputExpanded, setInputExpanded] = createSignal(false);
-  
   const allModes = () => ['Auto', ...SKILLS.map(s => s.label)];
   
   return (
@@ -440,13 +438,9 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 500px;
+          max-width: 600px;
           width: 100%;
-          margin: 24px auto 0;
-          transition: max-width 0.3s ease;
-        }
-        .chat-input-wrapper.expanded {
-          max-width: 700px;
+          margin: 16px auto 0;
         }
         .chat-input {
           width: 100%;
@@ -601,19 +595,19 @@ export default function ChatConsejero() {
               Cambiar
             </button>
           </div>
+          
+          <div class="chat-input-wrapper">
+            <input 
+              class="chat-input" 
+              type="text" 
+              value={input()} 
+              onInput={(e) => setInput(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+              placeholder="Escribe tu mensaje..."
+              disabled={isLoading() || isAtLimit()} 
+            />
+          </div>
         </Show>
-        
-        <div class={`chat-input-wrapper ${inputExpanded() || activeSkill() ? 'expanded' : ''}`}>
-          <input 
-            class="chat-input" 
-            type="text" 
-            value={input()} 
-            onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
-            onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-            placeholder="Escribe tu mensaje..."
-            disabled={isLoading() || isAtLimit()} 
-          />
-        </div>
       </div>
     </div>
   );
