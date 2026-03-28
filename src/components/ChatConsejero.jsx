@@ -263,11 +263,12 @@ export default function ChatConsejero() {
           margin-bottom: 32px;
         }
         .chat-greeting h1 {
-          font-family: system-ui, -apple-system, sans-serif;
-          font-weight: 700;
-          font-size: 22px;
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 800;
+          font-size: 42px;
           color: #000;
           margin: 0;
+          letter-spacing: -0.02em;
         }
         .chat-messages {
           flex: 1;
@@ -376,44 +377,6 @@ export default function ChatConsejero() {
         .chat-input:disabled {
           opacity: 0.6;
         }
-        .chat-toolbar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-top: 8px;
-          gap: 8px;
-          flex-wrap: wrap;
-          transition: opacity 0.2s ease, max-height 0.3s ease;
-        }
-        .chat-input-wrapper.expanded .chat-toolbar {
-          opacity: 0;
-          max-height: 0;
-          overflow: hidden;
-        }
-        .chat-input-wrapper:not(.expanded) .chat-toolbar {
-          opacity: 1;
-          max-height: 100px;
-        }
-        .mode-btn {
-          padding: 8px 14px;
-          border-radius: 20px;
-          border: 1px solid #e0e0e0;
-          background: transparent;
-          color: #666;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .mode-btn:hover {
-          border-color: #999;
-          color: #333;
-        }
-        .mode-btn.active {
-          background: #1C1C1C;
-          border-color: #1C1C1C;
-          color: #fff;
-        }
         .bubble {
           animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
         }
@@ -470,28 +433,11 @@ export default function ChatConsejero() {
           class="chat-input" 
           type="text" 
           value={input()} 
-          onInput={(e) => setInput(e.target.value)} 
+          onInput={(e) => { setInput(e.target.value); if (!inputExpanded()) setInputExpanded(true); }} 
           onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-          placeholder={inputExpanded() ? "Escribe tu mensaje..." : `Message ${allModes().join(' · ')}`}
+          placeholder="Escribe tu mensaje..."
           disabled={isLoading() || isAtLimit()} 
         />
-        
-        <div class="chat-toolbar">
-          <button 
-            class={`mode-btn ${!activeSkill() ? 'active' : ''}`} 
-            onClick={() => { setActiveSkill(null); setInputExpanded(false); }}
-          >
-            Auto
-          </button>
-          <For each={SKILLS}>{(skill) => (
-            <button 
-              class={`mode-btn ${activeSkill() === skill.id ? 'active' : ''}`} 
-              onClick={() => selectSkill(skill.id)}
-            >
-              {skill.label}
-            </button>
-          )}</For>
-        </div>
       </div>
     </div>
   );
