@@ -58,6 +58,7 @@ export default function ChatConsejero() {
   const [titleTyping, setTitleTyping] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
+  const [typingText, setTypingText] = createSignal('');
   
   let typingInterval;
   let messagesEndRef;
@@ -260,12 +261,14 @@ export default function ChatConsejero() {
               const json = JSON.parse(line.slice(6));
               if (json.provider && !firstChunk) { firstChunk = true; setCurrentProvider(json.provider); }
               if (json.texto) {
-                if (!firstChunk) { firstChunk = true; setIsLoading(false); }
-                setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto, isWaiting: false } : m));
+                if (!firstChunk) { firstChunk = true; setIsLoading(false); setTypingMessageId(botId); setTypingText(''); }
+                setTypingText(prev => prev + json.texto);
                 scrollToBottom(true);
               }
               if (json.error) {
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: json.error } : m));
+                setTypingText('');
+                setTypingMessageId(null);
                 setIsLoading(false);
                 return;
               }
@@ -275,14 +278,18 @@ export default function ChatConsejero() {
       }
     } catch { 
       setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: 'Lo siento, hubo un error. Intenta de nuevo.' } : m)); 
+      setTypingText('');
+      setTypingMessageId(null);
       setIsLoading(false);
     }
   };
 
   const finishMessage = (botId) => {
     setIsLoading(false);
-    stopTypingAnimation();
-    setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false } : m));
+    const finalText = typingText();
+    setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: finalText || m.text, isWaiting: false } : m));
+    setTypingText('');
+    setTypingMessageId(null);
     scrollToBottom(true);
   };
 
@@ -584,6 +591,10 @@ export default function ChatConsejero() {
           color: #1C1C1C;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
+        .typing-inline {
+          background: #fff;
+          color: #1C1C1C;
+        }
         .msg-bubble.user {
           background: #1C1C1C;
           color: #F7F4EE;
@@ -879,7 +890,10 @@ export default function ChatConsejero() {
                       </div>
                     </Show>
                     <Show when={!msg.isWaiting}>
-                      <span innerHTML={formatText(typingMessageId() === msg.id ? displayedText() : msg.text)}></span>
+                      <span innerHTML={formatText(msg.text)}></span>
+                    </Show>
+                    <Show when={typingMessageId() === msg.id && typingText()}>
+                      <span innerHTML={formatText(typingText())} class="typing-inline"></span>
                     </Show>
                   </div>
                 </Show>
