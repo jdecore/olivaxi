@@ -283,19 +283,19 @@ export default function ChatConsejero() {
           display: flex;
           flex-direction: column;
           background: #f5efe8;
-          padding: 12px;
+          padding: 8px;
           box-sizing: border-box;
           overflow: hidden;
         }
         .chat-hero {
           text-align: center;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
           flex-shrink: 0;
         }
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 20px;
+          font-size: 18px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
@@ -309,21 +309,21 @@ export default function ChatConsejero() {
         }
         .input-area {
           flex-shrink: 0;
-          padding-top: 6px;
+          padding-top: 4px;
           background: #f5efe8;
         }
         .province-select-card {
-          max-width: 320px;
-          margin: 0 auto 8px;
+          max-width: 280px;
+          margin: 0 auto 4px;
           background: #fff;
-          border-radius: 12px;
-          padding: 12px 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border-radius: 10px;
+          padding: 8px 12px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         .province-dropdown {
           width: 100%;
-          padding: 12px 16px;
-          font-size: 16px;
+          padding: 8px 12px;
+          font-size: 14px;
           border: 1px solid #e0e0e0;
           border-radius: 12px;
           background: #fff;
@@ -339,12 +339,12 @@ export default function ChatConsejero() {
           border-color: #1C1C1C;
         }
         .skills-card {
-          max-width: 340px;
-          margin: 0 auto 8px;
+          max-width: 300px;
+          margin: 0 auto 4px;
           background: #fff;
-          border-radius: 12px;
-          padding: 10px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border-radius: 10px;
+          padding: 8px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
         }
         .skills-grid {
@@ -382,11 +382,11 @@ export default function ChatConsejero() {
           overflow-y: hidden;
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          max-width: 400px;
+          gap: 4px;
+          max-width: 350px;
           width: 100%;
           margin: 0 auto;
-          padding-bottom: 6px;
+          padding-bottom: 4px;
           min-height: 0;
         }
         .msg-row {
@@ -404,21 +404,21 @@ export default function ChatConsejero() {
           justify-content: flex-end;
         }
         .msg-bubble {
-          padding: 8px 12px;
+          padding: 6px 10px;
           max-width: 72%;
-          font-size: 13px;
-          line-height: 1.5;
+          font-size: 12px;
+          line-height: 1.4;
         }
         .msg-bubble.bot {
           background: #fff;
-          border-radius: 4px 14px 14px 14px;
+          border-radius: 4px 12px 12px 12px;
           color: #1C1C1C;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
         .msg-bubble.user {
           background: #1C1C1C;
           color: #F7F4EE;
-          border-radius: 18px 4px 18px 18px;
+          border-radius: 14px 4px 14px 14px;
           width: fit-content;
           word-break: break-word;
         }
@@ -468,22 +468,22 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 320px;
+          max-width: 280px;
           width: 100%;
-          margin: 0 auto 6px;
-          padding: 5px 8px;
+          margin: 0 auto 4px;
+          padding: 4px 6px;
           background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
           transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .chat-input-wrapper.responding {
-          transform: translateY(6px);
+          transform: translateY(4px);
           opacity: 0.7;
         }
         .chat-input {
           width: 100%;
-          height: 28px;
+          height: 24px;
           border: none;
           background: transparent;
           font-size: 14px;
@@ -500,26 +500,26 @@ export default function ChatConsejero() {
         .active-mode {
           display: flex;
           align-items: center;
-          gap: 4px;
-          margin-bottom: 4px;
+          gap: 3px;
+          margin-bottom: 3px;
           justify-content: center;
         }
         .active-mode-badge {
           background: #1C1C1C;
           color: #fff;
-          padding: 3px 8px;
-          border-radius: 12px;
-          font-size: 11px;
+          padding: 2px 6px;
+          border-radius: 10px;
+          font-size: 10px;
           font-weight: 500;
           display: flex;
           align-items: center;
-          gap: 3px;
+          gap: 2px;
         }
         .active-mode-clear {
           background: transparent;
           border: 1px solid #ccc;
           color: #666;
-          padding: 4px 8px;
+          padding: 3px 6px;
           border-radius: 24px;
           font-size: 13px;
           cursor: pointer;
