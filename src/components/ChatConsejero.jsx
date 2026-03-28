@@ -20,12 +20,12 @@ const getInitialProvincia = () => {
 };
 
 const SKILLS = [
-  { id: 'calor', label: '🔥 Calor' },
-  { id: 'drought', label: '🏜️ Sequía' },
-  { id: 'frio', label: '❄️ Frío' },
-  { id: 'humedad', label: '💧 Humedad' },
-  { id: 'plagas', label: '🐛 Plagas' },
-  { id: 'fenologia', label: '🌱 Fenología' },
+  { id: 'calor', label: '🔥 Calor', condition: 'altas temperaturas', color: '#FFE4D6' },
+  { id: 'drought', label: '🏜️ Sequía', condition: 'estrés hídrico', color: '#FFF3E0' },
+  { id: 'frio', label: '❄️ Frío', condition: 'bajas temperaturas', color: '#E3F2FD' },
+  { id: 'humedad', label: '💧 Humedad', condition: 'exceso de humedad', color: '#ECEFF1' },
+  { id: 'plagas', label: '🐛 Plagas', condition: 'control de plagas', color: '#E8F5E9' },
+  { id: 'fenologia', label: '🌱 Fenología', condition: 'ciclo del olivo', color: '#F3E5F5' },
 ];
 
 const SKILL_PROMPTS = {
@@ -52,6 +52,9 @@ export default function ChatConsejero() {
   const [activeSkill, setActiveSkill] = createSignal(null);
   const [initComplete, setInitComplete] = createSignal(false);
   const [showLoading, setShowLoading] = createSignal(true);
+  const [titleText, setTitleText] = createSignal('');
+  const [titleFullText, setTitleFullText] = createSignal('');
+  const [titleTyping, setTitleTyping] = createSignal(false);
   
   let typingInterval;
   let messagesEndRef;
@@ -277,10 +280,37 @@ export default function ChatConsejero() {
     if (activeSkill() === skillId) {
       setActiveSkill(null);
       setInputExpanded(false);
+      setTitleText('');
+      setTitleTyping(false);
     } else {
       setActiveSkill(skillId);
       setInputExpanded(true);
+      const skill = SKILLS.find(s => s.id === skillId);
+      if (skill) {
+        startTitleTypewriter(`En qué te puedo ayudar... ${skill.condition}`);
+      }
     }
+  };
+
+  const startTitleTypewriter = (text) => {
+    setTitleFullText(text);
+    setTitleText('');
+    setTitleTyping(true);
+    let charIndex = 0;
+    const interval = setInterval(() => {
+      if (charIndex < text.length) {
+        setTitleText(text.slice(0, charIndex + 1));
+        charIndex++;
+      } else {
+        clearInterval(interval);
+        setTitleTyping(false);
+      }
+    }, 50);
+  };
+
+  const getSkillColor = (skillId) => {
+    const skill = SKILLS.find(s => s.id === skillId);
+    return skill ? skill.color : '#f5efe8';
   };
 
   const t = () => ({ bg: '#fff', text: '#1C1C1C', muted: '#6B6B5E', accent: '#D4E849', inputBg: '#f7f5f0' });
@@ -289,7 +319,7 @@ export default function ChatConsejero() {
   const allModes = () => ['Auto', ...SKILLS.map(s => s.label)];
   
   return (
-    <div class="chat-container">
+    <div class="chat-container" style={{ background: activeSkill() ? getSkillColor(activeSkill()) : '#f5efe8' }}>
       <style>{`
         .chat-container {
           width: 100%;
@@ -302,6 +332,7 @@ export default function ChatConsejero() {
           padding: 8px;
           box-sizing: border-box;
           overflow: hidden;
+          transition: background 0.5s ease;
         }
         .chat-hero {
           text-align: center;
@@ -311,10 +342,25 @@ export default function ChatConsejero() {
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 800;
-          font-size: 75px;
+          font-size: 50px;
           color: #000;
           margin: 0;
           letter-spacing: -0.02em;
+        }
+        .title-typewriter {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 800;
+          font-size: 40px;
+          color: #000;
+          min-height: 50px;
+        }
+        .title-typewriter::after {
+          content: '|';
+          animation: blink 0.7s infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
         .chat-with-input {
           flex: 1;
@@ -326,7 +372,22 @@ export default function ChatConsejero() {
         .input-area {
           flex-shrink: 0;
           padding-top: 4px;
-          background: #f5efe8;
+          background: inherit;
+          transition: background 0.5s ease;
+        }
+        .chat-messages {
+          flex: 1;
+          overflow-y: hidden;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          max-width: 350px;
+          width: 100%;
+          margin: 0 auto;
+          padding-bottom: 4px;
+          min-height: 0;
+          background: inherit;
+          transition: background 0.5s ease;
         }
         .province-select-card {
           max-width: 280px;
@@ -384,7 +445,7 @@ export default function ChatConsejero() {
         .skill-btn {
           padding: 5px 10px;
           border-radius: 16px;
-          border: none;
+          border: 2px solid #1C1C1C;
           background: #D4E849;
           color: #1C1C1C;
           font-size: 12px;
@@ -669,7 +730,11 @@ export default function ChatConsejero() {
 
       <Show when={!showLoading()}>
       <div class="chat-hero">
-        <h1>¿Qué modo quieres usar?</h1>
+        <Show when={!activeSkill()} fallback={
+          <div class="title-typewriter">{titleText()}</div>
+        }>
+          <h1>¿Qué modo quieres usar?</h1>
+        </Show>
       </div>
 
       <Show when={initComplete()}>
@@ -744,7 +809,7 @@ export default function ChatConsejero() {
               <div class="active-mode-badge">
                 {SKILLS.find(s => s.id === activeSkill())?.label}
               </div>
-              <button class="active-mode-clear" onClick={() => setActiveSkill(null)}>
+              <button class="active-mode-clear" onClick={() => { setActiveSkill(null); setTitleText(''); setTitleTyping(false); }}>
                 Cambiar
               </button>
             </div>
