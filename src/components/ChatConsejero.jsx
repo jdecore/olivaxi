@@ -369,6 +369,7 @@ export default function ChatConsejero() {
         }
         .chat-hero {
           text-align: center;
+          margin-top: 12px;
           margin-bottom: 18px;
           flex-shrink: 0;
         }
@@ -404,15 +405,69 @@ export default function ChatConsejero() {
         }
         .input-area {
           flex-shrink: 0;
-          padding: 16px 24px;
+          padding: 20px 24px;
           background: inherit;
           transition: background 0.5s ease;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          gap: 8px;
+          gap: 12px;
           width: 100%;
           box-sizing: border-box;
+        }
+        .mode-pill-inline {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .mode-pill-inline .mode-pill-button {
+          padding: 10px 18px;
+          font-size: 14px;
+          border: 2px solid #1C1C1C;
+          border-radius: 24px;
+          background: #D4E849;
+          color: #1C1C1C;
+          cursor: pointer;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+        .mode-pill-inline .mode-pill-button:hover {
+          background: #c5d93e;
+        }
+        .mode-pill-inline .mode-pill-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          margin-top: 8px;
+          background: #fff;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          display: none;
+          min-width: 240px;
+          z-index: 100;
+          overflow: hidden;
+        }
+        .mode-pill-inline .mode-pill-dropdown.show {
+          display: block;
+        }
+        .mode-option {
+          padding: 12px 16px;
+          font-size: 14px;
+          color: #1C1C1C;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+          transition: background 0.15s;
+        }
+        .mode-option:last-child {
+          border-bottom: none;
+        }
+        .mode-option:hover {
+          background: #D4E849;
         }
         .mode-pill-inline {
           position: relative;
@@ -901,16 +956,18 @@ export default function ChatConsejero() {
                 />
               </div>
               <div class="clean-btn-wrapper">
-                <button class="clean-btn" onClick={() => setShowCleanMenu(!showCleanMenu())} title="Limpiar chat">
-                  🧹
+                <button class="clean-btn" onClick={() => isAtLimit() ? setShowCleanMenu(!showCleanMenu()) : setShowCleanMenu(true)} title="Opciones">
+                  {isAtLimit() ? '🧹' : '💾'}
                 </button>
                 <div class={`clean-menu ${showCleanMenu() ? 'show' : ''}`}>
                   <div class="clean-option" onClick={() => { descargarChat(); setShowCleanMenu(false); }}>
                     📥 Descargar chat
                   </div>
-                  <div class="clean-option" onClick={() => { nuevoChat(); setShowCleanMenu(false); }}>
-                    ✨ Nuevo chat
-                  </div>
+                  <Show when={isAtLimit()}>
+                    <div class="clean-option" onClick={() => { nuevoChat(); setShowCleanMenu(false); }}>
+                      ✨ Nuevo chat
+                    </div>
+                  </Show>
                 </div>
               </div>
             </div>
