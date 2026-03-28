@@ -115,9 +115,15 @@ export default function ChatConsejero() {
     }
   });
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (smooth = false) => {
     requestAnimationFrame(() => {
-      messagesEndRef?.scrollIntoView({ behavior: 'auto', block: 'end' });
+      const container = messagesEndRef?.parentElement;
+      if (container) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: smooth ? 'smooth' : 'auto'
+        });
+      }
     });
   };
 
@@ -133,7 +139,7 @@ export default function ChatConsejero() {
         if (charIndex < fullText().length) {
           setDisplayedText(fullText().slice(0, charIndex + 1));
           charIndex++;
-          scrollToBottom();
+          scrollToBottom(true);
         } else {
           clearInterval(typingInterval);
           typingInterval = null;
@@ -188,13 +194,13 @@ export default function ChatConsejero() {
       { id: botId, role: 'bot', text: '', isWaiting: true }
     ]);
     setIsLoading(true);
-    scrollToBottom();
+    scrollToBottom(true);
 
     if (!provincia()) {
       const found = await handleProvinciaInput(pregunta);
       setIsLoading(false);
       setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: found ? `Perfecto, tengo información de ${provincia()}. ¿Qué quieres saber sobre tu olivar?` : 'No he entendido la provincia. Por favor, escribe el nombre de una provincia olivarera española (Jaén, Córdoba, Sevilla, Granada, Málaga, Badajoz, Toledo, Ciudad Real, Almería o Huelva).' } : m));
-      scrollToBottom();
+      scrollToBottom(true);
       return;
     }
 
@@ -228,7 +234,7 @@ export default function ChatConsejero() {
                 if (!firstChunk) { firstChunk = true; setIsLoading(false); }
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto } : m));
                 startTypingAnimation(botId, json.texto);
-                scrollToBottom();
+                scrollToBottom(true);
               }
             } catch {}
           }
@@ -244,7 +250,7 @@ export default function ChatConsejero() {
     setIsLoading(false);
     stopTypingAnimation();
     setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false } : m));
-    scrollToBottom();
+    scrollToBottom(true);
   };
 
   const limpiarChat = () => {
@@ -366,7 +372,7 @@ export default function ChatConsejero() {
         }
         .chat-messages {
           flex: 1;
-          overflow-y: auto;
+          overflow-y: hidden;
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -379,6 +385,12 @@ export default function ChatConsejero() {
           display: flex;
           align-items: flex-start;
           gap: 10px;
+          animation: msgSlideIn 0.4s ease-out forwards;
+          opacity: 0;
+        }
+        @keyframes msgSlideIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .msg-row.user {
           justify-content: flex-end;
