@@ -351,14 +351,10 @@ export default function ChatConsejero() {
           max-width: 700px;
           width: 100%;
           margin: 24px auto 0;
-          background: #fff;
-          border-radius: 24px;
-          padding: 20px 24px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         .chat-input {
           width: 100%;
-          height: 44px;
+          height: 48px;
           border: none;
           background: transparent;
           font-size: 15px;
@@ -376,8 +372,9 @@ export default function ChatConsejero() {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-top: 12px;
+          margin-top: 8px;
           gap: 8px;
+          flex-wrap: wrap;
         }
         .mode-btn {
           padding: 8px 14px;
