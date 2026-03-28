@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import nodemailer from "nodemailer";
 import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
-import { getClimaByProvincia } from "./clima";
+import { getClimaByProvincia, getClimaData } from "./clima";
 
 const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
 
@@ -365,7 +365,7 @@ function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
 }
 
 // ============================================
-// Función para obtener contexto completo del clima
+// Función para obtener contexto completo del clima (usa cache)
 // ============================================
 async function obtenerContextoAlerta(
   provincia: string,
@@ -374,48 +374,47 @@ async function obtenerContextoAlerta(
   nombre: string,
   tipo: string
 ): Promise<ContextoAlerta | null> {
-  const PROVINCIAS_COORDS: Record<string, { lat: number; lon: number }> = {};
-  for (const p of PROVINCIAS) {
-    PROVINCIAS_COORDS[p.nombre] = { lat: p.lat, lon: p.lon };
-  }
-
-  const coords = PROVINCIAS_COORDS[provincia];
-  if (!coords) return null;
-
-  try {
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,precipitation`
-    );
-    const data = await res.json();
-
-    const temp = data.current?.temperature_2m ?? 20;
-    const humedad = data.current?.relative_humidity_2m ?? 50;
-    const lluvia = data.current?.precipitation ?? 0;
-
-    const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
-    const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
-
-    const varInfo = VARIEDADES_INFO[variedad];
-    const faseFenologica = fenologia || 'No especificada';
-
+  // Usar datos cacheados del clima (evita llamar a Open-Meteo)
+  const provinciaData = getClimaByProvincia(provincia);
+  
+  if (!provinciaData) {
+    console.log("[Alertas] No hay datos cacheados para", provincia);
+    // Fallback: valores por defecto
     return {
-      nombre,
-      provincia,
-      variedad,
-      variedadNombre: varInfo?.nombre || variedad,
-      fenologia: faseFenologica,
-      tipo,
-      temp,
-      humedad,
-      lluvia,
-      riesgos_olivar,
-      riesgos_plaga,
-      faseFenologica
+      nombre, provincia, variedad,
+      variedadNombre: VARIEDADES_INFO[variedad]?.nombre || variedad,
+      fenologia: fenologia || 'No especificada', tipo,
+      temp: 20, humedad: 50, lluvia: 0,
+      riesgos_olivar: calcularRiesgosOlivar(20, 50, 0),
+      riesgos_plaga: calcularRiesgosPlaga(20, 50, 0),
+      faseFenologica: fenologia || 'No especificada'
     };
-  } catch (e) {
-    console.error("[Alertas] Error obteniendo contexto:", e);
-    return null;
   }
+
+  const temp = provinciaData.temperatura ?? 20;
+  const humedad = provinciaData.humedad ?? 50;
+  const lluvia = provinciaData.lluvia ?? 0;
+
+  const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
+  const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
+
+  const varInfo = VARIEDADES_INFO[variedad];
+  const faseFenologica = fenologia || 'No especificada';
+
+  return {
+    nombre,
+    provincia,
+    variedad,
+    variedadNombre: varInfo?.nombre || variedad,
+    fenologia: faseFenologica,
+    tipo,
+    temp,
+    humedad,
+    lluvia,
+    riesgos_olivar,
+    riesgos_plaga,
+    faseFenologica
+  };
 }
 
 // ============================================
@@ -567,35 +566,26 @@ alertas.post("/check", async (c) => {
   const provincesToCheck = [...new Set(alertasLimit.map((a) => a.provincia))].slice(0, 10);
   console.log("[ALERTAS] Provincias a verificar (max 10):", provincesToCheck);
 
-  const PROVINCIAS_COORDS: Record<string, { lat: number; lon: number }> = {};
-  for (const p of PROVINCIAS) {
-    PROVINCIAS_COORDS[p.nombre] = { lat: p.lat, lon: p.lon };
-  }
-
-  // Obtener datos climáticos completos para cada provincia
+  // Usar cache del clima - primero asegurar que hay datos
+  await getClimaData();
+  
+  // Obtener datos climáticos del cache para cada provincia
   const datosClima: Record<string, { temp: number; humedad: number; lluvia: number }> = {};
 
-  await Promise.all(
-    provincesToCheck.map(async (provincia) => {
-      const p = PROVINCIAS_COORDS[provincia];
-      if (!p) return;
-      try {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation`
-        );
-        const d = await res.json();
-        datosClima[provincia] = {
-          temp: d.current?.temperature_2m ?? 0,
-          humedad: d.current?.relative_humidity_2m ?? 50,
-          lluvia: d.current?.precipitation ?? 0
-        };
-      } catch {
-        datosClima[provincia] = { temp: 0, humedad: 50, lluvia: 0 };
-      }
-    })
-  );
+  for (const provincia of provincesToCheck) {
+    const provData = getClimaByProvincia(provincia);
+    if (provData) {
+      datosClima[provincia] = {
+        temp: provData.temperatura ?? 0,
+        humedad: provData.humedad ?? 50,
+        lluvia: provData.lluvia ?? 0
+      };
+    } else {
+      datosClima[provincia] = { temp: 0, humedad: 50, lluvia: 0 };
+    }
+  }
 
-  console.log("[ALERTAS] Datos climáticos:", datosClima);
+  console.log("[ALERTAS] Datos climáticos del cache:", datosClima);
 
   let enviados = 0;
   for (const alerta of alertasActivas) {
