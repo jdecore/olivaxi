@@ -270,8 +270,12 @@ export default function ChatConsejero() {
               if (json.texto) {
                 if (!firstChunk) { firstChunk = true; setIsLoading(false); }
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto, isWaiting: false } : m));
-                startTypingAnimation(botId, json.texto);
                 scrollToBottom(true);
+              }
+              if (json.error) {
+                setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: json.error } : m));
+                setIsLoading(false);
+                return;
               }
             } catch {}
           }
