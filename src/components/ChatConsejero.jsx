@@ -371,9 +371,34 @@ export default function ChatConsejero() {
         }
         .input-area {
           flex-shrink: 0;
-          padding-top: 4px;
+          padding: 16px;
           background: inherit;
           transition: background 0.5s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .mode-selector {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          max-width: 300px;
+          width: 100%;
+        }
+        .mode-dropdown {
+          flex: 1;
+          padding: 8px 12px;
+          font-size: 13px;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          background: #fff;
+          color: #1C1C1C;
+          cursor: pointer;
+          outline: none;
+        }
+        .mode-dropdown:focus {
+          border-color: #D4E849;
         }
         .chat-messages {
           flex: 1;
@@ -557,13 +582,14 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 280px;
+          max-width: 500px;
           width: 100%;
           margin: 0 auto 4px;
-          padding: 4px 6px;
+          padding: 8px 12px;
           background: #fff;
-          border-radius: 6px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+          border-radius: 12px;
+          border: 2px solid #1C1C1C;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .chat-input-wrapper.responding {
@@ -572,6 +598,14 @@ export default function ChatConsejero() {
         }
         .chat-input {
           width: 100%;
+          height: 30px;
+          border: none;
+          background: transparent;
+          font-size: 15px;
+          color: #1C1C1C;
+          outline: none;
+          padding: 0;
+        }
           height: 24px;
           border: none;
           background: transparent;
@@ -805,13 +839,25 @@ export default function ChatConsejero() {
           </div>
 
           <div class="input-area">
-            <div class="active-mode">
-              <div class="active-mode-badge">
-                {SKILLS.find(s => s.id === activeSkill())?.label}
-              </div>
-              <button class="active-mode-clear" onClick={() => { setActiveSkill(null); setTitleText(''); setTitleTyping(false); }}>
-                Cambiar
-              </button>
+            <div class="mode-selector">
+              <select 
+                class="mode-dropdown"
+                value={activeSkill() || ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    selectSkill(e.target.value);
+                  } else {
+                    setActiveSkill(null);
+                    setTitleText('');
+                    setTitleTyping(false);
+                  }
+                }}
+              >
+                <option value="">Selecciona un modo</option>
+                <For each={SKILLS}>{(skill) => (
+                  <option value={skill.id}>{skill.label} - {skill.condition}</option>
+                )}</For>
+              </select>
             </div>
           
             <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
