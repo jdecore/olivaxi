@@ -410,13 +410,13 @@ export default function ChatConsejero() {
           flex-shrink: 0;
           padding: 20px 24px;
           background: inherit;
-          transition: background 0.5s ease;
           display: flex;
           flex-direction: column;
           gap: 12px;
           width: 100%;
           max-width: 1200px;
           box-sizing: border-box;
+          min-height: 110px;
         }
         .mode-pill-inline {
           position: relative;
@@ -473,54 +473,10 @@ export default function ChatConsejero() {
         .mode-option:hover {
           background: #D4E849;
         }
-        .mode-pill-inline {
-          position: relative;
-          display: flex;
-          align-items: center;
-          flex-shrink: 0;
-        }
-        .mode-pill-inline .mode-pill-button {
-          padding: 6px 14px;
-          font-size: 12px;
-          border: 2px solid #1C1C1C;
-          border-radius: 20px;
-          background: #D4E849;
-          color: #1C1C1C;
-          cursor: pointer;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.2s;
-          white-space: nowrap;
-        }
-        .mode-pill-inline .mode-pill-button:hover {
-          background: #c5d93e;
-        }
-        .mode-pill-inline .mode-pill-dropdown {
-          position: absolute;
-          bottom: 100%;
-          left: 0;
-          margin-bottom: 8px;
-          background: #fff;
-          border: 2px solid #1C1C1C;
-          border-radius: 12px;
-          box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
-          display: none;
-          min-width: 220px;
-          z-index: 100;
-          overflow: hidden;
-        }
-        .mode-pill-inline .mode-pill-dropdown.show {
-          display: block;
-        }
-        .mode-pill-inline .mode-pill-dropdown.show {
-          display: block;
-        }
         
         .chat-messages {
           flex: 1;
-          overflow-y: hidden;
+          overflow-y: auto;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -530,7 +486,17 @@ export default function ChatConsejero() {
           box-sizing: border-box;
           min-height: 0;
           background: inherit;
-          transition: background 0.5s ease;
+          scroll-behavior: smooth;
+        }
+        .chat-messages::-webkit-scrollbar {
+          width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+          background: #ccc;
+          border-radius: 3px;
         }
         .province-select-card {
           max-width: 280px;
@@ -676,12 +642,12 @@ export default function ChatConsejero() {
           border-radius: 16px;
           border: 2px solid #1C1C1C;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          transition: transform 0.3s ease, opacity 0.3s ease;
           box-sizing: border-box;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
+          min-height: 70px;
         }
         .chat-input-wrapper.responding {
           transform: translateY(4px);
