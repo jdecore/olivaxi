@@ -428,63 +428,7 @@ export default function ChatConsejero() {
         .mode-pill-inline .mode-pill-dropdown.show {
           display: block;
         }
-        .mode-pill-container {
-          display: flex;
-          justify-content: center;
-        }
-        .mode-pill {
-          position: relative;
-          display: inline-block;
-        }
-        .mode-pill-button {
-          padding: 6px 14px;
-          font-size: 12px;
-          border: 2px solid #1C1C1C;
-          border-radius: 20px;
-          background: #fff;
-          color: #1C1C1C;
-          cursor: pointer;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.2s;
-        }
-        .mode-pill-button:hover {
-          background: #D4E849;
-        }
-        .mode-pill-dropdown {
-          position: absolute;
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          margin-bottom: 8px;
-          background: #fff;
-          border: 2px solid #1C1C1C;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          display: none;
-          min-width: 220px;
-          z-index: 100;
-          overflow: hidden;
-        }
-        .mode-pill-dropdown.show {
-          display: block;
-        }
-        .mode-option {
-          padding: 10px 14px;
-          font-size: 13px;
-          color: #1C1C1C;
-          cursor: pointer;
-          border-bottom: 1px solid #eee;
-          transition: background 0.15s;
-        }
-        .mode-option:last-child {
-          border-bottom: none;
-        }
-        .mode-option:hover {
-          background: #D4E849;
-        }
+        
         .chat-messages {
           flex: 1;
           overflow-y: hidden;
@@ -550,29 +494,6 @@ export default function ChatConsejero() {
           flex-wrap: wrap;
           gap: 6px;
           justify-content: center;
-        }
-        .skill-btn {
-          padding: 5px 10px;
-          border-radius: 16px;
-          border: 2px solid #1C1C1C;
-          background: #D4E849;
-          color: #1C1C1C;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .skill-btn:hover {
-          background: #c5d93e;
-        }
-        .skill-btn.selected {
-          background: #1C1C1C;
-          border-color: #1C1C1C;
-          color: #fff;
-        }
-        .input-section {
-          max-width: 600px;
-          width: 100%;
         }
         .msg-row {
           display: flex;
@@ -660,32 +581,48 @@ export default function ChatConsejero() {
           max-width: 100%;
           width: 100%;
           margin: 0;
-          padding: 12px 20px;
+          padding: 8px 16px;
           background: #fff;
           border-radius: 16px;
           border: 2px solid #1C1C1C;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
           transition: transform 0.3s ease, opacity 0.3s ease;
           box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
         }
         .chat-input-wrapper.responding {
           transform: translateY(4px);
           opacity: 0.7;
         }
+        .input-left {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex: 1;
+        }
+        .clean-btn {
+          background: #f5efe8;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          padding: 8px 12px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+        .clean-btn:hover {
+          background: #D4E849;
+          transform: scale(1.05);
+        }
         .chat-input {
-          width: 100%;
+          flex: 1;
           height: 36px;
           border: none;
           background: transparent;
           font-size: 16px;
-          color: #1C1C1C;
-          outline: none;
-          padding: 0;
-        }
-          height: 24px;
-          border: none;
-          background: transparent;
-          font-size: 14px;
           color: #1C1C1C;
           outline: none;
           padding: 0;
@@ -695,56 +632,6 @@ export default function ChatConsejero() {
         }
         .chat-input:disabled {
           opacity: 0.6;
-        }
-        .active-mode {
-          display: flex;
-          align-items: center;
-          gap: 3px;
-          margin-bottom: 3px;
-          justify-content: center;
-        }
-        .active-mode-badge {
-          background: #1C1C1C;
-          color: #fff;
-          padding: 2px 6px;
-          border-radius: 10px;
-          font-size: 10px;
-          font-weight: 500;
-          display: flex;
-          align-items: center;
-          gap: 2px;
-        }
-        .active-mode-clear {
-          background: transparent;
-          border: 1px solid #ccc;
-          color: #666;
-          padding: 3px 6px;
-          border-radius: 24px;
-          font-size: 13px;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .active-mode-clear:hover {
-          border-color: #1C1C1C;
-          color: #1C1C1C;
-        }
-        .skill-btn {
-          padding: 8px 16px;
-          border-radius: 20px;
-          border: none;
-          background: #D4E849;
-          color: #1C1C1C;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .skill-btn:hover {
-          background: #c5d93e;
-        }
-        .skill-btn.selected {
-          background: #1C1C1C;
-          color: #fff;
         }
         
         /* Loading Screen */
@@ -916,36 +803,41 @@ export default function ChatConsejero() {
 
           <div class="input-area">
             <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
-              <div class="mode-pill-inline">
-                <button 
-                  class="mode-pill-button"
-                  onClick={() => setShowModeDropdown(!showModeDropdown())}
-                >
-                  {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Modo'}
-                </button>
-                <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
-                  <For each={SKILLS}>{(skill) => (
-                    <div 
-                      class="mode-option"
-                      onClick={() => {
-                        selectSkill(skill.id);
-                        setShowModeDropdown(false);
-                      }}
-                    >
-                      {skill.label} - {skill.condition}
-                    </div>
-                  )}</For>
+              <div class="input-left">
+                <div class="mode-pill-inline">
+                  <button 
+                    class="mode-pill-button"
+                    onClick={() => setShowModeDropdown(!showModeDropdown())}
+                  >
+                    {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Modo'}
+                  </button>
+                  <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
+                    <For each={SKILLS}>{(skill) => (
+                      <div 
+                        class="mode-option"
+                        onClick={() => {
+                          selectSkill(skill.id);
+                          setShowModeDropdown(false);
+                        }}
+                      >
+                        {skill.label} - {skill.condition}
+                      </div>
+                    )}</For>
+                  </div>
                 </div>
+                <input 
+                  class="chat-input" 
+                  type="text" 
+                  value={input()} 
+                  onInput={(e) => setInput(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+                  placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
+                  disabled={isLoading() || isAtLimit()} 
+                />
               </div>
-              <input 
-                class="chat-input" 
-                type="text" 
-                value={input()} 
-                onInput={(e) => setInput(e.target.value)} 
-                onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-                placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
-                disabled={isLoading() || isAtLimit()} 
-              />
+              <button class="clean-btn" onClick={limpiarChat} title="Limpiar chat">
+                🧹
+              </button>
             </div>
           </div>
         </div>
