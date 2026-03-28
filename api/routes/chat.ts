@@ -62,6 +62,10 @@ chat.post("/", async (c) => {
 
   const mensaje = mensajeRaw.replace(/[<>'";]/g, '').trim().slice(0, 1000);
   const provincia = provinciaRaw.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, '').trim().slice(0, 50);
+  const variedad = (bodyRaw.variedad || '').replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ]/g, '').slice(0, 20);
+  const historialRaw = bodyRaw.historial || [];
+  const historial = Array.isArray(historialRaw) ? historialRaw.slice(-3).join(' | ') : '';
+  
   // Resolver alias de skill (ej: 'plagas' -> 'plaga')
   const resolvedSkill = SKILL_ALIASES[skillRaw] || skillRaw;
   const skill = SKILL_PROMPTS[resolvedSkill] || '';
@@ -81,34 +85,44 @@ chat.post("/", async (c) => {
   const provinciaInfo = climaHoy.find((p: any) => p.provincia === provincia) || climaHoy[0];
   const provinciaNombre = provinciaInfo?.provincia || provincia || 'Andalucía';
 
-  // Optimizado: solo datos de la provincia actual y resumen de otras
+  // Optimizado: solo datos de la provincia actual
   const datosProvincia = {
     temperatura: provinciaInfo?.temperatura,
     humedad: provinciaInfo?.humedad,
     lluvia: provinciaInfo?.lluvia,
     estado: provinciaInfo?.estado,
     riesgo: provinciaInfo?.riesgo,
-    riesgos_olivar: provinciaInfo?.riesgos_olivar,
-    riesgos_plaga: provinciaInfo?.riesgos_plaga
   };
 
-  // Construir el systemPrompt base - OPTIMIZADO
-  let basePrompt = `Eres Olivo, consejero experto en olivicultura española.
-Provincia actual: ${provinciaNombre}
-Clima actual: ${JSON.stringify(datosProvincia)}
-Reglas:
-- Responde en español informal y cercano
-- Da consejos prácticos y útiles
-- Máximo 3 párrafos
-- Sé conciso pero completo`;
+  // Construir el systemPrompt base - OPTIMIZADO con historial ligero
+  const temp = provinciaInfo?.temperatura ?? '';
+  const hum = provinciaInfo?.humedad ?? '';
+  const llov = provinciaInfo?.lluvia ?? '';
+  const estado = provinciaInfo?.estado ?? '';
+  const contextoAnterior = historial ? `Historial previo: ${historial}` : '';
+  const contextoVariedad = variedad ? `Variedad de olivo: ${variedad}` : '';
+  
+  let basePrompt = `Eres Olivo, conselheiro experto en olivicultura española.
+Provincia: ${provinciaNombre}
+Clima: ${temp}°C, ${hum}% humedad, ${llov}mm lluvia - ${estado}
+${contextoVariedad}
+${contextoAnterior}
+Reglas: Español cercano, práctico, máximo 3 párrafos`;
 
   // Añadir skill específico si está activo
   if (skill) {
-    basePrompt = `Eres Olivo, consejeros de olivicultura.
+    basePrompt = `Eres Olivo, conseillers de olivicultura.
 ${skill}
 Provincia: ${provinciaNombre}
-Clima: ${JSON.stringify(datosProvincia)}
+Clima: ${temp}°C, ${hum}% humedad
+${contextoVariedad}
+${contextoAnterior}
 Responde en español, máximo 2 párrafos, sé práctico.`;
+  }
+
+  // Añadir systemPrompt personalizado del frontend (para casos específicos)
+  if (systemPromptRaw) {
+    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${temp}°C, ${hum}% humedad\n${contextoVariedad}`;
   }
 
   // Añadir systemPrompt personalizado del frontend (para casos específicos)

@@ -116,6 +116,22 @@ export default function ChatConsejero() {
 
   const isAtLimit = () => messages().filter(m => m.role === 'bot' && !m.isWaiting).length >= 20;
 
+  const getHistorial = () => {
+    try {
+      const hist = localStorage.getItem('olivaxi_chat_historial');
+      return hist ? JSON.parse(hist) : [];
+    } catch { return []; }
+  };
+
+  const saveHistorial = (msgs) => {
+    const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.text).slice(-3);
+    try { localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs)); } catch {}
+  };
+
+  const getVariedad = () => {
+    try { return localStorage.getItem('olivaxi_variedad') || ''; } catch { return ''; }
+  };
+
   const enviarPregunta = async () => {
     const text = input().trim();
     if (!text || isLoading() || isAtLimit()) return;
@@ -124,10 +140,9 @@ export default function ChatConsejero() {
     const botId = Date.now();
 
     setInput('');
-    setMessages(prev => [...prev, 
-      { id: botId - 1, role: 'user', text: pregunta }, 
-      { id: botId, role: 'bot', text: '', isWaiting: true }
-    ]);
+    const newMessages = [...messages(), { id: botId - 1, role: 'user', text: pregunta }, { id: botId, role: 'bot', text: '', isWaiting: true }];
+    setMessages(newMessages);
+    saveHistorial(newMessages);
     setIsLoading(true);
     scrollToBottom();
 
@@ -141,10 +156,12 @@ export default function ChatConsejero() {
 
     try {
       const skillPrompt = activeSkill() ? SKILL_PROMPTS[activeSkill()] : '';
+      const historial = getHistorial();
+      const variedad = getVariedad();
       const res = await fetch(apiUrl('/api/chat'), { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt }) 
+        body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt, historial, variedad }) 
       });
       
       if (!res.ok) throw new Error('API error');
@@ -203,6 +220,7 @@ export default function ChatConsejero() {
     setActiveSkill(null);
     setTitleText('');
     setIsLoading(false);
+    try { localStorage.removeItem('olivaxi_chat_historial'); } catch {}
   };
 
   const descargarChat = () => {

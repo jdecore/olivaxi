@@ -24,9 +24,6 @@ export default defineConfig({
       'process.env': {}
     }
   },
-  preview: {
-    allowedHosts: ['olivaxi.duckdns.org']
-  },
   devToolbar: {
     enabled: false
   },
