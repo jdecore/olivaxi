@@ -246,11 +246,9 @@ export default function ChatConsejero() {
       <style>{`
         .chat-container {
           width: 100%;
-          height: calc(100vh - 64px - (100vh * 0.01));
+          height: 100vh;
           display: flex;
           flex-direction: column;
-          max-width: 900px;
-          margin: 0 auto;
           background: #F9F8F4;
         }
         .chat-header {
@@ -386,10 +384,9 @@ export default function ChatConsejero() {
         }
         .chat-input-wrapper {
           background: #f7f5f0;
-          border-radius: 16px;
-          padding: 12px 16px;
-          margin: 0 16px 16px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+          border-top: 1px solid rgba(0,0,0,0.06);
+          padding: 12px 20px 16px;
+          flex-shrink: 0;
         }
         .chat-input {
           width: 100%;
@@ -412,38 +409,13 @@ export default function ChatConsejero() {
           align-items: center;
           justify-content: space-between;
           margin-top: 12px;
-          padding-top: 12px;
-          border-top: 1px solid rgba(0,0,0,0.06);
-        }
-        .toolbar-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .toolbar-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          border: 1.5px solid #ddd;
-          background: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.15s;
-          padding: 0;
-        }
-        .toolbar-btn:hover {
-          border-color: #1C1C1C;
-        }
-        .toolbar-btn svg {
-          width: 16px;
-          height: 16px;
+          gap: 12px;
         }
         .mode-btns {
           display: flex;
           gap: 6px;
           flex-wrap: wrap;
+          flex: 1;
         }
         .mode-btn {
           padding: 6px 12px;
@@ -478,10 +450,28 @@ export default function ChatConsejero() {
           background: #D4E849;
           border-color: #D4E849;
         }
+        .active-mode-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex: 1;
+        }
+        .active-mode-badge {
+          background: #D4E849;
+          color: #1C1C1C;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
         .toolbar-right {
           display: flex;
           align-items: center;
           gap: 8px;
+          flex-shrink: 0;
         }
         .send-btn {
           width: 36px;
@@ -511,17 +501,6 @@ export default function ChatConsejero() {
           height: 18px;
           fill: #fff;
           transition: fill 0.15s;
-        }
-        .active-mode-badge {
-          background: #D4E849;
-          color: #1C1C1C;
-          padding: 6px 12px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 6px;
         }
         .bubble {
           animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
@@ -611,16 +590,8 @@ export default function ChatConsejero() {
         />
         
         <div class="chat-toolbar">
-          <div class="toolbar-left">
-            <button class="toolbar-btn" title="Adjuntar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#6B6B5E" stroke-width="2">
-                <path d="M12 5v14M5 12h14"/>
-              </svg>
-            </button>
-          </div>
-          
           <Show when={!activeSkill()} fallback={
-            <div class="toolbar-right">
+            <div class="active-mode-left">
               <div class="active-mode-badge">
                 {SKILLS.find(s => s.id === activeSkill())?.label}
               </div>
