@@ -35,38 +35,45 @@ const { title = "olivaξ" } = Astro.props;
   </head>
   <body>
     <nav class="navbar">
-      <div class="nav-left">
-        <a href="/" class="logo">🫒 olivaξ</a>
+      <div class="navbar-inner">
+        <div class="nav-left">
+          <a href="/" class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6C12 6 8 2 6 2C4 2 3 4 3 6C3 10 12 14 12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 6C12 6 16 2 18 2C20 2 21 4 21 6C21 10 12 14 12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>olivaξ</span>
+          </a>
+        </div>
+        
+        <div class="nav-center desktop-nav">
+          <a href="/">Inicio</a>
+          <a href="/consejero">Consejero</a>
+          <a href="/variedades">Variedades</a>
+          <a href="/agua-suelos">Agua y Suelos</a>
+          <a href="/plagas">Plagas</a>
+        </div>
+
+        <div class="nav-right">
+          <a href="/alertas" class="btn-primary">Activar alertas</a>
+          <button class="btn-secondary"></button>
+        </div>
+
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
-      
-      <!-- Desktop nav -->
-      <div class="nav-center desktop-nav">
+
+      <div class="nav-dropdown" id="nav-dropdown">
         <a href="/">Inicio</a>
         <a href="/consejero">Consejero</a>
         <a href="/variedades">Variedades</a>
         <a href="/agua-suelos">Agua y Suelos</a>
         <a href="/plagas">Plagas</a>
-      </div>
-
-      <!-- Mobile hamburger -->
-      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menú">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <!-- Dropdown menu -->
-      <div class="nav-dropdown" id="nav-dropdown">
-        <a href="/">🏠 Inicio</a>
-        <a href="/consejero">💬 Consejero</a>
-        <a href="/variedades">🫒 Variedades</a>
-        <a href="/agua-suelos">💧 Agua y Suelos</a>
-        <a href="/plagas">🔬 Plagas</a>
-        <a href="/alertas">🔔 Activar alertas</a>
-      </div>
-      
-      <div class="nav-right">
-        <a href="/alertas" class="btn-alerta-pill">🔔 Activar alerta</a>
+        <a href="/alertas">Activar alertas</a>
       </div>
     </nav>
 
@@ -84,9 +91,6 @@ const { title = "olivaξ" } = Astro.props;
 
     <script>
       (function() {
-        const nav = document.querySelector('nav');
-        let lastY = 0;
-
         // Hamburger menu toggle
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const dropdown = document.getElementById('nav-dropdown');
@@ -103,13 +107,6 @@ const { title = "olivaξ" } = Astro.props;
             hamburgerBtn?.classList.remove('active');
           }
         });
-        
-        window.addEventListener('scroll', () => {
-          const y = window.scrollY;
-          if (y > lastY && y > 50) nav.style.transform = 'translateX(-50%) translateY(-150%)';
-          else nav.style.transform = 'translateX(-50%)';
-          lastY = y;
-        }, { passive: true });
 
         window.addEventListener('modoOscuroChange', (e) => {
           document.documentElement.setAttribute('data-theme', e.detail.modoOscuro ? 'dark' : 'light');
@@ -133,15 +130,6 @@ const { title = "olivaξ" } = Astro.props;
             hamburgerBtn?.classList.remove('active');
           }
         });
-
-        const nav = document.querySelector('nav');
-        let lastY = 0;
-        window.addEventListener('scroll', () => {
-          const y = window.scrollY;
-          if (y > lastY && y > 50) nav.style.transform = 'translateX(-50%) translateY(-150%)';
-          else nav.style.transform = 'translateX(-50%)';
-          lastY = y;
-        }, { passive: true });
       });
     </script>
   </body>
@@ -200,43 +188,59 @@ const { title = "olivaξ" } = Astro.props;
   h1 { font-size: var(--font-xl); }
 
   .navbar {
-    position: fixed;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: sticky;
+    top: 0;
     z-index: 100;
-    transition: transform 0.2s ease;
-    width: auto;
+    background-color: var(--color-white-surface);
+    border-bottom: 1px solid var(--color-border);
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+  }
+
+  .navbar:hover {
+    opacity: 1;
+  }
+
+  .navbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 56px;
     display: flex;
     align-items: center;
-    gap: 32px;
-    background-color: #FFFFFF;
-    border: 2px solid var(--color-aceituna);
-    border-radius: 50px;
-    padding: 8px 24px 8px 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    justify-content: space-between;
+    padding: 0 24px;
   }
 
   .nav-left .logo {
-    color: var(--color-aceituna);
-    font-weight: 800;
-    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-white);
+    font-weight: 600;
+    font-size: 1.1rem;
     text-decoration: none;
     font-family: 'Outfit', system-ui, sans-serif;
-    letter-spacing: -0.02em;
     white-space: nowrap;
+  }
+
+  .nav-left .logo svg {
+    color: var(--color-limon);
+  }
+
+  [data-theme="light"] .nav-left .logo {
+    color: var(--color-aceituna);
   }
 
   .nav-center { 
     display: flex; 
-    gap: 8px;
+    gap: 24px;
   }
 
   .desktop-nav {
     display: flex;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     .desktop-nav { display: none; }
     .nav-right { display: none; }
   }
@@ -248,25 +252,28 @@ const { title = "olivaξ" } = Astro.props;
     align-items: center;
     width: 36px;
     height: 36px;
-    background: var(--color-sal);
-    border: 2px solid var(--color-aceituna);
-    border-radius: 8px;
+    background: transparent;
+    border: none;
     cursor: pointer;
-    gap: 4px;
+    gap: 5px;
     padding: 6px;
   }
 
   .hamburger-btn span {
     display: block;
-    width: 18px;
+    width: 20px;
     height: 2px;
     background: var(--color-aceituna);
     border-radius: 1px;
     transition: all 0.3s ease;
   }
 
+  [data-theme="dark"] .hamburger-btn span {
+    background: var(--color-white);
+  }
+
   .hamburger-btn.active span:nth-child(1) {
-    transform: rotate(45deg) translate(4px, 4px);
+    transform: rotate(45deg) translate(5px, 5px);
   }
 
   .hamburger-btn.active span:nth-child(2) {
@@ -274,10 +281,10 @@ const { title = "olivaξ" } = Astro.props;
   }
 
   .hamburger-btn.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(4px, -4px);
+    transform: rotate(-45deg) translate(5px, -5px);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     .hamburger-btn { display: flex; }
   }
 
@@ -285,14 +292,11 @@ const { title = "olivaξ" } = Astro.props;
     display: none;
     position: absolute;
     top: 100%;
+    left: 0;
     right: 0;
-    margin-top: 8px;
-    background: #1a1a1a;
-    border: 2px solid var(--color-aceituna);
-    border-radius: 12px;
-    padding: 12px 0;
-    min-width: 200px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    background: var(--color-white-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 24px;
     z-index: 200;
   }
 
@@ -308,59 +312,103 @@ const { title = "olivaξ" } = Astro.props;
 
   .nav-dropdown a {
     display: block;
-    padding: 10px 20px;
-    color: #F7F4EE;
+    padding: 12px 16px;
+    color: var(--color-aceituna);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+  }
+
+  [data-theme="dark"] .nav-dropdown a {
+    color: var(--color-white);
   }
 
   .nav-dropdown a:hover {
-    background: rgba(212, 232, 73, 0.15);
-    color: #D4E849;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
   }
 
   .nav-center a {
-    color: var(--color-muted);
+    color: #999;
     text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     font-family: 'Outfit', system-ui, sans-serif;
-    padding: 10px 16px;
-    border-radius: 30px;
-    transition: all 0.2s ease;
+    padding: 8px 12px;
+    transition: color 0.15s ease;
     white-space: nowrap;
   }
 
   .nav-center a:hover { 
-    color: var(--color-aceituna);
-    background: var(--color-sal);
+    color: var(--color-white);
   }
 
-  .btn-alerta-pill {
-    background: var(--color-limon);
+  [data-theme="light"] .nav-center a:hover {
     color: var(--color-aceituna);
-    padding: 10px 18px;
-    border-radius: 30px;
+  }
+
+  .nav-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    background: var(--color-limon);
+    color: #000;
+    padding: 8px 18px;
+    border-radius: 6px;
     text-decoration: none;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     border: none;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     white-space: nowrap;
   }
 
-  .btn-alerta-pill:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(212, 232, 73, 0.4);
+  .btn-primary:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--color-limon);
+    color: var(--color-limon);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 100px;
+    min-height: 36px;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-limon);
+    color: #000;
   }
 
   .toggle-wrapper {
-    position: fixed;
-    top: 20px;
+    position: absolute;
+    top: 10px;
     right: 24px;
     z-index: 101;
+  }
+
+  @media (max-width: 600px) {
+    .navbar-inner {
+      padding: 0 16px;
+    }
+    .nav-left .logo span {
+      display: none;
+    }
+    .nav-left .logo {
+      gap: 0;
+    }
   }
 
   footer {
