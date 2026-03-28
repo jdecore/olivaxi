@@ -31,7 +31,7 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 |------------|-------------|
 | **Astro 6.x** | Framework moderno (build estático) |
 | **SolidJS** | Solo framework UI (sin React) |
-| **Leaflet** | Librería de mapas open-source |
+| **MapLibre GL** | Mapa open-source (optimizado con CDN) |
 | **CartoDB** | Tiles de mapas gratuitos |
 
 ---
