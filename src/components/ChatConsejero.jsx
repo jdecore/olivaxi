@@ -51,6 +51,7 @@ export default function ChatConsejero() {
   const [typingMessageId, setTypingMessageId] = createSignal(null);
   const [activeSkill, setActiveSkill] = createSignal(null);
   const [initComplete, setInitComplete] = createSignal(false);
+  const [showLoading, setShowLoading] = createSignal(true);
   
   let typingInterval;
   let messagesEndRef;
@@ -70,6 +71,7 @@ export default function ChatConsejero() {
   const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
   
   const initChat = async () => {
+    setTimeout(() => setShowLoading(false), 1500);
     setInitComplete(true);
     
     const savedProv = getProvinciaFromStorage();
@@ -561,12 +563,99 @@ export default function ChatConsejero() {
           background: #1C1C1C;
           color: #fff;
         }
+        
+        /* Loading Screen */
+        .loading-screen {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg, #F7F4EE);
+          z-index: 100;
+          transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .loading-screen.fade-out {
+          opacity: 0;
+          transform: scale(1.02);
+          pointer-events: none;
+        }
+        .loading-olive {
+          font-size: 4rem;
+          margin-bottom: 1rem;
+          animation: float 2s ease-in-out infinite;
+        }
+        .loading-text {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: var(--text, #1C1C1C);
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        .loading-subtext {
+          font-size: 0.875rem;
+          color: var(--text-muted, #4a4a40);
+          margin-top: 0.5rem;
+          opacity: 0;
+          animation: fadeIn 0.5s ease 0.3s forwards;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+        
+        /* Main Content Animations */
+        .chat-hero {
+          animation: slideUp 0.6s ease forwards;
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .province-select-card, .skills-card {
+          animation: slideUp 0.6s ease 0.2s forwards;
+          opacity: 0;
+        }
+        
+        .skill-btn {
+          animation: fadeInScale 0.4s ease forwards;
+          opacity: 0;
+        }
+        .skill-btn:nth-child(1) { animation-delay: 0.3s; }
+        .skill-btn:nth-child(2) { animation-delay: 0.35s; }
+        .skill-btn:nth-child(3) { animation-delay: 0.4s; }
+        .skill-btn:nth-child(4) { animation-delay: 0.45s; }
+        .skill-btn:nth-child(5) { animation-delay: 0.5s; }
+        .skill-btn:nth-child(6) { animation-delay: 0.55s; }
+        
+        @keyframes fadeInScale {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        
         @keyframes bounce {
           0%, 100% { transform: translateY(0); opacity: 0.4; }
           50% { transform: translateY(-6px); opacity: 1; }
         }
       `}</style>
 
+      <Show when={showLoading()}>
+        <div class={`loading-screen ${!showLoading() ? 'fade-out' : ''}`}>
+          <div class="loading-olive">🌿</div>
+          <div class="loading-text">Hola, soy Olivaxi</div>
+          <div class="loading-subtext">Cargando tu asesor agrícola...</div>
+        </div>
+      </Show>
+
+      <Show when={!showLoading()}>
       <div class="chat-hero">
         <h1>¿Qué modo quieres usar?</h1>
       </div>
@@ -661,6 +750,7 @@ export default function ChatConsejero() {
             </div>
           </div>
         </div>
+      </Show>
       </Show>
       </Show>
     </div>
