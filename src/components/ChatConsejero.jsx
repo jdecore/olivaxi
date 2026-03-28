@@ -163,15 +163,21 @@ export default function ChatConsejero() {
       setDisplayedText('');
       if (typingInterval) clearInterval(typingInterval);
       let charIndex = 0;
-      const speed = 25;
+      const speed = 20;
+      let lastScrollTime = 0;
       typingInterval = setInterval(() => {
         if (charIndex < fullText().length) {
           setDisplayedText(fullText().slice(0, charIndex + 1));
           charIndex++;
-          scrollToBottom(true);
+          const now = Date.now();
+          if (now - lastScrollTime > 100) {
+            scrollToBottom(true);
+            lastScrollTime = now;
+          }
         } else {
           clearInterval(typingInterval);
           typingInterval = null;
+          scrollToBottom(true);
         }
       }, speed);
     } else {
@@ -436,11 +442,16 @@ export default function ChatConsejero() {
           display: flex;
           align-items: center;
           gap: 8px;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
           white-space: nowrap;
         }
         .mode-pill-inline .mode-pill-button:hover {
           background: #c5d93e;
+        }
+        .mode-pill-inline.expanded .mode-pill-button {
+          background: #1C1C1C;
+          color: #D4E849;
+          padding-right: 12px;
         }
         .mode-pill-inline .mode-pill-dropdown {
           position: absolute;
@@ -556,8 +567,9 @@ export default function ChatConsejero() {
           align-items: flex-start;
           gap: 6px;
           width: 100%;
-          animation: msgSlideIn 0.4s ease-out forwards;
+          animation: msgSlideIn 0.3s ease-out forwards;
           opacity: 0;
+          will-change: transform, opacity;
         }
         @keyframes msgSlideIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -898,7 +910,7 @@ export default function ChatConsejero() {
           <div class="input-area">
             <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
               <div class="input-left">
-                <div class="mode-pill-inline">
+                <div class={`mode-pill-inline ${activeSkill() ? 'expanded' : ''}`}>
                   <button 
                     class="mode-pill-button"
                     onClick={() => setShowModeDropdown(!showModeDropdown())}
