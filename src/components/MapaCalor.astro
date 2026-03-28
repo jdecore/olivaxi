@@ -58,14 +58,13 @@ const variedadSeleccionada = Astro.props.variedad || '';
   .legend-item { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .legend-label { color: var(--color-aceituna); white-space: nowrap; }
-  .maplibregl-popup-content { font-family: -apple-system, sans-serif !important; padding: 8px 12px !important; border-radius: 6px !important; }
   @media (prefers-reduced-motion: reduce) { .marker-fadeIn { animation: none; opacity: 1; } .skeleton-spinner, .sk-p { animation: none; } }
   @media (max-width: 768px) { .marker-fadeIn { animation-duration: 0.2s; } }
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
 
-<script>
+<script type="module">
   const getColorByTemperatura = (temp) => {
     if (temp < 10) return '#74B9FF';
     if (temp < 20) return '#55EFC4';
@@ -105,29 +104,16 @@ const variedadSeleccionada = Astro.props.variedad || '';
   };
 
   const getLeyenda = (filtro, variedad) => {
-    if (variedad) {
-      return [
-        { label: 'Óptimo (0)', color: '#16a34a' },
-        { label: 'Bajo (1-3)', color: '#22c55e' },
-        { label: 'Medio (4-6)', color: '#f59e0b' },
-        { label: 'Crítico (7+)', color: '#ef4444' },
-      ];
-    }
+    if (variedad) return [
+      { label: 'Óptimo (0)', color: '#16a34a' },
+      { label: 'Bajo (1-3)', color: '#22c55e' },
+      { label: 'Medio (4-6)', color: '#f59e0b' },
+      { label: 'Crítico (7+)', color: '#ef4444' },
+    ];
     const legends = {
-      temperatura: [
-        { label: '<10°C', color: '#74B9FF' }, { label: '10-20°C', color: '#55EFC4' },
-        { label: '20-28°C', color: '#A8D8A8' }, { label: '28-35°C', color: '#FDCB6E' },
-        { label: '35-38°C', color: '#E17055' }, { label: '>38°C', color: '#D63031' },
-      ],
-      humedad: [
-        { label: '<20%', color: '#D63031' }, { label: '20-40%', color: '#E17055' },
-        { label: '40-60%', color: '#FDCB6E' }, { label: '60-80%', color: '#55EFC4' },
-        { label: '>80%', color: '#74B9FF' },
-      ],
-      precipitacion: [
-        { label: '0mm', color: '#FDCB6E' }, { label: '<2mm', color: '#55EFC4' },
-        { label: '2-10mm', color: '#74B9FF' }, { label: '>10mm', color: '#0984e3' },
-      ],
+      temperatura: [{ label: '<10°C', color: '#74B9FF' }, { label: '10-20°C', color: '#55EFC4' }, { label: '20-28°C', color: '#A8D8A8' }, { label: '28-35°C', color: '#FDCB6E' }, { label: '35-38°C', color: '#E17055' }, { label: '>38°C', color: '#D63031' }],
+      humedad: [{ label: '<20%', color: '#D63031' }, { label: '20-40%', color: '#E17055' }, { label: '40-60%', color: '#FDCB6E' }, { label: '60-80%', color: '#55EFC4' }, { label: '>80%', color: '#74B9FF' }],
+      precipitacion: [{ label: '0mm', color: '#FDCB6E' }, { label: '<2mm', color: '#55EFC4' }, { label: '2-10mm', color: '#74B9FF' }, { label: '>10mm', color: '#0984e3' }],
     };
     return legends[filtro] || [];
   };
@@ -143,11 +129,20 @@ const variedadSeleccionada = Astro.props.variedad || '';
     return "#16a34a";
   }
 
-  let map, datos = [], filtroActual = 'temperatura', variedadActual = '';
+  let map = null;
+  let maplibregl = null;
+  let datos = [];
+  let filtroActual = 'temperatura';
+  let variedadActual = '';
   let markers = [];
   const container = document.getElementById('mapa-container');
-  if (container?.dataset.variedad) variedadActual = container.dataset.variedad;
-  else if (window.__mapaVariedad) variedadActual = window.__mapaVariedad;
+
+  async function loadMapLibre() {
+    if (maplibregl) return maplibregl;
+    const ml = await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs');
+    maplibregl = ml.default;
+    return maplibregl;
+  }
 
   const initMap = async () => {
     const mapaDiv = document.getElementById('mapa');
@@ -171,13 +166,11 @@ const variedadSeleccionada = Astro.props.variedad || '';
     }
 
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const style = isDark 
-      ? 'https://tiles.openfreemap.org/styles/darkmatter'
-      : 'https://tiles.openfreemap.org/styles/liberty';
+    const style = isDark ? 'https://tiles.openfreemap.org/styles/darkmatter' : 'https://tiles.openfreemap.org/styles/liberty';
 
-    const maplibregl = window.maplibregl || (await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default;
+    const ml = await loadMapLibre();
 
-    map = new maplibregl.Map({
+    map = new ml.Map({
       container: 'mapa',
       style: style,
       center: [-3.5, 40.0],
@@ -187,17 +180,17 @@ const variedadSeleccionada = Astro.props.variedad || '';
       attributionControl: false
     });
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    map.addControl(new ml.NavigationControl(), 'top-right');
+    map.addControl(new ml.AttributionControl({ compact: true }), 'bottom-right');
 
     map.on('load', () => {
-      renderMarkers(maplibregl);
+      renderMarkers(ml);
       if (loadingEl) loadingEl.classList.add('hidden');
       updateLegend();
     });
   };
 
-  const renderMarkers = (maplibregl) => {
+  const renderMarkers = (ml) => {
     if (!map || !map.isStyleLoaded()) return;
     markers.forEach(m => m.remove());
     markers = [];
@@ -211,22 +204,18 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
       const el = document.createElement('div');
       el.className = `marker-fadeIn${isExtremo ? ' marker-pulse' : ''}`;
-      el.style.cssText = `width: ${radius * 2}px; height: ${radius * 2}px; background: ${color}; border: 2.5px solid ${color}; border-radius: 50%; opacity: 0.9; cursor: pointer; position: relative;`;
+      el.style.cssText = `width: ${radius * 2}px; height: ${radius * 2}px; background: ${color}; border: 2.5px solid ${color}; border-radius: 50%; opacity: 0.9; cursor: pointer;`;
       if (isExtremo || tieneAlto) el.style.boxShadow = `0 0 0 8px ${color}26`;
       el.style.animationDelay = `${index * 50}ms`;
 
-      const popup = new maplibregl.Popup({ offset: [0, -10], closeButton: false })
-        .setHTML(getTooltipContent(provincia, color, filtroActual, variedadActual, []));
+      const popup = new ml.Popup({ offset: [0, -10], closeButton: false })
+        .setHTML(getTooltipContent(provincia, color, filtroActual, variedadActual));
 
       el.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: provincia.provincia } }));
       });
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([provincia.lon, provincia.lat])
-        .setPopup(popup)
-        .addTo(map);
-
+      const marker = new ml.Marker({ element: el }).setLngLat([provincia.lon, provincia.lat]).setPopup(popup).addTo(map);
       markers.push(marker);
     });
   };
@@ -239,16 +228,14 @@ const variedadSeleccionada = Astro.props.variedad || '';
     const base = `font-family: -apple-system, sans-serif; font-size: 12px; color: ${textColor}; background: ${bg}; border-radius: 6px; padding: 8px 10px;`;
 
     if (variedad && provincia.riesgos_variedad?.[variedad]) {
-      const riesgoData = provincia.riesgos_variedad?.[variedad];
-      const score = riesgoData?.score || 0;
-      const nivel = riesgoData?.nivel || 'óptimo';
-      return `<div style="${base}"><div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">⚠️ Riesgo: ${nivel.toUpperCase()} (${score}/10)</div><div style="margin-top: 6px; font-size: 11px; color: ${mutedColor};">🌡️ ${provincia.temperatura}°C | 💧 ${provincia.humedad}%</div></div>`;
+      const rd = provincia.riesgos_variedad?.[variedad];
+      return `<div style="${base}"><div style="font-size: 14px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-weight: 700;">⚠️ Riesgo: ${(rd?.nivel || 'óptimo').toUpperCase()} (${rd?.score || 0}/10)</div><div style="font-size: 11px; color: ${mutedColor};">🌡️ ${provincia.temperatura}°C | 💧 ${provincia.humedad}%</div></div>`;
     }
 
     const contenido = {
-      temperatura: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor}; margin-top: 2px;">${provincia.estado || ''}</div>`,
-      humedad: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">💧 ${provincia.humedad}%</div>`,
-      precipitacion: `<div style="font-size: 14px; margin-bottom: 4px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-size: 13px; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>`,
+      temperatura: `<div style="font-size: 14px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-weight: 700;">🌡️ ${provincia.temperatura}°C</div><div style="font-size: 11px; color: ${mutedColor};">${provincia.estado || ''}</div>`,
+      humedad: `<div style="font-size: 14px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-weight: 700;">💧 ${provincia.humedad}%</div>`,
+      precipitacion: `<div style="font-size: 14px;">🫒 ${provincia.provincia}</div><div style="color: ${color}; font-weight: 700;">🌧️ ${provincia.lluvia}mm</div>`,
     };
     return `<div style="${base}">${contenido[filtro] || ''}</div>`;
   };
@@ -262,26 +249,31 @@ const variedadSeleccionada = Astro.props.variedad || '';
   };
 
   const init = async () => {
+    if (container?.dataset.variedad) variedadActual = container.dataset.variedad;
+    else if (window.__mapaVariedad) variedadActual = window.__mapaVariedad;
     if (!variedadActual) {
-      try { variedadActual = localStorage.getItem('olivaxi_variedad') || window.__mapaVariedad || ''; } catch (e) {}
+      try { variedadActual = localStorage.getItem('olivaxi_variedad') || ''; } catch (e) {}
     }
     if (container && variedadActual) container.dataset.variedad = variedadActual;
+
     await initMap();
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         filtroActual = btn.dataset.filtro;
-        renderMarkers((await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default);
+        const ml = await loadMapLibre();
+        renderMarkers(ml);
         updateLegend();
       });
     });
 
-    window.addEventListener('variedad-seleccionada', (e) => {
+    window.addEventListener('variedad-seleccionada', async (e) => {
       variedadActual = e.detail?.variedad || '';
       if (container) container.dataset.variedad = variedadActual;
-      renderMarkers((await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default);
+      const ml = await loadMapLibre();
+      renderMarkers(ml);
       updateLegend();
     });
 
@@ -297,10 +289,9 @@ const variedadSeleccionada = Astro.props.variedad || '';
     window.addEventListener('modoOscuroChange', async (e) => {
       if (!map) return;
       const isDark = e.detail.modoOscuro;
-      const style = isDark ? 'https://tiles.openfreemap.org/styles/darkmatter' : 'https://tiles.openfreemap.org/styles/liberty';
-      map.setStyle(style);
-      map.once('styledata', () => {
-        const ml = (await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs')).default;
+      map.setStyle(isDark ? 'https://tiles.openfreemap.org/styles/darkmatter' : 'https://tiles.openfreemap.org/styles/liberty');
+      map.once('styledata', async () => {
+        const ml = await loadMapLibre();
         renderMarkers(ml);
         updateLegend();
       });
