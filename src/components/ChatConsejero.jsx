@@ -361,6 +361,8 @@ export default function ChatConsejero() {
           height: 100%;
           display: flex;
           flex-direction: column;
+          justify-content: center;
+          align-items: center;
           background: #f5efe8;
           padding: 16px 24px;
           box-sizing: border-box;
@@ -369,9 +371,10 @@ export default function ChatConsejero() {
         }
         .chat-hero {
           text-align: center;
-          margin-top: 12px;
           margin-bottom: 18px;
           flex-shrink: 0;
+          width: 100%;
+          max-width: 1200px;
         }
         .chat-hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
@@ -412,6 +415,7 @@ export default function ChatConsejero() {
           flex-direction: column;
           gap: 12px;
           width: 100%;
+          max-width: 1200px;
           box-sizing: border-box;
         }
         .mode-pill-inline {
@@ -440,13 +444,13 @@ export default function ChatConsejero() {
         }
         .mode-pill-inline .mode-pill-dropdown {
           position: absolute;
-          top: 100%;
+          bottom: 100%;
           left: 0;
-          margin-top: 8px;
+          margin-bottom: 8px;
           background: #fff;
           border: 2px solid #1C1C1C;
           border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
           display: none;
           min-width: 240px;
           z-index: 100;
@@ -501,11 +505,14 @@ export default function ChatConsejero() {
           background: #fff;
           border: 2px solid #1C1C1C;
           border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
           display: none;
           min-width: 220px;
           z-index: 100;
           overflow: hidden;
+        }
+        .mode-pill-inline .mode-pill-dropdown.show {
+          display: block;
         }
         .mode-pill-inline .mode-pill-dropdown.show {
           display: block;
@@ -518,6 +525,7 @@ export default function ChatConsejero() {
           flex-direction: column;
           gap: 8px;
           width: 100%;
+          max-width: 1200px;
           padding: 0 24px;
           box-sizing: border-box;
           min-height: 0;
