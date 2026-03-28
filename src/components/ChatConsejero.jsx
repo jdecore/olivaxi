@@ -55,6 +55,7 @@ export default function ChatConsejero() {
   const [titleText, setTitleText] = createSignal('');
   const [titleFullText, setTitleFullText] = createSignal('');
   const [titleTyping, setTitleTyping] = createSignal(false);
+  const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   
   let typingInterval;
   let messagesEndRef;
@@ -106,6 +107,12 @@ export default function ChatConsejero() {
     const handleThemeChange = () => setMessages([...messages()]);
     window.addEventListener('modoOscuroChange', handleThemeChange);
     onCleanup(() => window.removeEventListener('modoOscuroChange', handleThemeChange));
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.mode-pill')) {
+        setShowModeDropdown(false);
+      }
+    });
     
     const handleStorageChange = () => {
       const prov = getProvinciaFromStorage();
@@ -379,26 +386,62 @@ export default function ChatConsejero() {
           align-items: center;
           gap: 8px;
         }
-        .mode-selector {
+        .mode-pill-container {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          max-width: 300px;
-          width: 100%;
+          justify-content: center;
         }
-        .mode-dropdown {
-          flex: 1;
-          padding: 8px 12px;
-          font-size: 13px;
+        .mode-pill {
+          position: relative;
+          display: inline-block;
+        }
+        .mode-pill-button {
+          padding: 6px 14px;
+          font-size: 12px;
           border: 2px solid #1C1C1C;
-          border-radius: 12px;
+          border-radius: 20px;
           background: #fff;
           color: #1C1C1C;
           cursor: pointer;
-          outline: none;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
         }
-        .mode-dropdown:focus {
-          border-color: #D4E849;
+        .mode-pill-button:hover {
+          background: #D4E849;
+        }
+        .mode-pill-dropdown {
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 8px;
+          background: #fff;
+          border: 2px solid #1C1C1C;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          display: none;
+          min-width: 220px;
+          z-index: 100;
+          overflow: hidden;
+        }
+        .mode-pill-dropdown.show {
+          display: block;
+        }
+        .mode-option {
+          padding: 10px 14px;
+          font-size: 13px;
+          color: #1C1C1C;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+          transition: background 0.15s;
+        }
+        .mode-option:last-child {
+          border-bottom: none;
+        }
+        .mode-option:hover {
+          background: #D4E849;
         }
         .chat-messages {
           flex: 1;
@@ -406,7 +449,7 @@ export default function ChatConsejero() {
           display: flex;
           flex-direction: column;
           gap: 4px;
-          max-width: 350px;
+          max-width: 100%;
           width: 100%;
           margin: 0 auto;
           padding-bottom: 4px;
@@ -582,7 +625,7 @@ export default function ChatConsejero() {
           color: #1C1C1C;
         }
         .chat-input-wrapper {
-          max-width: 500px;
+          max-width: 1000px;
           width: 100%;
           margin: 0 auto 4px;
           padding: 8px 12px;
@@ -839,25 +882,28 @@ export default function ChatConsejero() {
           </div>
 
           <div class="input-area">
-            <div class="mode-selector">
-              <select 
-                class="mode-dropdown"
-                value={activeSkill() || ''}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    selectSkill(e.target.value);
-                  } else {
-                    setActiveSkill(null);
-                    setTitleText('');
-                    setTitleTyping(false);
-                  }
-                }}
-              >
-                <option value="">Selecciona un modo</option>
-                <For each={SKILLS}>{(skill) => (
-                  <option value={skill.id}>{skill.label} - {skill.condition}</option>
-                )}</For>
-              </select>
+            <div class="mode-pill-container">
+              <div class="mode-pill">
+                <button 
+                  class="mode-pill-button"
+                  onClick={() => setShowModeDropdown(!showModeDropdown())}
+                >
+                  {activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : 'Seleccionar modo ▼'}
+                </button>
+                <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
+                  <For each={SKILLS}>{(skill) => (
+                    <div 
+                      class="mode-option"
+                      onClick={() => {
+                        selectSkill(skill.id);
+                        setShowModeDropdown(false);
+                      }}
+                    >
+                      {skill.label} - {skill.condition}
+                    </div>
+                  )}</For>
+                </div>
+              </div>
             </div>
           
             <div class={`chat-input-wrapper ${isLoading() ? 'responding' : ''}`}>
