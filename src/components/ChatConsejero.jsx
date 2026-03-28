@@ -261,7 +261,7 @@ export default function ChatConsejero() {
               if (json.provider && !firstChunk) { firstChunk = true; setCurrentProvider(json.provider); }
               if (json.texto) {
                 if (!firstChunk) { firstChunk = true; setIsLoading(false); }
-                setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto } : m));
+                setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: m.text + json.texto, isWaiting: false } : m));
                 startTypingAnimation(botId, json.texto);
                 scrollToBottom(true);
               }
