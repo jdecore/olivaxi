@@ -8,8 +8,6 @@ services:
     ports:
       - "4321:4321"
     restart: unless-stopped
-    networks:
-      - dokploy-network
 
   api:
     build:
@@ -25,9 +23,3 @@ services:
       - OPENROUTER_KEY=${OPENROUTER_KEY}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
     restart: unless-stopped
-    networks:
-      - dokploy-network
-
-networks:
-  dokploy-network:
-    external: true

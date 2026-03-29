@@ -107,25 +107,29 @@ let top3Riesgos = [];
   .bento-grid {
     display: grid;
     grid-template-columns: 60fr 40fr;
-    grid-template-rows: auto auto;
+    grid-template-rows: 1fr;
     gap: 4px;
     max-width: 1200px;
     margin: 2px auto 1rem;
     padding: 0 1rem;
-    align-items: start;
+    align-items: stretch;
   }
 
     .mapa-card {
       grid-column: 1;
-      grid-row: 1 / 3;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .mapa-card :global(#mapa-container) {
-      height: 400px;
+      flex: 1;
+      min-height: 400px;
     }
 
     .sidebar-panels {
       grid-column: 2;
+      grid-row: 1;
       display: flex;
       flex-direction: column;
       gap: 12px;
