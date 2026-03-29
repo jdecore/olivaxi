@@ -145,10 +145,14 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
   const initMap = async () => {
     const mapaDiv = document.getElementById('mapa');
-    const container = document.getElementById('mapa-container');
-    const apiBase = container?.dataset.apiUrl || 'http://localhost:3000';
+    const containerEl = document.getElementById('mapa-container');
     const loadingEl = document.getElementById('mapa-loading');
     if (!mapaDiv || map) return;
+
+    // API URL: read from HTML data attribute or use fallback
+    const container = document.getElementById('mapa-container');
+    const apiUrlAttr = container?.getAttribute('data-api-url');
+    const apiBase = apiUrlAttr || 'http://45.90.237.135:3001';
 
     try {
       const res = await fetch(`${apiBase}/api/clima`);
