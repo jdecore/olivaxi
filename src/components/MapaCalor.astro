@@ -3,67 +3,175 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 const variedadSeleccionada = Astro.props.variedad || '';
 ---
 
-<div id="olivaxi-mapa-container" data-api-url={apiUrl} data-variedad={variedadSeleccionada}>
-  <div id="olivaxi-mapa-filters">
-    <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
-    <button class="filter-btn" data-filtro="humedad">💧</button>
-    <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
-  </div>
-  <div id="olivaxi-mapa"></div>
-  <div id="olivaxi-mapa-legend"></div>
-  <div id="olivaxi-mapa-loading">
-    <div class="spinner"></div>
-    <p id="olivaxi-loading-text">Inicializando...</p>
-  </div>
-</div>
+<olivaxi-mapa 
+  data-api={apiUrl} 
+  data-variedad={variedadSeleccionada}
+></olivaxi-mapa>
 
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin></script>
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin />
+<script>
+class OlivaxiMapa extends HTMLElement {
+  constructor() {
+    super();
+    this.map = null;
+    this.datos = [];
+    this.filtro = 'temperatura';
+    this.variedad = '';
+    this.markers = [];
+    this.inited = false;
+  }
 
-<script type="module">
-(function() {
-  const API_BASE = 'http://45.90.237.135:3001';
-  const TILE_SERVER = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+  connectedCallback() {
+    if (this.inited) return;
+    this.inited = true;
+    this.init();
+  }
 
-  const COLORS = {
-    temp: [
-      { max: 10, color: '#74B9FF' },
-      { max: 20, color: '#55EFC4' },
-      { max: 28, color: '#A8D8A8' },
-      { max: 35, color: '#FDCB6E' },
-      { max: 38, color: '#E17055' },
-      { max: Infinity, color: '#D63031' }
-    ],
-    humedad: [
-      { max: 20, color: '#D63031' },
-      { max: 40, color: '#E17055' },
-      { max: 60, color: '#FDCB6E' },
-      { max: 80, color: '#55EFC4' },
-      { max: Infinity, color: '#74B9FF' }
-    ],
-    lluvia: [
-      { max: 0, color: '#FDCB6E' },
-      { max: 2, color: '#55EFC4' },
-      { max: 10, color: '#74B9FF' },
-      { max: Infinity, color: '#0984e3' }
-    ],
-    riesgo: {
-      'óptimo': '#16a34a',
-      'bajo': '#22c55e',
-      'medio': '#f59e0b',
-      'crítico': '#ef4444'
+  async init() {
+    const API_BASE = 'http://45.90.237.135:3001';
+    const TILE_SERVER = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+
+    this.innerHTML = `
+      <div class="mapa-wrapper">
+        <div class="mapa-filters">
+          <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
+          <button class="filter-btn" data-filtro="humedad">💧</button>
+          <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
+        </div>
+        <div class="mapa-inner"></div>
+        <div class="mapa-legend"></div>
+        <div class="mapa-loading">
+          <div class="spinner"></div>
+          <p>Cargando...</p>
+        </div>
+      </div>
+    `;
+
+    const styles = `
+      <style>
+        olivaxi-mapa { display: block; width: 100%; }
+        .mapa-wrapper { position: relative; height: 400px; width: 100%; border: 2px solid var(--color-sal); border-radius: 8px; overflow: hidden; background: #f5f5f5; }
+        .mapa-inner { height: 100%; width: 100%; }
+        .mapa-filters { position: absolute; top: 10px; left: 10px; z-index: 10; display: flex; gap: 4px; background: rgba(255,255,255,0.95); padding: 6px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .filter-btn { padding: 6px 10px; font-size: 14px; border: 1.5px solid var(--color-sal); border-radius: 6px; background: var(--color-limon); color: var(--color-aceituna); cursor: pointer; font-weight: 600; }
+        .filter-btn:hover { background: #c5d93e; }
+        .filter-btn.active { background: #fff; border-color: var(--color-aceituna); }
+        .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 12px; }
+        .mapa-loading.hidden { display: none; }
+        .spinner { width: 36px; height: 36px; border: 3px solid var(--color-muted); border-top-color: var(--color-limon); border-radius: 50%; animation: spin .8s linear infinite; }
+        .mapa-legend { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); border: 2px solid var(--color-sal); border-radius: 6px; padding: 6px 12px; font-size: 10px; z-index: 10; display: flex; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media(max-width:768px) { .mapa-wrapper { height: 320px } }
+      </style>
+    `;
+
+    this.insertAdjacentHTML('afterbegin', styles);
+
+    const loading = this.querySelector('.mapa-loading');
+    const mapaDiv = this.querySelector('.mapa-inner');
+    
+    // Wait for maplibregl
+    if (typeof maplibregl === 'undefined') {
+      loading.querySelector('p').textContent = 'Cargando librería...';
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 100));
+        if (typeof maplibregl !== 'undefined') break;
+      }
+      if (typeof maplibregl === 'undefined') {
+        loading.querySelector('p').textContent = 'Error: MapLibre no cargó';
+        return;
+      }
     }
-  };
 
-  const getColor = (valor, tipo) => {
-    const escala = COLORS[tipo === 'precipitacion' ? 'lluvia' : tipo] || COLORS.temp;
-    for (const { max, color } of escala) {
+    // Load data
+    loading.querySelector('p').textContent = 'Cargando datos...';
+    try {
+      const res = await fetch(`${API_BASE}/api/clima`);
+      if (!res.ok) throw new Error('API error');
+      this.datos = await res.json();
+      if (!this.datos || this.datos.length === 0) throw new Error('Sin datos');
+    } catch (e) {
+      console.error('Error datos:', e);
+      loading.querySelector('p').textContent = 'Error de datos';
+      return;
+    }
+
+    // Create map
+    loading.querySelector('p').textContent = 'Cargando mapa...';
+    this.map = new maplibregl.Map({
+      container: mapaDiv,
+      style: TILE_SERVER,
+      center: [-3.5, 40.0],
+      zoom: 7,
+      minZoom: 5,
+      maxZoom: 10,
+      attributionControl: false
+    });
+
+    this.map.on('load', () => {
+      this.render();
+      loading.classList.add('hidden');
+      this.updateLegend();
+    });
+
+    // Events
+    this.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.filtro = btn.dataset.filtro;
+        this.render();
+        this.updateLegend();
+      });
+    });
+
+    window.addEventListener('variedad-seleccionada', (e) => {
+      this.variedad = e.detail?.variedad || '';
+      this.render();
+    });
+  }
+
+  getColor(valor, tipo) {
+    const colores = {
+      temp: [[10,'#74B9FF'],[20,'#55EFC4'],[28,'#A8D8A8'],[35,'#FDCB6E'],[38,'#E17055'],[Infinity,'#D63031']],
+      humedad: [[20,'#D63031'],[40,'#E17055'],[60,'#FDCB6E'],[80,'#55EFC4'],[Infinity,'#74B9FF']],
+      lluvia: [[0,'#FDCB6E'],[2,'#55EFC4'],[10,'#74B9FF'],[Infinity,'#0984e3']]
+    };
+    const escala = colores[tipo === 'precipitacion' ? 'lluvia' : tipo] || colores.temp;
+    for (const [max, color] of escala) {
       if (valor < max) return color;
     }
-    return escala[escala.length - 1].color;
-  };
+    return escala[escala.length - 1][1];
+  }
 
-  const getLegend = (filtro) => {
+  render() {
+    if (!this.map || !this.map.loaded()) return;
+    
+    this.markers.forEach(m => m.remove());
+    this.markers = [];
+
+    this.datos.forEach(d => {
+      const color = this.getColor(d[this.filtro], this.filtro);
+      const el = document.createElement('div');
+      el.style.cssText = 'width:12px;height:12px;background:${color};border:2px solid #fff;border-radius:50%;opacity:0.95;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.3)';
+      
+      const val = this.filtro === 'temperatura' ? d.temperatura + '°C' : this.filtro === 'humedad' ? d.humedad + '%' : d.lluvia + 'mm';
+      el.title = `${d.provincia}: ${val}`;
+
+      el.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: d.provincia } }));
+      });
+
+      this.markers.push(
+        new maplibregl.Marker({ element: el })
+          .setLngLat([d.lon, d.lat])
+          .addTo(this.map)
+      );
+    });
+  }
+
+  updateLegend() {
+    const legend = this.querySelector('.mapa-legend');
+    if (!legend) return;
     const isDark = document.documentElement.dataset.theme === 'dark';
     const txt = isDark ? '#F7F4EE' : '#1C1C1C';
     const L = {
@@ -71,174 +179,14 @@ const variedadSeleccionada = Astro.props.variedad || '';
       humedad: [['<20%','#D63031'],['20-40%','#E17055'],['40-60%','#FDCB6E'],['60-80%','#55EFC4'],['>80%','#74B9FF']],
       precipitacion: [['0mm','#FDCB6E'],['<2mm','#55EFC4'],['2-10mm','#74B9FF'],['>10mm','#0984e3']]
     };
-    return (L[filtro] || []).map(([l,c]) => `<span style="display:flex;align-items:center;gap:3px"><i style="width:10px;height:10px;background:${c};border-radius:3px"></i><span style="color:${txt};font-size:10px">${l}</span></span>`).join('');
-  };
-
-  let map, datos = [], filtro = 'temperatura', variedad = '', markers = [], initialized = false;
-
-  function el(id) {
-    return document.getElementById(id);
+    legend.innerHTML = (L[this.filtro] || []).map(([l,c]) => 
+      `<span style="display:flex;align-items:center;gap:3px"><i style="width:10px;height:10px;background:${c};border-radius:3px"></i><span style="color:${txt};font-size:10px">${l}</span></span>`
+    ).join('');
   }
+}
 
-  function showError(msg) {
-    const t = el('olivaxi-loading-text');
-    if (t) t.textContent = msg;
-  }
-
-  async function initMapa() {
-    if (initialized) return;
-    initialized = true;
-
-    const container = el('olivaxi-mapa-container');
-    const load = el('olivaxi-mapa-loading');
-    const mapaDiv = el('olivaxi-mapa');
-    
-    if (!container || !mapaDiv) return;
-
-    if (map) return;
-
-    // Esperar MapLibre
-    if (typeof maplibregl === 'undefined') {
-      showError('Cargando librería...');
-      for (let i = 0; i < 30; i++) {
-        await new Promise(r => setTimeout(r, 100));
-        if (typeof maplibregl !== 'undefined') break;
-      }
-      if (typeof maplibregl === 'undefined') {
-        showError('Error: MapLibre no cargó');
-        return;
-      }
-    }
-
-    showError('Cargando datos...');
-
-    try {
-      const res = await fetch(`${API_BASE}/api/clima`);
-      if (!res.ok) throw new Error('API error');
-      datos = await res.json();
-      if (!datos || datos.length === 0) throw new Error('Sin datos');
-    } catch (e) {
-      console.error('Error datos:', e);
-      showError('Error de datos');
-      return;
-    }
-
-    showError('Cargando mapa...');
-
-    try {
-      map = new maplibregl.Map({
-        container: mapaDiv,
-        style: TILE_SERVER,
-        center: [-3.5, 40.0],
-        zoom: 6,
-        minZoom: 5,
-        maxZoom: 10,
-        attributionControl: true
-      });
-
-      map.on('load', () => {
-        console.log('Mapa cargado OK');
-        render();
-        if (load) load.classList.add('hidden');
-        const leg = el('olivaxi-mapa-legend');
-        if (leg) leg.innerHTML = getLegend(filtro);
-      });
-
-      map.on('error', (e) => {
-        console.error('Mapa error:', e);
-      });
-    } catch (e) {
-      console.error('Error creando mapa:', e);
-      showError('Error del mapa');
-    }
-  }
-
-  function render() {
-    if (!map || !map.loaded()) return;
-    
-    markers.forEach(m => m.remove());
-    markers = [];
-
-    const isDark = document.documentElement.dataset.theme === 'dark';
-    const bg = isDark ? '#1a1a1a' : '#FFFFFF';
-    const txt = isDark ? '#F7F4EE' : '#1C1C1C';
-
-    datos.forEach((d) => {
-      let color;
-      if (variedad && d.riesgos_variedad?.[variedad]) {
-        const nivel = d.riesgos_variedad[variedad].nivel;
-        color = COLORS.riesgo[nivel] || COLORS.riesgo['óptimo'];
-      } else {
-        color = getColor(d[filtro], filtro);
-      }
-
-      const radius = 8 + (d.humedad / 100) * 8;
-      const elDiv = document.createElement('div');
-      elDiv.style.cssText = `width:${radius*2}px;height:${radius*2}px;background:${color};border:2.5px solid ${color};border-radius:50%;opacity:0.9;cursor:pointer`;
-
-      const val = filtro === 'temperatura' ? d.temperatura + '°C' : filtro === 'humedad' ? d.humedad + '%' : d.lluvia + 'mm';
-      
-      elDiv.innerHTML = `<div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:${bg};padding:4px 8px;border-radius:4px;font:11px sans-serif;color:${txt};white-space:nowrap">${d.provincia}: ${val}</div>`;
-      elDiv.style.position = 'relative';
-
-      elDiv.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: d.provincia } }));
-      });
-
-      markers.push(
-        new maplibregl.Marker({ element: elDiv })
-          .setLngLat([d.lon, d.lat])
-          .addTo(map)
-      );
-    });
-  }
-
-  function initEvents() {
-    document.querySelectorAll('#olivaxi-mapa-filters .filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#olivaxi-mapa-filters .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtro = btn.dataset.filtro;
-        render();
-        const leg = el('olivaxi-mapa-legend');
-        if (leg) leg.innerHTML = getLegend(filtro);
-      });
-    });
-  }
-
-  window.addEventListener('variedad-seleccionada', e => {
-    variedad = e.detail?.variedad || '';
-    render();
-  });
-
-  window.addEventListener('provincia-seleccionada', e => {
-    if (!map || !e.detail?.provincia) return;
-    const p = datos.find(d => d.provincia === e.detail.provincia);
-    if (p?.lat && p?.lon) map.flyTo({ center: [p.lon, p.lat], zoom: 8, duration: 500 });
-  });
-
-  // Iniciar
-  initEvents();
-  
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMapa);
-  } else {
-    initMapa();
-  }
-})();
+customElements.define('olivaxi-mapa', OlivaxiMapa);
 </script>
 
-<style>
-#olivaxi-mapa-container { position:relative;height:400px;width:100%;border:2px solid var(--color-sal);border-radius:8px;overflow:hidden;background:#f5f5f5 }
-#olivaxi-mapa { height:100%;width:100%; }
-#olivaxi-mapa-filters { position:absolute;top:10px;left:10px;z-index:10;display:flex;gap:4px;background:rgba(255,255,255,0.95);padding:6px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1) }
-#olivaxi-mapa-filters .filter-btn { padding:6px 10px;font-size:14px;border:1.5px solid var(--color-sal);border-radius:6px;background:var(--color-limon);color:var(--color-aceituna);cursor:pointer;font-weight:600 }
-#olivaxi-mapa-filters .filter-btn:hover { background:#c5d93e }
-#olivaxi-mapa-filters .filter-btn.active { background:#fff;border-color:var(--color-aceituna) }
-#olivaxi-mapa-loading { position:absolute;inset:0;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;gap:12px }
-#olivaxi-mapa-loading.hidden { display:none }
-#olivaxi-mapa-loading .spinner { width:36px;height:36px;border:3px solid var(--color-muted);border-top-color:var(--color-limon);border-radius:50%;animation:spin .8s linear infinite }
-#olivaxi-mapa-legend { position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);border:2px solid var(--color-sal);border-radius:6px;padding:6px 12px;font-size:10px;z-index:10;display:flex;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1) }
-@media(max-width:768px){ #olivaxi-mapa-container{height:320px} #olivaxi-mapa-filters{top:5px;left:5px;padding:4px } #olivaxi-mapa-filters .filter-btn{padding:4px 8px;font-size:12px } }
-@keyframes spin { to{transform:rotate(360deg)} }
-</style>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin></script>
