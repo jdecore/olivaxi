@@ -134,7 +134,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
   let filtroActual = 'temperatura';
   let variedadActual = '';
   let markers = [];
-  const container = document.getElementById('mapa-container');
+  let containerEl = null;
 
   async function loadMapLibre() {
     if (maplibregl) return maplibregl;
@@ -145,25 +145,29 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
   const initMap = async () => {
     const mapaDiv = document.getElementById('mapa');
-    const containerEl = document.getElementById('mapa-container');
     const loadingEl = document.getElementById('mapa-loading');
     if (!mapaDiv || map) return;
 
     // API URL: read from HTML data attribute or use fallback
-    const container = document.getElementById('mapa-container');
-    const apiUrlAttr = container?.getAttribute('data-api-url');
-    const apiBase = apiUrlAttr || 'http://45.90.237.135:3001';
+    containerEl = document.getElementById('mapa-container');
+    const apiUrlAttr = containerEl?.getAttribute('data-api-url');
+    // Use the hardcoded server URL since PUBLIC_API_URL might be localhost in build
+    const apiBase = apiUrlAttr && !apiUrlAttr.includes('localhost') ? apiUrlAttr : 'http://45.90.237.135:3001';
 
     try {
+      console.log('[Mapa] Fetching from:', `${apiBase}/api/clima`);
       const res = await fetch(`${apiBase}/api/clima`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       datos = await res.json();
+      console.log('[Mapa] Datos recibidos:', datos?.length || 0, 'provincias');
+      if (!datos || datos.length === 0) throw new Error('Sin datos');
     } catch (e) {
+      console.error('[Mapa] Error:', e);
       if (loadingEl) {
         const spinner = loadingEl.querySelector('.skeleton-spinner');
         const text = loadingEl.querySelector('.skeleton-text');
         if (spinner) spinner.style.display = 'none';
-        if (text) text.textContent = 'Error al cargar datos';
+        if (text) text.textContent = 'Error al cargar datos: ' + e.message;
       }
       return;
     }
@@ -187,9 +191,25 @@ const variedadSeleccionada = Astro.props.variedad || '';
     map.addControl(new ml.AttributionControl({ compact: true }), 'bottom-right');
 
     map.on('load', () => {
+      console.log('[Mapa] Mapa cargado, renderizando markers...');
       renderMarkers(ml);
       if (loadingEl) loadingEl.classList.add('hidden');
       updateLegend();
+    });
+
+    map.on('styledata', () => {
+      console.log('[Mapa] Estilo cargado');
+      if (map && map.isStyleLoaded()) {
+        renderMarkers(ml);
+      }
+    });
+    
+    map.on('error', (e) => {
+      console.error('[Mapa] Error del mapa:', e);
+    });
+    
+    map.on('idle', () => {
+      console.log('[Mapa] Mapa idle');
     });
   };
 
@@ -252,12 +272,13 @@ const variedadSeleccionada = Astro.props.variedad || '';
   };
 
   const init = async () => {
-    if (container?.dataset.variedad) variedadActual = container.dataset.variedad;
+    containerEl = document.getElementById('mapa-container');
+    if (containerEl?.dataset.variedad) variedadActual = containerEl.dataset.variedad;
     else if (window.__mapaVariedad) variedadActual = window.__mapaVariedad;
     if (!variedadActual) {
       try { variedadActual = localStorage.getItem('olivaxi_variedad') || ''; } catch (e) {}
     }
-    if (container && variedadActual) container.dataset.variedad = variedadActual;
+    if (containerEl && variedadActual) containerEl.dataset.variedad = variedadActual;
 
     await initMap();
 
@@ -274,7 +295,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
     window.addEventListener('variedad-seleccionada', async (e) => {
       variedadActual = e.detail?.variedad || '';
-      if (container) container.dataset.variedad = variedadActual;
+      if (containerEl) containerEl.dataset.variedad = variedadActual;
       const ml = await loadMapLibre();
       renderMarkers(ml);
       updateLegend();
