@@ -115,6 +115,16 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     max-width: 100%;
     margin: 0 auto;
     box-shadow: 6px 6px 0 #1C1C1C;
+    animation: formEntry 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes formEntry {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @media (max-width: 480px) {
@@ -159,6 +169,14 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     color: #1C1C1C;
     font-size: 1rem;
     font-family: 'Outfit', system-ui, sans-serif;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+  }
+
+  .form-field input:hover,
+  .form-field select:hover {
+    transform: translateY(-2px);
+    filter: brightness(0.95);
   }
 
   .form-field input:focus,
@@ -166,6 +184,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     outline: none;
     border-color: #D4E849;
     box-shadow: 0 0 0 3px rgba(212, 232, 73, 0.3);
+    transform: scale(1.01);
+    filter: brightness(1.02);
   }
 
   #btn-submit {
@@ -182,16 +202,19 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     text-transform: uppercase;
     letter-spacing: 1px;
     box-shadow: 4px 4px 0 #D4E849;
-    transition: all 0.15s ease;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease, box-shadow 0.25s ease;
+    will-change: transform;
   }
 
   #btn-submit:hover { 
-    transform: translate(-2px, -2px);
+    transform: translate(-3px, -3px) scale(1.02);
+    filter: brightness(1.1);
     box-shadow: 6px 6px 0 #D4E849;
   }
 
   #btn-submit:active {
-    transform: translate(0, 0);
+    transform: scale(0.98);
+    transition-duration: 0.1s;
     box-shadow: 2px 2px 0 #D4E849;
   }
 
@@ -212,6 +235,14 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     font-size: 0.875rem;
     font-weight: 700;
     border: 2px solid #1C1C1C;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #mensaje.show {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   #mensaje.hidden { display: none; }
