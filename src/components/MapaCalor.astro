@@ -138,7 +138,7 @@ const variedadSeleccionada = Astro.props.variedad || '';
 
   async function loadMapLibre() {
     if (maplibregl) return maplibregl;
-    const ml = await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.mjs');
+    const ml = await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js');
     maplibregl = ml.default;
     return maplibregl;
   }
