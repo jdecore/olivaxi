@@ -8,10 +8,14 @@ export default defineConfig({
   ],
   build: {
     inlineStylesheets: 'always',
-    assetsInlineLimit: 2048,
+    assetsInlineLimit: 4096,
     emptyOutDir: true
   },
   compressHTML: true,
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'hover'
+  },
   vite: {
     build: {
       cssMinify: true,
@@ -24,6 +28,5 @@ export default defineConfig({
   },
   devToolbar: {
     enabled: false
-  },
-  prefetch: false
+  }
 });

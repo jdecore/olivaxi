@@ -157,10 +157,17 @@ bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.or
 
 ## 📋 Estado Actual
 
-### Build stats:
-- **Tamaño**: 424KB (muy ligero para VPS)
-- **Tiempo**: ~3 segundos
+### Build stats (2026-03-28):
+- **Tamaño**: 264KB (muy ligero para VPS) ⬇️ de 424KB
+- **Tiempo**: ~2.5 segundos ⬇️ de 4s
 - **Páginas**: 6
+
+### Optimizaciones aplicadas:
+- Prefetch habilitado (hover strategy) - navegación instantánea
+- Assets inline hasta 4KB (antes 2KB)
+- Logo optimizado (103KB → 4KB)
+- Favicon SVG (17MB → 4KB)
+- Código limpio (eliminadas funciones no usadas)
 
 ### Deploy actual:
 - **Web**: https://olivaxi.duckdns.org
@@ -172,7 +179,7 @@ bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.or
 - ✅ Sistema de alertas
 - ✅ Catálogo variedades
 - ✅ Tema light/dark
-- ⚠️allowedHosts requiere CLI flag
+- ✅ Prefetch para navegación rápida
 
 ---
 
@@ -256,7 +263,8 @@ curl -H "Host: olivaxi.duckdns.org" http://localhost:4321/
 2. **Para allowedHosts usar CLI flag** - La config no funciona, solo el flag
 3. **SolidJS funciona bien** - Solo instalar en package.json
 4. **Ecosistema compartido** - Ya hay evento olivaxi-state-change pero no está implementado completamente
-5. **Build muy ligero** - 424KB, ideal para VPS pequeños
+5. **Build muy ligero** - 264KB, ideal para VPS pequeños
+6. **Prefetch activado** - Las páginas se precargan al hacer hover
 
 ---
 
