@@ -56,7 +56,7 @@ olivaxi/
 │       └── provincias.ts        # 10 provincias olivareras
 ├── src/
 │   ├── components/
-│   │   ├── MapaCalor.astro      # Mapa Leaflet
+│   │   ├── MapaCalor.astro      # Mapa MapLibre GL
 │   │   ├── ChatConsejero.jsx    # Chat SolidJS
 │   │   └── ThemeToggle.astro    # Toggle tema
 │   ├── layouts/
@@ -95,13 +95,6 @@ CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--a
 ```
 - **No funciona**: preview.allowedHosts en astro.config.mjs ni vite.config.js
 - **SÍ funciona**: --allowedHosts como argumento CLI
-
-### 3. Leaflet no encontrado en build
-- **Error**: `Rollup failed to resolve import "leaflet"`
-- **Solución**: Agregar leaflet a dependencies en package.json:
-```json
-"leaflet": "^1.9.4"
-```
 
 ---
 
