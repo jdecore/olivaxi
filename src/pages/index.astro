@@ -3,13 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import MapaCalor from '../components/MapaCalor.astro';
 
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
-
-let climaData = [];
-let heroStats = { tempMax: '--', tempMin: '--', avgTemp: '--', totalProvincias: 0 };
-let top3Riesgos = [];
-
-// Skip SSR fetch - client-side JS will fetch data
-// This allows the build to work without a running API server
 ---
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
@@ -1278,27 +1271,6 @@ let top3Riesgos = [];
       </div>
     </div>
   </div>
-
-  <!-- TOP 3 RIESGOS -->
-  {top3Riesgos.length > 0 && (
-    <div style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem;">
-      <h3 style="font-family: Georgia, serif; color: var(--color-aceituna); margin-bottom: 1rem; text-align: center;">
-        🔴 Provincias en Riesgo
-      </h3>
-      <div class="top3-grid">
-        {top3Riesgos.map((p) => (
-          <div class="top3-card" data-provincia={p.provincia}>
-            <div class="top3-header">
-              <span class="top3-emoji">{p.emoji}</span>
-              <span class="top3-provincia">{p.provincia}</span>
-            </div>
-            <div class="top3-risk">{p.label}</div>
-            <div class="top3-temp">{p.temperatura}°C</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
 
   <!-- PREMIUM CARDS - CARRUSEL -->
   <section class="premium-cards">

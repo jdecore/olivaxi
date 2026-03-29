@@ -55,23 +55,9 @@ app.use(
 
 app.use("*", compress());
 
-// Sanitización de inputs - evita injection
-const sanitizeInput = (input: string): string => {
-  return input.replace(/[<>\"'%;()&+]/g, '').trim().slice(0, 200);
-};
-
-const validateProvincia = (provincia: string): boolean => {
-  const valid = ['Jaén', 'Córdoba', 'Sevilla', 'Granada', 'Málaga', 'Badajoz', 'Toledo', 'Ciudad Real', 'Almería', 'Huelva'];
-  return valid.includes(provincia);
-};
-
-const validateVariedad = (variedad: string): boolean => {
-  const valid = ['cornicabra', 'picual', 'arbequina', 'hojiblanca', 'manzanilla', 'empeltre'];
-  return valid.includes(variedad);
-};
-
 app.route("/api/clima", clima);
 app.route("/api/chat", chat);
+app.route("/api/alertas", alertas);
 app.route("/api/analisis", analisis);
 
 app.get("/api", (c) => c.json({
@@ -79,20 +65,6 @@ app.get("/api", (c) => c.json({
   version: "1.0.0",
   endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
 }));
-
-app.get("/api/", (c) => c.json({
-  nombre: "olivaξ API",
-  version: "1.0.0",
-  endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
-}));
-
-app.get("/api/chat/", (c) => c.redirect("/api/chat"));
-app.get("/api/clima/", (c) => c.redirect("/api/clima"));
-app.get("/api/alertas/", (c) => c.redirect("/api/alertas"));
-app.get("/api/analisis/", (c) => c.redirect("/api/analisis"));
-
-app.route("/api/alertas", alertas);
-app.route("/api/analisis", analisis);
 
 app.get("/", (c) => c.text("OK"));
 
