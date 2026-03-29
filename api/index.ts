@@ -72,6 +72,25 @@ const validateVariedad = (variedad: string): boolean => {
 
 app.route("/api/clima", clima);
 app.route("/api/chat", chat);
+app.route("/api/analisis", analisis);
+
+app.get("/api", (c) => c.json({
+  nombre: "olivaξ API",
+  version: "1.0.0",
+  endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
+}));
+
+app.get("/api/", (c) => c.json({
+  nombre: "olivaξ API",
+  version: "1.0.0",
+  endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
+}));
+
+app.get("/api/chat/", (c) => c.redirect("/api/chat"));
+app.get("/api/clima/", (c) => c.redirect("/api/clima"));
+app.get("/api/alertas/", (c) => c.redirect("/api/alertas"));
+app.get("/api/analisis/", (c) => c.redirect("/api/analisis"));
+
 app.route("/api/alertas", alertas);
 app.route("/api/analisis", analisis);
 

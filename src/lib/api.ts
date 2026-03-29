@@ -1,3 +1,4 @@
 export const apiUrl = (path: string) => {
-  return `https://olivaxi.duckdns.org/api${path}`;
+  const cleanPath = path.replace(/\/$/, '');
+  return `https://olivaxi.duckdns.org/api${cleanPath}`;
 };
