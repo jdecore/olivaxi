@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_URL: https://olivaxi.duckdns.org/api
+        PUBLIC_API_URL: http://45.90.237.135:3001/api
     ports:
       - "4321:4321"
     restart: unless-stopped
