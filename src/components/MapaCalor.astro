@@ -13,15 +13,15 @@ const variedadSeleccionada = Astro.props.variedad || '';
   <div id="mapa-legend"></div>
   <div id="mapa-loading">
     <div class="spinner"></div>
-    <p id="loading-text">Cargando...</p>
+    <p id="loading-text">Inicializando...</p>
   </div>
 </div>
 
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin></script>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin />
 
 <script type="module">
 const API_BASE = 'http://45.90.237.135:3001';
-
 const TILE_SERVER = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
 
 const COLORS = {
@@ -73,7 +73,7 @@ const getLegend = (filtro) => {
   return (L[filtro] || []).map(([l,c]) => `<span style="display:flex;align-items:center;gap:3px"><i style="width:10px;height:10px;background:${c};border-radius:3px"></i><span style="color:${txt};font-size:10px">${l}</span></span>`).join('');
 };
 
-let map, ml, datos = [], filtro = 'temperatura', variedad = '', markers = [];
+let map, datos = [], filtro = 'temperatura', variedad = '', markers = [];
 
 function showError(msg) {
   const el = document.getElementById('loading-text');
@@ -85,76 +85,70 @@ async function initMapa() {
   const mapaDiv = document.getElementById('mapa');
   
   if (!mapaDiv) {
-    showError('No se encontró el div del mapa');
+    showError('No se encontró el div');
     return;
   }
 
   if (map) return;
 
-  // Cargar datos primero
+  // Verificar que MapLibre esté cargado
+  if (typeof maplibregl === 'undefined') {
+    showError('Cargando librería...');
+    // Esperar a que cargue
+    for (let i = 0; i < 50; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      if (typeof maplibregl !== 'undefined') break;
+    }
+    if (typeof maplibregl === 'undefined') {
+      showError('Error: MapLibre no cargó');
+      return;
+    }
+  }
+
   showError('Cargando datos...');
-  console.log('[Mapa] Iniciando...');
-  console.log('[Mapa] Fetch:', `${API_BASE}/api/clima`);
+
   try {
     const res = await fetch(`${API_BASE}/api/clima`);
-    console.log('[Mapa] Response:', res.status);
-    if (!res.ok) throw new Error('API error: ' + res.status);
+    if (!res.ok) throw new Error('API error');
     datos = await res.json();
-    console.log('[Mapa] Datos:', datos?.length || 0);
     if (!datos || datos.length === 0) throw new Error('Sin datos');
-    showError('Cargando mapa...');
   } catch (e) {
-    console.error('[Mapa] Error datos:', e);
-    showError('Error: ' + e.message);
+    console.error('Error datos:', e);
+    showError('Error de datos');
     return;
   }
 
-  // Cargar MapLibre
-  console.log('[Mapa] Cargando MapLibre...');
+  showError('Cargando mapa...');
+
   try {
-    const mlModule = await import('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js');
-    ml = mlModule.default;
-    console.log('[Mapa] MapLibre OK');
-  } catch (e) {
-    console.error('[Mapa] Error MapLibre:', e);
-    showError('Error cargando librería');
-    return;
-  }
+    map = new maplibregl.Map({
+      container: mapaDiv,
+      style: TILE_SERVER,
+      center: [-3.5, 40.0],
+      zoom: 6,
+      minZoom: 5,
+      maxZoom: 10,
+      attributionControl: true
+    });
 
-  // Crear mapa con Carto tiles
-  map = new ml.Map({
-    container: mapaDiv,
-    style: TILE_SERVER,
-    center: [-3.5, 40.0],
-    zoom: 6,
-    minZoom: 5,
-    maxZoom: 10,
-    attributionControl: true
-  });
-
-  map.on('load', () => {
-    console.log('Mapa cargado, renderizando...');
-    render();
-    load.classList.add('hidden');
-    document.getElementById('mapa-legend').innerHTML = getLegend(filtro);
-  });
-
-  map.on('error', (e) => {
-    console.error('Error del mapa:', e);
-  });
-
-  // Timeout de seguridad
-  setTimeout(() => {
-    if (!map || !map.loaded()) {
-      console.log('Forzando render...');
+    map.on('load', () => {
+      console.log('Mapa cargado');
       render();
       load.classList.add('hidden');
-    }
-  }, 5000);
+      document.getElementById('mapa-legend').innerHTML = getLegend(filtro);
+    });
+
+    map.on('error', (e) => {
+      console.error('Mapa error:', e);
+    });
+  } catch (e) {
+    console.error('Error creando mapa:', e);
+    showError('Error del mapa');
+  }
 }
 
 function render() {
-  if (!map) return;
+  if (!map || !map.loaded()) return;
   
   markers.forEach(m => m.remove());
   markers = [];
@@ -186,7 +180,7 @@ function render() {
     });
 
     markers.push(
-      new ml.Marker({ element: el })
+      new maplibregl.Marker({ element: el })
         .setLngLat([d.lon, d.lat])
         .addTo(map)
     );
@@ -214,7 +208,7 @@ window.addEventListener('provincia-seleccionada', e => {
   if (p?.lat && p?.lon) map.flyTo({ center: [p.lon, p.lat], zoom: 8, duration: 500 });
 });
 
-// Iniciar cuando el DOM esté listo
+// Iniciar
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initMapa);
 } else {
