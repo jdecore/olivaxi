@@ -322,16 +322,16 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const btn = document.getElementById("btn-submit");
   const msg = document.getElementById("mensaje");
   const form = document.getElementById("form-alerta");
-  const selectProvincia = document.getElementById("provincia") as HTMLSelectElement;
-  const selectVariedad = document.getElementById("variedad") as HTMLSelectElement;
-  const selectTipo = document.getElementById("tipo") as HTMLSelectElement;
+  const selectProvincia = document.getElementById("provincia");
+  const selectVariedad = document.getElementById("variedad");
+  const selectTipo = document.getElementById("tipo");
 
-  async function calcularTipoAlerta(provincia: string, variedad: string) {
+  async function calcularTipoAlerta(provincia, variedad) {
     try {
-      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://45.90.237.135:3001";
       const res = await fetch(`${apiBase}/api/clima`);
       const datos = await res.json();
-      const datosProv = datos.find((p: any) => p.provincia === provincia);
+      const datosProv = datos.find((p) => p.provincia === provincia);
       
       if (!datosProv) return [];
 
@@ -417,16 +417,16 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   btn?.addEventListener("click", async () => {
-    const nombre = (document.getElementById("nombre") as HTMLInputElement).value.trim();
-    const email = (document.getElementById("email") as HTMLInputElement).value.trim();
-    const provincia = (document.getElementById("provincia") as HTMLSelectElement).value;
-    const variedad = (document.getElementById("variedad") as HTMLSelectElement).value;
-    const tipo = (document.getElementById("tipo") as HTMLSelectElement).value;
-    const fenologia = (document.getElementById("fenologia") as HTMLSelectElement).value;
+    const nombre = document.getElementById("nombre").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const provincia = document.getElementById("provincia").value;
+    const variedad = document.getElementById("variedad").value;
+    const tipo = document.getElementById("tipo").value;
+    const fenologia = document.getElementById("fenologia").value;
 
     if (!nombre || !email || !provincia) {
       msg.textContent = "⚠️ Por favor completa los campos obligatorios.";
-      msg.className = "warning";
+      msg.className = "warning show";
       msg.removeAttribute("hidden");
       return;
     }
@@ -435,7 +435,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     btn.disabled = true;
 
     try {
-      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://45.90.237.135:3001";
       const res = await fetch(`${apiBase}/api/alertas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -444,7 +444,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
       if (res.ok) {
         msg.textContent = `✅ ¡Alerta activada! Se te avisará cuando cualquier riesgo aparezca en tu zona para tu cultivo de olivo.`;
-        msg.className = "success";
+        msg.className = "success show";
         localStorage.setItem("olivaxi_provincia", provincia);
         if (variedad) localStorage.setItem("olivaxi_variedad", variedad);
       } else {
@@ -452,7 +452,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       }
     } catch {
       msg.textContent = "❌ Algo salió mal. Inténtalo de nuevo.";
-      msg.className = "error";
+      msg.className = "error show";
     } finally {
       msg.removeAttribute("hidden");
       btn.textContent = "Activar alerta 🔔";
