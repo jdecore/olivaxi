@@ -200,30 +200,6 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .alert-option-icon { font-size: 20px; }
     .alert-option-text strong { display: block; font-size: 13px; }
     .alert-option-text span { font-size: 11px; color: #666; }
-
-    .geopolitics-section { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-    .geopolitics-section summary { cursor: pointer; font-weight: 600; color: var(--color-aceituna); padding: 12px; background: var(--color-white-surface); border: 1px solid var(--color-border); border-radius: 8px; }
-    .geopolitics-section[open] summary { border-radius: 8px 8px 0 0; }
-    .geopolitics-content { background: var(--color-white-surface); border: 1px solid var(--color-border); border-top: none; padding: 16px; border-radius: 0 0 8px 8px; }
-    .geopolitics-content ul { margin: 0; padding-left: 20px; }
-    .geopolitics-content li { color: var(--color-muted); font-size: 0.9rem; margin-bottom: 8px; }
-
-    .consejos-carousel { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-    .consejos-title { font-size: 1.1rem; font-weight: 700; color: var(--color-aceituna); text-align: center; margin-bottom: 1rem; }
-    .consejos-container { position: relative; overflow: hidden; }
-    .consejos-track { display: flex; transition: transform 0.4s ease; }
-    .consejo-card { flex: 0 0 100%; padding: 20px; background: var(--color-white-surface); border: 1px solid var(--color-border); border-radius: 12px; text-align: center; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
-    .consejo-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .consejo-text { font-size: 1rem; color: var(--color-aceituna); font-weight: 600; margin-bottom: 8px; }
-    .consejo-desc { font-size: 0.85rem; color: var(--color-muted); }
-    .consejo-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
-    .consejo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-border); cursor: pointer; transition: all 0.3s ease; }
-    .consejo-dot.active { background: var(--color-limon); transform: scale(1.2); }
-    .consejo-nav { position: absolute; top: 50%; transform: translateY(-50%); background: var(--color-white-surface); border: 1px solid var(--color-border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s ease; z-index: 2; }
-    .consejo-nav:hover { background: var(--color-limon); }
-    .consejo-nav.prev { left: 0; }
-    .consejo-nav.next { right: 0; }
-    @media(max-width: 600px) { .consejo-card { min-height: 140px; padding: 16px; } .consejo-nav { width: 30px; height: 30px; font-size: 14px; } }
   </style>
 
   <section class="agua-hero">
@@ -405,58 +381,6 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     </div>
   </section>
 
-  <div class="consejos-carousel">
-    <div class="consejos-title">💡 Consejo del día</div>
-    <div class="consejos-container">
-      <button class="consejo-nav prev" onclick="slideConsejo(-1)">‹</button>
-      <div class="consejos-track" id="consejos-track">
-        <div class="consejo-card">
-          <div class="consejo-icon">💧</div>
-          <div class="consejo-text">Riega al amanecer</div>
-          <div class="consejo-desc">El riego matinal reduce evaporación y previene hongos</div>
-        </div>
-        <div class="consejo-card">
-          <div class="consejo-icon">🪵</div>
-          <div class="consejo-text">Añade mulch al suelo</div>
-          <div class="consejo-desc">Una capa de 5cm retiene humedad y reduce malezas</div>
-        </div>
-        <div class="consejo-card">
-          <div class="consejo-icon">🌿</div>
-          <div class="consejo-text">Usa cubiertas vegetales</div>
-          <div class="consejo-desc">Fijan nitrógeno y reducen erosión hasta un 50%</div>
-        </div>
-        <div class="consejo-card">
-          <div class="consejo-icon">📊</div>
-          <div class="consejo-text">Mide la humedad del suelo</div>
-          <div class="consejo-desc">Sensor a 30cm de profundidad para decisiones precisas</div>
-        </div>
-        <div class="consejo-card">
-          <div class="consejo-icon">🫒</div>
-          <div class="consejo-text">Podar después de cosecha</div>
-          <div class="consejo-desc">Reduce estrés hídrico y mejora aireación del árbol</div>
-        </div>
-        <div class="consejo-card">
-          <div class="consejo-icon">⬛</div>
-          <div class="consejo-text">Prueba el biochar</div>
-          <div class="consejo-desc">Aumenta retención de agua hasta 3 veces</div>
-        </div>
-      </div>
-      <button class="consejo-nav next" onclick="slideConsejo(1)">›</button>
-    </div>
-    <div class="consejo-dots" id="consejo-dots"></div>
-  </div>
-
-  <details class="geopolitics-section">
-    <summary>🌍 Contexto: olivar y geopolítica</summary>
-    <div class="geopolitics-content">
-      <ul>
-        <li>España es el mayor productor de aceite de oliva mundial (~45%)</li>
-        <li>El Estrecho de Hormuz controla el 20% del petróleo mundial</li>
-        <li>La tensión geopolítica puede encarecer fertilizantes nitrogenados</li>
-      </ul>
-    </div>
-  </details>
-
 </Layout>
 
 <script>
@@ -631,40 +555,4 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
   OlivaxiEcosistema.onChange(() => {
     syncWithEcosistema();
   }, { immediate: true });
-
-  // Carrusel de consejos
-  let currentConsejo = 0;
-  const totalConsejos = 6;
-  const track = document.getElementById('consejos-track');
-  const dotsContainer = document.getElementById('consejo-dots');
-  
-  if (track && dotsContainer) {
-    for (let i = 0; i < totalConsejos; i++) {
-      const dot = document.createElement('div');
-      dot.className = 'consejo-dot' + (i === 0 ? ' active' : '');
-      dot.onclick = () => goToConsejo(i);
-      dotsContainer.appendChild(dot);
-    }
-  }
-  
-  window.slideConsejo = function(dir) {
-    currentConsejo = (currentConsejo + dir + totalConsejos) % totalConsejos;
-    updateConsejo();
-  }
-  
-  function goToConsejo(index) {
-    currentConsejo = index;
-    updateConsejo();
-  }
-  
-  function updateConsejo() {
-    if (track) {
-      track.style.transform = `translateX(-${currentConsejo * 100}%)`;
-    }
-    document.querySelectorAll('.consejo-dot').forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentConsejo);
-    });
-  }
-  
-  setInterval(() => slideConsejo(1), 6000);
 </script>
