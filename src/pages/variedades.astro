@@ -91,6 +91,23 @@ const varieties = [
         <span class="var-label">🧬 LABORATORIO</span>
         <h1 class="var-title">Variedades de Olivo</h1>
         <p class="var-subtitle">Compara resistencia climática, plagas y enfermedades para elegir la mejor opción para tu zona</p>
+        <div class="provincia-selector">
+          <label for="select-provincia">📍 Filtrar por provincia:</label>
+          <select id="select-provincia">
+            <option value="">Todas las provincias</option>
+            <option value="Jaén">Jaén</option>
+            <option value="Córdoba">Córdoba</option>
+            <option value="Sevilla">Sevilla</option>
+            <option value="Granada">Granada</option>
+            <option value="Málaga">Málaga</option>
+            <option value="Badajoz">Badajoz</option>
+            <option value="Toledo">Toledo</option>
+            <option value="Ciudad Real">Ciudad Real</option>
+            <option value="Almería">Almería</option>
+            <option value="Huelva">Huelva</option>
+          </select>
+        </div>
+        <div class="provincia-info-bar" id="provincia-info-bar" style="display:none"></div>
       </div>
     </header>
 
@@ -174,6 +191,10 @@ const varieties = [
           <div class="var-riesgos">
             <h4>⚠️ RIESGOS</h4>
             <p>{v.riesgos}</p>
+          </div>
+
+          <div class="dynamic-riesgo" style="margin-bottom: 8px;">
+            <span class="dynamic-riesgo-badge" data-variedad={v.id} style="display:none">-</span>
           </div>
 
           <button class="var-btn" data-nombre={v.nombre}>COMPARAR</button>
@@ -268,6 +289,39 @@ const varieties = [
     margin: 1rem 0 0;
     max-width: 500px;
     line-height: 1.5;
+  }
+
+  .provincia-selector {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .provincia-selector label {
+    color: rgba(247, 244, 238, 0.8);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .provincia-selector select {
+    background: rgba(255,255,255,0.9);
+    border: 2px solid #D4E849;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1C1C1C;
+    cursor: pointer;
+  }
+  .provincia-info-bar {
+    margin-top: 0.75rem;
+    padding: 8px 12px;
+    background: rgba(212,232,73,0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #F7F4EE;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   .var-filters {
@@ -517,6 +571,26 @@ const varieties = [
     color: #1C1C1C;
   }
 
+  .dynamic-riesgo-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .dynamic-riesgo-badge.riesgo-alto {
+    background: rgba(239,68,68,0.15);
+    color: #dc2626;
+  }
+  .dynamic-riesgo-badge.riesgo-medio {
+    background: rgba(245,158,11,0.15);
+    color: #b45309;
+  }
+  .dynamic-riesgo-badge.riesgo-bajo {
+    background: rgba(34,197,94,0.15);
+    color: #15803d;
+  }
+
   .sticky-bar {
     position: fixed;
     bottom: 0;
@@ -663,6 +737,80 @@ const varieties = [
 </style>
 
 <script>
+  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const provinciaSelect = document.getElementById('select-provincia');
+  const provinciaInfoBar = document.getElementById('provincia-info-bar');
+  const VARIEDADES_KEYS = ['cornicabra', 'picual', 'arbequina', 'hojiblanca', 'manzanilla', 'empeltre'];
+  let datosProvincia = null;
+  let riesgosVariedad = {};
+
+  const savedProvincia = localStorage.getItem('olivaxi_provincia');
+  if (savedProvincia && provinciaSelect) {
+    provinciaSelect.value = savedProvincia;
+    cargarDatosProvincia(savedProvincia);
+  }
+
+  async function cargarDatosProvincia(provincia) {
+    if (!provincia) {
+      datosProvincia = null;
+      riesgosVariedad = {};
+      if (provinciaInfoBar) provinciaInfoBar.style.display = 'none';
+      actualizarRiesgos();
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      
+      if (d.ok) {
+        datosProvincia = d;
+        riesgosVariedad = d.riesgos?.variedad || {};
+        
+        if (provinciaInfoBar) {
+          provinciaInfoBar.innerHTML = `
+            <span>🌡️ ${d.clima.temperatura}°C</span>
+            <span>💧 ${d.clima.humedad}%</span>
+            <span>🫒 ${d.provinciaInfo.variedadPredominante}</span>
+            <span>🪨 ${d.provinciaInfo.tipoSuelo}</span>
+          `;
+          provinciaInfoBar.style.display = 'flex';
+        }
+        
+        actualizarRiesgos();
+      }
+    } catch (e) {
+      console.error('Error loading province data:', e);
+    }
+  }
+
+  function actualizarRiesgos() {
+    VARIEDADES_KEYS.forEach(v => {
+      const badge = document.querySelector(`.var-card[data-nombre="${v}"] .dynamic-riesgo-badge`);
+      if (badge && riesgosVariedad[v]) {
+        const nivel = riesgosVariedad[v].nivel || 'bajo';
+        const score = riesgosVariedad[v].score || 0;
+        badge.textContent = `${nivel.toUpperCase()} (${score}/10)`;
+        badge.className = `dynamic-riesgo-badge riesgo-${nivel}`;
+        badge.style.display = 'inline-block';
+      }
+    });
+  }
+
+  provinciaSelect?.addEventListener('change', () => {
+    const prov = provinciaSelect.value;
+    localStorage.setItem('olivaxi_provincia', prov);
+    cargarDatosProvincia(prov);
+  });
+
+  window.addEventListener('olivaxi-state-change', (e) => {
+    if (e.detail?.provincia && provinciaSelect) {
+      provinciaSelect.value = e.detail.provincia;
+      cargarDatosProvincia(e.detail.provincia);
+    }
+  });
+
   const seleccionadas = [];
 
   function getCardData(nombre) {

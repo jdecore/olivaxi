@@ -495,4 +495,179 @@ function getClimaDataCached() {
   return [];
 }
 
+// ============================================
+// CONSEJOS por tipo de riesgo
+// ============================================
+const CONSEJOS: Record<string, string[]> = {
+  ola_calor: ['💧 Riega antes del amanecer', '🌿 Evita fertilizar', '🛡️ Acolcha el suelo con paja', '🌳 No podes en días calurosos'],
+  calor_critico: ['💧 Aumenta riego', '🌿 Aplica mulch', '🛡️ Protege del sol directo', '🌳 Evita poda'],
+  helada: ['🧣 Protege árboles jóvenes con manta', '💧 No riegues antes de helada', '🌳 Evita poda ahora', '🔥 Considera heaters si es viable'],
+  helada_critica: ['🧣 Protege con manta térmica', '💧 No riegues', '🌳 Evita podar', '🔥 Calefacción si es viable'],
+  estres_hidrico: ['💦 Aplica riego profundo', '🪵 Usa mulch para retener humedad', '✂️ Reduce poda', '🌿 Aplica compost'],
+  sequia_severa: ['💧 Aumenta riego significativamente', '🪵 Aplica mulch espeso', '🌳 Reduce frutos si es necesario', '💦 Considera riego de emergencia'],
+  sequia_extrema: ['💥 Solicita permiso para emergencia', '🛡️ Protege árboles centenarios', '📞 Contacta asociaciones'],
+  alta_humedad: ['🍄 Aplica fungicida preventivo', '🌳 Poda para ventilación', '💧 Evita riego por aspersión', '🔍 Monitorea hojas'],
+  hongos_criticos: ['🍄 Aplica fungicida urgente', '🔴 Elimina ramas afectadas', '💧 No riegues por aspersión', '📞 Consulta técnico'],
+  inundacion: ['🌊 Revisa drenaje', '🍄 Aplica anti-hongos', '🌳 Evalúa raíces', '🛡️ Protege de erosión'],
+  mosca: ['🧪 Aplica tratamiento', '🪓 Recoge frutos afectados', '🔒 Instala trampas', '📅 Programa tratamiento'],
+  polilla: ['🪓 Poda afectada', '🧪 Aplica tratamiento', '🔒 Trampas de feromonas', '🥅 Redes anti-insectos'],
+  xylella: ['🚨 Notifica a autoridades', '🪓 Elimina árboles afectados', '🛡️ Medidas preventivas', '🔬 Confirma laboratorio'],
+  repilo: ['🍄 Aplica fungicida', '🌳 Poda para aireación', '💧 Evita exceso de riego', '🔍 Monitorea regularmente'],
+  condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
+};
+
+function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any): string[] {
+  const consejos: string[] = [];
+  
+  if (riesgos_olivar?.calor?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.ola_calor.slice(0, 2));
+  } else if (riesgos_olivar?.calor?.nivel === 'medio') {
+    consejos.push(...CONSEJOS.calor_critico.slice(0, 2));
+  }
+  
+  if (riesgos_olivar?.frio?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.helada.slice(0, 2));
+  }
+  
+  if (riesgos_olivar?.baja_humedad?.nivel === 'alto' || riesgos_olivar?.baja_lluvia?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.sequia_extrema.slice(0, 2));
+  }
+  
+  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.alta_humedad.slice(0, 2));
+  }
+  
+  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.inundacion.slice(0, 2));
+  }
+  
+  if (riesgos_plaga?.mosca?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.mosca.slice(0, 2));
+  }
+  
+  if (riesgos_plaga?.polilla?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.polilla.slice(0, 2));
+  }
+  
+  if (riesgos_plaga?.repilo?.nivel === 'alto') {
+    consejos.push(...CONSEJOS.repilo.slice(0, 2));
+  }
+  
+  if (consejos.length === 0) {
+    return CONSEJOS.condiciones_optimas;
+  }
+  
+  return [...new Set(consejos)];
+}
+
+function getRiesgosActivos(riesgos_olivar: any, riesgos_plaga: any): any[] {
+  const activos: any[] = [];
+  
+  if (riesgos_olivar?.calor?.nivel === 'alto') activos.push({ tipo: 'calor', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
+  else if (riesgos_olivar?.calor?.nivel === 'medio') activos.push({ tipo: 'calor', nivel: 'medio', titulo: 'Calor', icono: '🌡️' });
+  
+  if (riesgos_olivar?.frio?.nivel === 'alto') activos.push({ tipo: 'frio', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
+  else if (riesgos_olivar?.frio?.nivel === 'medio') activos.push({ tipo: 'frio', nivel: 'medio', titulo: 'Frío', icono: '🌡️' });
+  
+  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
+  else if (riesgos_olivar?.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', nivel: 'medio', titulo: 'Baja humedad', icono: '💧' });
+  
+  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'hongos', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
+  
+  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
+  
+  if (riesgos_plaga?.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', nivel: 'alto', titulo: 'Mosca', icono: '🪰' });
+  else if (riesgos_plaga?.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', nivel: 'medio', titulo: 'Mosca', icono: '🪰' });
+  
+  if (riesgos_plaga?.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', nivel: 'alto', titulo: 'Polilla', icono: '🦋' });
+  else if (riesgos_plaga?.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', nivel: 'medio', titulo: 'Polilla', icono: '🦋' });
+  
+  if (riesgos_plaga?.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', nivel: 'alto', titulo: 'Repilo', icono: '🍂' });
+  else if (riesgos_plaga?.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', nivel: 'medio', titulo: 'Repilo', icono: '🍂' });
+  
+  if (riesgos_plaga?.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', nivel: 'alto', titulo: 'Xylella', icono: '🚨' });
+  else if (riesgos_plaga?.xylella?.nivel === 'medio') activos.push({ tipo: 'xylella', nivel: 'medio', titulo: 'Xylella', icono: '🚨' });
+  
+  return activos;
+}
+
+// Endpoint unificado para el dashboard
+clima.get("/dashboard", async (c) => {
+  try {
+    const provincia = c.req.query('provincia');
+    const variedad = c.req.query('variedad') || '';
+    
+    const data = await getClimaData();
+    
+    if (provincia) {
+      const provData = data.find((p: any) => p.provincia === provincia);
+      if (provData) {
+        const riesgosActivos = getRiesgosActivos(provData.riesgos_olivar, provData.riesgos_plaga);
+        const consejos = getConsejosByRiesgos(provData.riesgos_olivar, provData.riesgos_plaga);
+        
+        return c.json({
+          ok: true,
+          provincia: provincia,
+          clima: {
+            temperatura: provData.temperatura,
+            humedad: provData.humedad,
+            lluvia: provData.lluvia,
+            estado: provData.estado,
+            riesgo: provData.riesgo
+          },
+          suelo: {
+            temperatura: provData.suelo_temp,
+            humedad: provData.suelo_humedad,
+            evapotranspiracion: provData.evapotranspiracion
+          },
+          provinciaInfo: {
+            altitud: provData.altitud,
+            pluviometriaAnual: provData.pluviometriaAnual,
+            tipoSuelo: provData.tipoSuelo,
+            variedadPredominante: provData.variedadPredominante,
+            epocaCritica: provData.epocaCritica,
+            consejosSuelo: provData.consejosSuelo || []
+          },
+          plagas: {
+            mosca: provData.riesgos_plaga?.mosca,
+            polilla: provData.riesgos_plaga?.polilla,
+            repilo: provData.riesgos_plaga?.repilo,
+            xylella: provData.riesgos_plaga?.xylella
+          },
+          riesgos: {
+            olivar: provData.riesgos_olivar,
+            variedad: variedad ? provData.riesgos_variedad?.[variedad] : null
+          },
+          riesgosActivos,
+          consejos,
+          variedadRiesgo: variedad ? provData.riesgos_variedad?.[variedad] : null
+        });
+      }
+    }
+    
+    return c.json({ error: "Provincia no encontrada" }, 404);
+  } catch (error) {
+    console.error("ERROR DASHBOARD:", error);
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+// Endpoint para obtener todas las provincias
+clima.get("/provincias", async (c) => {
+  try {
+    const data = await getClimaData();
+    return c.json(data.map((p: any) => ({
+      provincia: p.provincia,
+      lat: p.lat,
+      lon: p.lon,
+      temperatura: p.temperatura,
+      riesgo: p.riesgo,
+      variedadPredominante: p.variedadPredominante,
+      tipoSuelo: p.tipoSuelo
+    })));
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
 export default clima;

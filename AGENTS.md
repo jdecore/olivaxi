@@ -115,6 +115,11 @@ CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--a
 - **Storage**: SQLite
 - **Email**: Requiere GMAIL_APP_PASSWORD
 
+### GET /api/alertas/tipos
+- **Función**: Calcula tipos de alerta disponibles según provincia y variedad
+- **Usa**: Datos cacheados del clima (sin llamada API externa)
+- **Retorna**: Array de tipos de alerta activos
+
 ---
 
 ## 🚀 Cómo ejecutar
@@ -252,6 +257,71 @@ curl -H "Host: olivaxi.duckdns.org" http://localhost:4321/
 
 ## 📝 Notas para el siguiente agente
 
+### ✅ Completado (2026-03-30)
+
+1. **Cálculos movidos al backend** - `calcularTipoAlerta()` ahora está en `/api/alertas/tipos`
+   - Archivo: `api/routes/alertas.ts` (líneas 486-541)
+   - El frontend solo muestra datos, no calcula
+
+2. **Riesgos dinámicos de variedades** - La grid de variedades muestra riesgos reales según la provincia seleccionada
+   - Archivo: `src/pages/index.astro` (función `renderVariedadesGrid`)
+   - Usa `riesgos_variedad` del API por provincia
+
+3. **Endpoint nuevo** - `/api/alertas/tipos` calculado completamente en backend
+   - Usa datos cacheados del clima
+   - Retorna tipos de alerta activos para provincia + variedad
+
+4. **Reactividad** - Al seleccionar provincia, la grid de variedades se actualiza con los riesgos de esa provincia
+
+### 📋 Estado actual (2026-03-29)
+
+- ✅ Build passa (264KB)
+- ✅ Frontend solo muestra datos del API
+- ✅ Cálculos de riesgos en backend
+- ✅ Endpoint /api/dashboard unificado con todos los datos + consejos
+- ✅ Todas las páginas con datos contextuales por provincia
+- ⚠️ Cache de producción necesita refresh para ver nuevos datos
+
+### 🎯 Implementado en esta actualización
+
+**Backend:**
+- ✅ Endpoint `/api/dashboard` - Retorna datos completos + riesgos + consejos
+- ✅ Función `getRiesgosActivos()` - Lista de riesgos activos con iconos
+- ✅ Función `getConsejosByRiesgos()` - Consejos dinámicos según riesgos
+
+**index.astro:**
+- ✅ Hero contextual (temp, humedad, estado)
+- ✅ Cards dinámicos (suelo, variedad, consejo)
+- ✅ Panel alertas con quick stats + consejos del suelo
+- ✅ Riesgos activos con iconos y niveles
+
+**alertas.astro:**
+- ✅ Panel provincial expandido con todos los datos
+- ✅ Clima actual (temp, humedad, lluvia, estado)
+- ✅ Suelo Open-Meteo (temp, humedad, ETo)
+- ✅ Info provincial (variedad, suelo, altitud, pluviometría)
+- ✅ Plagas RAIF con iconos por nivel
+- ✅ Riesgos activos detallados
+- ✅ Consejos prácticos dinámicos
+
+**variedades.astro:**
+- ✅ Selector de provincia
+- ✅ Info bar con datos de la provincia
+- ✅ Badge de riesgo dinámico por variedad
+
+**plagas.astro:**
+- ✅ Selector de provincia
+- ✅ Barra de estado RAIF por provincia
+- ✅ Iconos de nivel por plaga (mosca, polilla, repilo)
+
+**agua-suelos.astro:**
+- ✅ Selector de provincia
+- ✅ Datos del suelo en tiempo real (temp, humedad, ETo, lluvia)
+- ✅ Info provincial (tipo suelo, pluviometría, variedad)
+- ✅ Consejos del suelo dinámicos
+
+### Legacy notes
+
 1. **NO usar ViewTransitions/ClientRouter** - Obsoleto en Astro 6
 2. **Para allowedHosts usar CLI flag** - La config no funciona, solo el flag
 3. **SolidJS funciona bien** - Solo instalar en package.json
@@ -261,5 +331,5 @@ curl -H "Host: olivaxi.duckdns.org" http://localhost:4321/
 
 ---
 
-*Documentación actualizada: 2026-03-28*
+*Documentación actualizada: 2026-03-30*
 *Proyecto: olivaξ - Monitor Climático de Olivares*

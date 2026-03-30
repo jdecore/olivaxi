@@ -304,13 +304,59 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     gap: 0.25rem;
   }
   .provincia-info-panel .consejos {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(0,0,0,0.1);
-    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    font-size: 0.75rem;
+    list-style: none;
   }
   .provincia-info-panel .consejos li {
     margin-bottom: 0.25rem;
+  }
+  .provincia-info-panel .info-section {
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .provincia-info-panel .info-section:last-child {
+    border-bottom: none;
+  }
+  .provincia-info-panel .info-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-aceituna);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.05em;
+  }
+  .provincia-info-panel .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .provincia-info-panel .info-item {
+    font-size: 0.7rem;
+    padding: 3px 5px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 4px;
+  }
+  .provincia-info-panel .riesgo-item {
+    padding: 4px 6px;
+    margin-bottom: 3px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .provincia-info-panel .riesgo-item.alto {
+    background: rgba(239,68,68,0.15);
+    color: #dc2626;
+  }
+  .provincia-info-panel .riesgo-item.medio {
+    background: rgba(245,158,11,0.15);
+    color: #b45309;
+  }
+  .provincia-info-panel .riesgo-item.bajo {
+    background: rgba(34,197,94,0.15);
+    color: #15803d;
   }
 
   .alertas-info {
@@ -411,25 +457,65 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     if (!provinciaNombre || !provinciaInfoPanel) return;
     
     try {
-      const res = await fetch(`${apiBase}/api/clima`);
-      const datos = await res.json();
-      const prov = datos.find(p => p.provincia === provinciaNombre);
+      const res = await fetch(`${apiBase}/api/clima/dashboard?provincia=${encodeURIComponent(provinciaNombre)}`);
+      if (!res.ok) throw new Error('API error');
+      const d = await res.json();
       
-      if (prov) {
-        const plagaNivel = prov.riesgos_plaga?.polilla?.nivelRAIF || prov.riesgos_plaga?.polilla?.nivel || 'bajo';
-        const iconoPlaga = plagaNivel === 'alto' ? '🔴' : plagaNivel === 'medio' ? '🟡' : '🟢';
+      if (d.ok) {
+        const getIcono = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
+        
+        const riesgosHTML = d.riesgosActivos?.length 
+          ? d.riesgosActivos.map(r => `<div class="riesgo-item ${r.nivel}"><span>${r.icono}</span> ${r.titulo} - ${r.nivel.toUpperCase()}</div>`).join('')
+          : '<div class="riesgo-item bajo">✅ Sin riesgos activos</div>';
+        
+        const consejosHTML = d.consejos?.length
+          ? d.consejos.slice(0, 2).map(c => `<li>💡 ${c.replace(/^\S+\s/, '')}</li>`).join('')
+          : '';
         
         provinciaInfoPanel.innerHTML = `
-          <h4>📍 Información de ${provinciaNombre}</h4>
-          <div class="info-grid">
-            ${prov.variedadPredominante ? `<div class="info-item">🫒 <b>${prov.variedadPredominante}</b></div>` : ''}
-            ${prov.tipoSuelo ? `<div class="info-item">🪨 ${prov.tipoSuelo}</div>` : ''}
-            ${prov.altitud ? `<div class="info-item">⛰️ ${prov.altitud}m</div>` : ''}
-            ${prov.pluviometriaAnual ? `<div class="info-item">🌧️ ${prov.pluviometriaAnual}mm/año</div>` : ''}
-            ${prov.epocaCritica ? `<div class="info-item">⚠️ ${prov.epocaCritica}</div>` : ''}
-            <div class="info-item">🦟 Plagas: ${iconoPlaga} ${plagaNivel}</div>
+          <h4>📍 ${provinciaNombre} - Datos en tiempo real</h4>
+          
+          <div class="info-section">
+            <div class="info-title">🌡️ CLIMA</div>
+            <div class="info-grid">
+              <div class="info-item">🌡️ <b>${d.clima.temperatura}°C</b></div>
+              <div class="info-item">💧 <b>${d.clima.humedad}%</b></div>
+              <div class="info-item">🌧️ <b>${d.clima.lluvia}mm</b></div>
+              <div class="info-item">📊 <b>${d.clima.estado}</b></div>
+            </div>
           </div>
-          ${prov.consejosSuelo?.length ? `<ul class="consejos">${prov.consejosSuelo.map(c => `<li>💡 ${c}</li>`).join('')}</ul>` : ''}
+          
+          <div class="info-section">
+            <div class="info-title">🪨 SUELO</div>
+            <div class="info-grid">
+              <div class="info-item">🫒 <b>${d.provinciaInfo.variedadPredominante}</b></div>
+              <div class="info-item">🪨 <b>${d.provinciaInfo.tipoSuelo}</b></div>
+              <div class="info-item">⛰️ <b>${d.provinciaInfo.altitud}m</b></div>
+              <div class="info-item">🌧️ <b>${d.provinciaInfo.pluviometriaAnual}mm</b></div>
+            </div>
+          </div>
+          
+          <div class="info-section">
+            <div class="info-title">🦟 PLAGAS (RAIF)</div>
+            <div class="info-grid">
+              <div class="info-item">🪰 ${getIcono(d.plagas?.mosca?.nivel)} <b>${d.plagas?.mosca?.nivel}</b></div>
+              <div class="info-item">🦋 ${getIcono(d.plagas?.polilla?.nivel)} <b>${d.plagas?.polilla?.nivel}</b></div>
+              <div class="info-item">🍂 ${getIcono(d.plagas?.repilo?.nivel)} <b>${d.plagas?.repilo?.nivel}</b></div>
+              <div class="info-item">🚨 ${getIcono(d.plagas?.xylella?.nivel)} <b>${d.plagas?.xylella?.nivel||'bajo'}</b></div>
+            </div>
+          </div>
+          
+          <div class="info-section">
+            <div class="info-title">⚠️ RIESGOS ACTIVOS</div>
+            ${riesgosHTML}
+          </div>
+          
+          ${consejosHTML ? `
+          <div class="info-section">
+            <div class="info-title">💡 CONSEJOS</div>
+            <ul class="consejos">${consejosHTML}</ul>
+          </div>
+          ` : ''}
         `;
         provinciaInfoPanel.classList.add('show');
       }

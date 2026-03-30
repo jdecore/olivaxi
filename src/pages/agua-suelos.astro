@@ -24,6 +24,43 @@ import Layout from '../layouts/Layout.astro';
       font-size: 1.1rem;
     }
 
+    .provincia-bar-agua {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .provincia-bar-agua select {
+      padding: 10px 20px;
+      border: 2px solid var(--color-limon);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      background: white;
+      color: var(--color-aceituna);
+      cursor: pointer;
+    }
+    .suelo-datos {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .suelo-dato {
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .suelo-dato .icon { font-size: 1.5rem; }
+    .suelo-dato .value { font-size: 1.25rem; font-weight: 700; }
+    .suelo-dato .label { font-size: 0.7rem; opacity: 0.8; }
+    @media(max-width: 600px) {
+      .suelo-datos { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .agua-section {
       background: var(--color-sal);
       padding: 2.5rem 1rem;
@@ -140,6 +177,28 @@ import Layout from '../layouts/Layout.astro';
   <section class="agua-hero">
     <h1>💧 Agua y Suelos</h1>
     <p>Gestión eficiente del agua y cuidado del suelo para olivares resilientes al cambio climático</p>
+    <div class="provincia-bar-agua">
+      <select id="provincia-select-agua">
+        <option value="">Selecciona provincia para ver datos en tiempo real...</option>
+        <option value="Jaén">Jaén</option>
+        <option value="Córdoba">Córdoba</option>
+        <option value="Sevilla">Sevilla</option>
+        <option value="Granada">Granada</option>
+        <option value="Málaga">Málaga</option>
+        <option value="Badajoz">Badajoz</option>
+        <option value="Toledo">Toledo</option>
+        <option value="Ciudad Real">Ciudad Real</option>
+        <option value="Almería">Almería</option>
+        <option value="Huelva">Huelva</option>
+      </select>
+      <div class="suelo-datos" id="suelo-datos" style="display:none">
+        <div class="suelo-dato"><div class="icon">🌡️</div><div class="value" id="suelo-temp">-</div><div class="label">Temp Suelo</div></div>
+        <div class="suelo-dato"><div class="icon">💧</div><div class="value" id="suelo-humedad">-</div><div class="label">Humedad</div></div>
+        <div class="suelo-dato"><div class="icon">📈</div><div class="value" id="suelo-eto">-</div><div class="label">ETo mm/hoy</div></div>
+        <div class="suelo-dato"><div class="icon">🌧️</div><div class="value" id="suelo-lluvia">-</div><div class="label">Lluvia mm</div></div>
+      </div>
+      <div class="suelo-datos" id="suelo-info" style="display:none; width:100%; max-width:600px; text-align:left;"></div>
+    </div>
   </section>
 
   <section class="agua-section">
@@ -254,3 +313,65 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 </Layout>
+
+<script>
+  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const provinciaSelect = document.getElementById('provincia-select-agua');
+  const sueloDatos = document.getElementById('suelo-datos');
+  const sueloInfo = document.getElementById('suelo-info');
+  const sueloTemp = document.getElementById('suelo-temp');
+  const sueloHumedad = document.getElementById('suelo-humedad');
+  const sueloEto = document.getElementById('suelo-eto');
+  const sueloLluvia = document.getElementById('suelo-lluvia');
+
+  async function cargarDatosProvincia(provincia) {
+    if (!provincia) {
+      if (sueloDatos) sueloDatos.style.display = 'none';
+      if (sueloInfo) sueloInfo.style.display = 'none';
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      
+      if (d.ok) {
+        if (sueloDatos) {
+          sueloTemp.textContent = `${d.suelo.temperatura}°C`;
+          sueloHumedad.textContent = `${d.suelo.humedad}%`;
+          sueloEto.textContent = d.suelo.evapotranspiracion;
+          sueloLluvia.textContent = `${d.clima.lluvia}mm`;
+          sueloDatos.style.display = 'grid';
+        }
+        
+        if (sueloInfo) {
+          const consejosSuelo = d.provinciaInfo.consejosSuelo?.slice(0, 2).map(c => `<li>💡 ${c}</li>`).join('') || '';
+          sueloInfo.innerHTML = `
+            <div style="background:rgba(212,232,73,0.15);padding:12px;border-radius:8px;margin-top:10px">
+              <strong>🪨 Tipo de suelo:</strong> ${d.provinciaInfo.tipoSuelo}<br/>
+              <strong>🌧️ Pluviometría:</strong> ${d.provinciaInfo.pluviometriaAnual}mm/año<br/>
+              <strong>🫒 Variedad predominante:</strong> ${d.provinciaInfo.variedadPredominante}<br/>
+              ${consejosSuelo ? `<ul style="margin-top:8px;margin-bottom:0">${consejosSuelo}</ul>` : ''}
+            </div>
+          `;
+          sueloInfo.style.display = 'block';
+        }
+      }
+    } catch (e) {
+      console.error('Error loading suelo data:', e);
+    }
+  }
+
+  const savedProvincia = localStorage.getItem('olivaxi_provincia');
+  if (savedProvincia && provinciaSelect) {
+    provinciaSelect.value = savedProvincia;
+    cargarDatosProvincia(savedProvincia);
+  }
+
+  provinciaSelect?.addEventListener('change', () => {
+    const prov = provinciaSelect.value;
+    localStorage.setItem('olivaxi_provincia', prov);
+    cargarDatosProvincia(prov);
+  });
+</script>

@@ -79,6 +79,22 @@ const cambioClimatico = [
   <div class="page-header">
     <h1>🦠 Plagas del Olivar</h1>
     <p class="subtitle">Identifica las condiciones que favorecen cada plaga y aprende a tratarla</p>
+    <div class="provincia-bar">
+      <select id="provincia-select-plagas">
+        <option value="">Selecciona provincia...</option>
+        <option value="Jaén">Jaén</option>
+        <option value="Córdoba">Córdoba</option>
+        <option value="Sevilla">Sevilla</option>
+        <option value="Granada">Granada</option>
+        <option value="Málaga">Málaga</option>
+        <option value="Badajoz">Badajoz</option>
+        <option value="Toledo">Toledo</option>
+        <option value="Ciudad Real">Ciudad Real</option>
+        <option value="Almería">Almería</option>
+        <option value="Huelva">Huelva</option>
+      </select>
+      <div id="raif-status-bar" class="raif-status"></div>
+    </div>
   </div>
 
   <div class="tabs-container">
@@ -148,11 +164,51 @@ const cambioClimatico = [
 </Layout>
 
 <script>
+  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const provinciaSelect = document.getElementById('provincia-select-plagas');
+  const raifStatusBar = document.getElementById('raif-status-bar');
+
   const condicionesMap = {
     'temperatura': ['Bajas Temperaturas', 'Altas Temperaturas'],
     'humedad': ['Baja Humedad', 'Alta Humedad'],
     'lluvia': ['Baja Lluvia', 'Alta Lluvia']
   };
+
+  async function cargarDatosProvincia(provincia) {
+    if (!provincia) {
+      if (raifStatusBar) raifStatusBar.innerHTML = '';
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      
+      if (d.ok && raifStatusBar) {
+        const getIcon = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
+        raifStatusBar.innerHTML = `
+          <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel}</span>
+          <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel}</span>
+          <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel}</span>
+        `;
+      }
+    } catch (e) {
+      console.error('Error loading RAIF data:', e);
+    }
+  }
+
+  const savedProvincia = localStorage.getItem('olivaxi_provincia');
+  if (savedProvincia && provinciaSelect) {
+    provinciaSelect.value = savedProvincia;
+    cargarDatosProvincia(savedProvincia);
+  }
+
+  provinciaSelect?.addEventListener('change', () => {
+    const prov = provinciaSelect.value;
+    localStorage.setItem('olivaxi_provincia', prov);
+    cargarDatosProvincia(prov);
+  });
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -204,6 +260,42 @@ const cambioClimatico = [
   .subtitle {
     color: var(--color-muted);
     font-size: 1rem;
+  }
+
+  .provincia-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .provincia-bar select {
+    padding: 8px 16px;
+    border: 2px solid var(--color-limon);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    background: white;
+    color: var(--color-aceituna);
+    cursor: pointer;
+  }
+  .raif-status {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 12px;
+    padding: 6px 12px;
+    background: rgba(212,232,73,0.15);
+    border-radius: 20px;
+  }
+  .raif-status span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .tabs-container {

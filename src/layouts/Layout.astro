@@ -214,6 +214,15 @@ const { title = "olivaξ" } = Astro.props;
     border: 2px solid var(--color-border);
     border-radius: 8px;
     opacity: 1;
+    contain: layout style;
+    transform: translateZ(0);
+    will-change: contents;
+  }
+
+  .navbar img {
+    display: block;
+    height: 60px;
+    width: auto;
   }
 
   .navbar-inner {
