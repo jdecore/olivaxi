@@ -31,16 +31,18 @@ import Layout from '../layouts/Layout.astro';
       align-items: center;
       gap: 1rem;
     }
+
     .provincia-bar-agua select {
       padding: 10px 20px;
       border: 2px solid var(--color-limon);
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
-      background: white;
+      background: var(--color-white-surface);
       color: var(--color-aceituna);
       cursor: pointer;
     }
+
     .suelo-datos {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -48,15 +50,18 @@ import Layout from '../layouts/Layout.astro';
       width: 100%;
       max-width: 600px;
     }
+
     .suelo-dato {
       background: rgba(255,255,255,0.1);
       padding: 10px;
       border-radius: 8px;
       text-align: center;
     }
+
     .suelo-dato .icon { font-size: 1.5rem; }
     .suelo-dato .value { font-size: 1.25rem; font-weight: 700; }
     .suelo-dato .label { font-size: 0.7rem; opacity: 0.8; }
+
     @media(max-width: 600px) {
       .suelo-datos { grid-template-columns: repeat(2, 1fr); }
     }

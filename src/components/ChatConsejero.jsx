@@ -1,6 +1,7 @@
 import { createSignal, onMount, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
 import OlivaxiState from '../lib/state';
+import { olivaxiCache } from '../lib/cache';
 
 const PROVINCIAS = ['Jaén', 'Córdoba', 'Sevilla', 'Granada', 'Málaga', 'Badajoz', 'Toledo', 'Ciudad Real', 'Almería', 'Huelva'];
 
@@ -112,23 +113,17 @@ export default function ChatConsejero() {
     try { localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs)); } catch {}
   };
 
-  // Cache en memoria para clima (evita llamadas innecesarias a Open-Meteo)
-  let climaCache = null;
-  let climaCacheTime = 0;
-  const CLIMA_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
-
   const getClimaData = async (forceRefresh = false) => {
-    const now = Date.now();
-    if (!forceRefresh && climaCache && now - climaCacheTime < CLIMA_CACHE_TTL) {
-      return climaCache;
+    if (!forceRefresh) {
+      const cached = olivaxiCache.get('/api/clima');
+      if (cached) return cached;
     }
     try {
       const res = await fetch(apiUrl('/api/clima'));
       const data = await res.json();
-      climaCache = data;
-      climaCacheTime = now;
+      olivaxiCache.set('/api/clima', data);
       return data;
-    } catch { return climaCache || []; }
+    } catch { return []; }
   };
 
   const enviarPregunta = async () => {

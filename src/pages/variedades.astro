@@ -225,20 +225,18 @@ const varieties = [
 </Layout>
 
 <style is:global>
-  :global(body) {
-    overflow-x: hidden;
-  }
+  :global(body) { overflow-x: hidden; }
 
   .var-container {
-    background: var(--color-sal, #F7F4EE);
+    background: var(--color-sal);
     min-height: 100vh;
     padding-top: 10px;
   }
 
   .var-header {
-    background: #1C1C1C;
+    background: var(--color-aceituna);
     padding: 2rem 1.5rem 2rem;
-    border-bottom: 4px solid #D4E849;
+    border-bottom: 4px solid var(--color-limon);
     position: relative;
     overflow: hidden;
     margin-top: 30px;
@@ -264,8 +262,8 @@ const varieties = [
 
   .var-label {
     display: inline-block;
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
     font-size: 11px;
     font-weight: 800;
     padding: 4px 12px;
@@ -278,7 +276,7 @@ const varieties = [
     font-family: 'Outfit', system-ui, sans-serif;
     font-size: clamp(28px, 5vw, 42px);
     font-weight: 800;
-    color: #F7F4EE;
+    color: var(--color-sal);
     margin: 0;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -298,28 +296,31 @@ const varieties = [
     align-items: center;
     gap: 10px;
   }
+
   .provincia-selector label {
     color: rgba(247, 244, 238, 0.8);
     font-size: 13px;
     font-weight: 600;
   }
+
   .provincia-selector select {
     background: rgba(255,255,255,0.9);
-    border: 2px solid #D4E849;
+    border: 2px solid var(--color-limon);
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 13px;
     font-weight: 600;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     cursor: pointer;
   }
+
   .provincia-info-bar {
     margin-top: 0.75rem;
     padding: 8px 12px;
     background: rgba(212,232,73,0.2);
     border-radius: 6px;
     font-size: 12px;
-    color: #F7F4EE;
+    color: var(--color-sal);
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -331,31 +332,29 @@ const varieties = [
     flex-wrap: wrap;
     justify-content: center;
     padding: 1.5rem 1rem;
-    background: #1C1C1C;
-    border-bottom: 2px solid #D4E849;
+    background: var(--color-aceituna);
+    border-bottom: 2px solid var(--color-limon);
   }
 
   .filter-btn {
     padding: 8px 16px;
-    border: 2px solid #D4E849;
+    border: 2px solid var(--color-limon);
     border-radius: 0;
     font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     background: transparent;
-    color: #F7F4EE;
+    color: var(--color-sal);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.15s;
   }
 
-  .filter-btn:hover {
-    background: rgba(212, 232, 73, 0.2);
-  }
+  .filter-btn:hover { background: rgba(212, 232, 73, 0.2); }
 
   .filter-btn.active {
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
   }
 
   .var-grid {
@@ -368,28 +367,24 @@ const varieties = [
   }
 
   .var-card {
-    background: #FFFFFF;
-    border: 3px solid #1C1C1C;
+    background: var(--color-white-surface);
+    border: 3px solid var(--color-border);
     border-radius: 0;
     padding: 20px;
-    box-shadow: 6px 6px 0 #1C1C1C;
+    box-shadow: 6px 6px 0 var(--color-border);
     transition: transform 0.2s, box-shadow 0.2s;
   }
 
   .var-card:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 8px 8px 0 #1C1C1C;
+    box-shadow: 8px 8px 0 var(--color-border);
   }
 
-  .var-card-header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
-  }
+  .var-card-header { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 
   .var-badge {
-    background: #1C1C1C;
-    color: #D4E849;
+    background: var(--color-aceituna);
+    color: var(--color-limon);
     font-size: 10px;
     font-weight: 800;
     padding: 4px 10px;
@@ -401,20 +396,20 @@ const varieties = [
     font-family: 'Outfit', system-ui, sans-serif;
     font-size: 22px;
     font-weight: 800;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     margin: 8px 0 4px;
   }
 
   .var-origen {
     font-size: 12px;
-    color: #6b6b60;
+    color: var(--color-muted);
     margin: 0 0 12px;
     font-weight: 600;
   }
 
   .var-desc {
     font-size: 13px;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     line-height: 1.5;
     margin: 0 0 16px;
   }
@@ -424,8 +419,8 @@ const varieties = [
     gap: 8px;
     margin-bottom: 16px;
     padding: 12px;
-    background: #F7F4EE;
-    border: 2px solid #1C1C1C;
+    background: var(--color-sal);
+    border: 2px solid var(--color-border);
   }
 
   .rango-item {
@@ -436,20 +431,18 @@ const varieties = [
     gap: 2px;
   }
 
-  .rango-icon {
-    font-size: 16px;
-  }
+  .rango-icon { font-size: 16px; }
 
   .rango-label {
     font-size: 9px;
-    color: #6b6b60;
+    color: var(--color-muted);
     font-weight: 700;
     text-transform: uppercase;
   }
 
   .rango-value {
     font-size: 11px;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     font-weight: 800;
   }
 
@@ -468,7 +461,7 @@ const varieties = [
 
   .var-bar-label {
     font-size: 10px;
-    color: #6b6b60;
+    color: var(--color-muted);
     font-weight: 700;
     width: 70px;
     flex-shrink: 0;
@@ -477,8 +470,8 @@ const varieties = [
   .var-bar-bg {
     flex: 1;
     height: 8px;
-    background: #F7F4EE;
-    border: 1px solid #1C1C1C;
+    background: var(--color-sal);
+    border: 1px solid var(--color-border);
   }
 
   .var-bar-fill {
@@ -488,43 +481,37 @@ const varieties = [
   }
 
   .var-bar-fill.calor { background: #F59E0B; }
-  .var-bar-fill.sequia { background: #D4E849; }
+  .var-bar-fill.sequia { background: var(--color-limon); }
   .var-bar-fill.humedad { background: #8B5CF6; }
   .var-bar-fill.prod { background: #3B82F6; }
 
   .var-bar-pct {
     font-size: 11px;
     font-weight: 800;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     width: 35px;
     text-align: right;
   }
 
-  .var-resist {
-    margin-bottom: 12px;
-  }
+  .var-resist { margin-bottom: 12px; }
 
   .var-resist h4 {
     font-size: 10px;
     font-weight: 800;
-    color: #6b6b60;
+    color: var(--color-muted);
     margin: 0 0 8px;
     letter-spacing: 0.5px;
   }
 
-  .res-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .res-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 
   .res-tag {
     font-size: 10px;
     font-weight: 700;
     padding: 4px 8px;
-    background: #F7F4EE;
-    border: 1px solid #1C1C1C;
-    color: #1C1C1C;
+    background: var(--color-sal);
+    border: 1px solid var(--color-border);
+    color: var(--color-aceituna);
   }
 
   .var-riesgos {
@@ -543,7 +530,7 @@ const varieties = [
 
   .var-riesgos p {
     font-size: 11px;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     margin: 0;
     line-height: 1.4;
   }
@@ -551,8 +538,8 @@ const varieties = [
   .var-btn {
     width: 100%;
     padding: 12px;
-    background: #1C1C1C;
-    color: #FFFFFF;
+    background: var(--color-aceituna);
+    color: var(--color-white);
     font-size: 12px;
     font-weight: 800;
     border: none;
@@ -563,13 +550,13 @@ const varieties = [
   }
 
   .var-btn:hover {
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
   }
 
   .var-btn.selected {
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
   }
 
   .dynamic-riesgo-badge {
@@ -579,25 +566,13 @@ const varieties = [
     font-size: 10px;
     font-weight: 700;
   }
-  .dynamic-riesgo-badge.riesgo-alto {
-    background: rgba(239,68,68,0.15);
-    color: #dc2626;
-  }
-  .dynamic-riesgo-badge.riesgo-medio {
-    background: rgba(245,158,11,0.15);
-    color: #b45309;
-  }
-  .dynamic-riesgo-badge.riesgo-bajo {
-    background: rgba(34,197,94,0.15);
-    color: #15803d;
-  }
 
   .detail-tag {
     display: inline-block;
     padding: 4px 8px;
     margin: 2px;
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
     font-size: 9px;
     font-weight: 600;
     text-decoration: none;
@@ -606,8 +581,8 @@ const varieties = [
   }
 
   .detail-tag:hover {
-    background: #1C1C1C;
-    color: #D4E849;
+    background: var(--color-aceituna);
+    color: var(--color-limon);
   }
 
   .sticky-bar {
@@ -615,29 +590,29 @@ const varieties = [
     bottom: 0;
     left: 0;
     right: 0;
-    background: #1C1C1C;
-    color: #D4E849;
+    background: var(--color-aceituna);
+    color: var(--color-limon);
     padding: 14px 20px;
     font-size: 13px;
     font-weight: 700;
     text-align: center;
     z-index: 1000;
-    border-top: 2px solid #D4E849;
+    border-top: 2px solid var(--color-limon);
   }
 
   .compare-panel {
-    border: 3px solid #1C1C1C;
+    border: 3px solid var(--color-border);
     border-radius: 0;
-    background: #FFFFFF;
+    background: var(--color-white-surface);
     padding: 24px;
     margin: 32px auto;
     max-width: 900px;
-    box-shadow: 8px 8px 0 #1C1C1C;
+    box-shadow: 8px 8px 0 var(--color-border);
   }
 
   .clear-btn {
     background: #EF4444;
-    color: #FFFFFF;
+    color: var(--color-white);
     border: none;
     font-size: 11px;
     font-weight: 800;
@@ -647,15 +622,13 @@ const varieties = [
     text-transform: uppercase;
   }
 
-  .clear-btn:hover {
-    background: #DC2626;
-  }
+  .clear-btn:hover { background: #DC2626; }
 
   .compare-title {
     font-family: 'Outfit', system-ui, sans-serif;
     font-size: 18px;
     font-weight: 800;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     margin: 0 0 20px;
     padding-right: 100px;
   }
@@ -670,88 +643,55 @@ const varieties = [
     padding: 12px 8px;
     font-size: 11px;
     font-weight: 800;
-    color: #6b6b60;
+    color: var(--color-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #1C1C1C;
+    border-bottom: 2px solid var(--color-border);
   }
 
   .compare-table th:nth-child(2),
   .compare-table th:nth-child(3) {
     text-align: center;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     font-size: 13px;
   }
 
   .compare-table td {
     padding: 12px 8px;
     font-size: 12px;
-    color: #6b6b60;
-    border-bottom: 1px solid #F7F4EE;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-sal);
     text-align: center;
   }
 
   .compare-table td:first-child {
     text-align: left;
     font-weight: 700;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
   }
 
-  .compare-table td.winner {
-    background: #D4E849;
-  }
+  .compare-table td.winner { background: var(--color-limon); }
 
   .compare-table .tag-resalta { 
-    background: #D4E849; 
-    color: #1C1C1C;
+    background: var(--color-limon); 
+    color: var(--color-aceituna);
     padding: 4px 8px;
     font-weight: 700;
     font-size: 10px;
   }
 
   @media (max-width: 768px) {
-    .var-grid {
-      grid-template-columns: 1fr;
-      padding: 16px 12px;
-      gap: 12px;
-    }
-    .var-card {
-      padding: 14px;
-      box-shadow: 4px 4px 0 #1C1C1C;
-    }
-    .var-header {
-      padding: 1.5rem 1rem;
-      margin-top: 50px;
-    }
-    .var-title {
-      font-size: 1.5rem;
-    }
-    .var-subtitle {
-      font-size: 0.85rem;
-    }
-    .var-filters {
-      padding: 1rem 0.5rem;
-      gap: 6px;
-    }
-    .filter-btn {
-      padding: 6px 10px;
-      font-size: 10px;
-    }
-    .compare-panel {
-      padding: 1rem;
-      margin: 1rem;
-    }
-    .compare-table {
-      font-size: 11px;
-    }
-    .compare-title {
-      font-size: 1rem;
-      padding-right: 0;
-    }
-    .clear-btn {
-      position: static;
-      margin-bottom: 1rem;
-    }
+    .var-grid { grid-template-columns: 1fr; padding: 16px 12px; gap: 12px; }
+    .var-card { padding: 14px; box-shadow: 4px 4px 0 var(--color-border); }
+    .var-header { padding: 1.5rem 1rem; margin-top: 50px; }
+    .var-title { font-size: 1.5rem; }
+    .var-subtitle { font-size: 0.85rem; }
+    .var-filters { padding: 1rem 0.5rem; gap: 6px; }
+    .filter-btn { padding: 6px 10px; font-size: 10px; }
+    .compare-panel { padding: 1rem; margin: 1rem; }
+    .compare-table { font-size: 11px; }
+    .compare-title { font-size: 1rem; padding-right: 0; }
+    .clear-btn { position: static; margin-bottom: 1rem; }
   }
 </style>
 

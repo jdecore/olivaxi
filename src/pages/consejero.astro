@@ -12,20 +12,17 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
 </Layout>
 
 <style is:global>
-  /* Aislar estilos del chat de otras páginas */
   .main-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #f5efe8;
+    background: var(--color-sal);
     overflow: hidden;
     position: relative;
     z-index: 1;
   }
 
-  main {
-    padding-top: 0 !important;
-  }
+  main { padding-top: 0 !important; }
 
   .chat-wrapper {
     flex: 1;
@@ -40,12 +37,6 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
     z-index: 1;
   }
 
-  footer {
-    display: none !important;
-  }
-
-  /* Asegurar que el navbar esté siempre visible */
-  .navbar {
-    z-index: 1000 !important;
-  }
+  footer { display: none !important; }
+  .navbar { z-index: 1000 !important; }
 </style>

@@ -134,10 +134,12 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   .form-field {
+    margin-bottom: 1rem;
     opacity: 0;
     animation: fieldEntry 0.6s ease forwards;
     transform: translateY(15px);
   }
+
   .form-field:nth-child(1) { animation-delay: 0.15s; }
   .form-field:nth-child(2) { animation-delay: 0.25s; }
   .form-field:nth-child(3) { animation-delay: 0.35s; }
@@ -152,32 +154,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     }
   }
 
-  @media (max-width: 480px) {
-    .alertas-form {
-      padding: 1.5rem 1rem;
-      border-radius: 16px;
-    }
-    .alertas-hero h1 {
-      font-size: 1.5rem;
-    }
-    .form-field {
-      margin-bottom: 0.75rem;
-    }
-    .form-field label {
-      font-size: 0.75rem;
-    }
-    #btn-submit {
-      padding: 0.85rem 1rem;
-      font-size: 0.9rem;
-    }
-  }
-
-  .form-field { margin-bottom: 1rem; }
-
   .form-field label {
     display: block;
     font-weight: 800;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -192,7 +172,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     border: 2px solid rgba(28, 28, 28, 0.2);
     border-radius: 12px;
     padding: 0.85rem 1rem;
-    color: #1C1C1C;
+    color: var(--color-aceituna);
     font-size: 1rem;
     font-family: 'Outfit', system-ui, sans-serif;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
@@ -207,23 +187,23 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   .form-field label:hover {
-    color: #D4E849;
+    color: var(--color-limon);
   }
 
   .form-field input:focus,
   .form-field select:focus {
     outline: none;
-    border-color: #D4E849;
+    border-color: var(--color-limon);
     box-shadow: 0 0 0 4px rgba(212, 232, 73, 0.4), 0 8px 25px rgba(212, 232, 73, 0.25);
     transform: scale(1.03) translateY(-2px);
     filter: brightness(1.05);
-    background: #fff;
+    background: var(--color-white);
   }
 
   #btn-submit {
     width: 100%;
-    background: linear-gradient(135deg, #1C1C1C 0%, #3C3C3C 100%);
-    color: #FFFFFF;
+    background: linear-gradient(135deg, var(--color-aceituna) 0%, #3C3C3C 100%);
+    color: var(--color-white);
     padding: 1rem 1.5rem;
     border-radius: 14px;
     font-weight: 800;
@@ -285,41 +265,48 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     font-size: 0.85rem;
     display: none;
   }
-  .provincia-info-panel.show {
-    display: block;
-  }
+
+  .provincia-info-panel.show { display: block; }
+
   .provincia-info-panel h4 {
     margin: 0 0 0.5rem;
     color: var(--color-aceituna);
     font-size: 1rem;
   }
+
   .provincia-info-panel .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
+
   .provincia-info-panel .info-item {
     display: flex;
     align-items: center;
     gap: 0.25rem;
   }
+
   .provincia-info-panel .consejos {
     margin-top: 0.5rem;
     padding-top: 0.5rem;
     font-size: 0.75rem;
     list-style: none;
   }
+
   .provincia-info-panel .consejos li {
     margin-bottom: 0.25rem;
   }
+
   .provincia-info-panel .info-section {
     margin-bottom: 0.6rem;
     padding-bottom: 0.4rem;
     border-bottom: 1px solid rgba(0,0,0,0.06);
   }
+
   .provincia-info-panel .info-section:last-child {
     border-bottom: none;
   }
+
   .provincia-info-panel .info-title {
     font-size: 0.65rem;
     font-weight: 700;
@@ -327,16 +314,19 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     margin-bottom: 0.3rem;
     letter-spacing: 0.05em;
   }
+
   .provincia-info-panel .info-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.3rem;
   }
+
   .provincia-info-panel .info-item {
     font-size: 0.7rem;
     padding: 3px 5px;
     background: rgba(255,255,255,0.5);
     border-radius: 4px;
   }
+
   .provincia-info-panel .riesgo-item {
     padding: 4px 6px;
     margin-bottom: 3px;
@@ -346,22 +336,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     align-items: center;
     gap: 6px;
   }
-  .provincia-info-panel .riesgo-item.alto {
-    background: rgba(239,68,68,0.15);
-    color: #dc2626;
-  }
-  .provincia-info-panel .riesgo-item.medio {
-    background: rgba(245,158,11,0.15);
-    color: #b45309;
-  }
-  .provincia-info-panel .riesgo-item.bajo {
-    background: rgba(34,197,94,0.15);
-    color: #15803d;
-  }
 
   .alertas-info {
     font-size: 0.8rem;
-    color: #6b6b60;
+    color: var(--color-muted);
     text-align: center;
     margin-top: 1rem;
     font-weight: 600;
@@ -386,8 +364,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   #mensaje.hidden { display: none; }
 
   #mensaje.warning {
-    background: #D4E849;
-    color: #1C1C1C;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
   }
 
   #mensaje.success {
@@ -399,7 +377,27 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   #mensaje.error {
     background: #ef4444;
     border: 2px solid #ef4444;
-    color: #FFFFFF;
+    color: var(--color-white);
+  }
+
+  @media (max-width: 480px) {
+    .alertas-form {
+      padding: 1.5rem 1rem;
+      border-radius: 16px;
+    }
+    .alertas-hero h1 {
+      font-size: 1.5rem;
+    }
+    .form-field {
+      margin-bottom: 0.75rem;
+    }
+    .form-field label {
+      font-size: 0.75rem;
+    }
+    #btn-submit {
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+    }
   }
 </style>
 
@@ -415,7 +413,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   async function calcularTipoAlerta(provincia, variedad) {
     try {
-      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://45.90.237.135:3001";
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
       const res = await fetch(`${apiBase}/api/alertas/tipos?provincia=${encodeURIComponent(provincia)}&variedad=${encodeURIComponent(variedad)}`);
       if (!res.ok) return [];
       const data = await res.json();
@@ -573,7 +571,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     btn.disabled = true;
 
     try {
-      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://45.90.237.135:3001";
+      const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
       const res = await fetch(`${apiBase}/api/alertas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

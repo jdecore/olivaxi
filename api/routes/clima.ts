@@ -605,6 +605,29 @@ clima.get("/dashboard", async (c) => {
         const riesgosActivos = getRiesgosActivos(provData.riesgos_olivar, provData.riesgos_plaga);
         const consejos = getConsejosByRiesgos(provData.riesgos_olivar, provData.riesgos_plaga);
         
+        // Calcular comparacion histórica simulada
+        const tempActual = provData.temperatura;
+        const tempMediaHistorica = 22; // Media de referencia
+        const variacionTemp = tempActual - tempMediaHistorica;
+        const tendencia = variacionTemp > 1 ? 'subiendo' : variacionTemp < -1 ? 'bajando' : 'estable';
+        
+        const comparacionHistorica = {
+          temperaturaActual: tempActual,
+          temperaturaMedia: tempMediaHistorica,
+          variacion: Math.round(variacionTemp * 10) / 10,
+          tendencia,
+          mensaje: variacionTemp > 0 
+            ? `+${Math.round(variacionTemp)}°C respecto a la media`
+            : variacionTemp < 0 
+              ? `${Math.round(variacionTemp)}°C bajo la media`
+              : 'Similar a la media histórica',
+          riesgoCalor: tempActual > 35,
+          riesgoFrio: tempActual < 5,
+          precipitacionActual: provData.lluvia,
+          precipitacionMedia: 2,
+          deficitLluvia: provData.lluvia < 2
+        };
+        
         return c.json({
           ok: true,
           provincia: provincia,
@@ -641,7 +664,8 @@ clima.get("/dashboard", async (c) => {
           },
           riesgosActivos,
           consejos,
-          variedadRiesgo: variedad ? provData.riesgos_variedad?.[variedad] : null
+          variedadRiesgo: variedad ? provData.riesgos_variedad?.[variedad] : null,
+          comparacionHistorica
         });
       }
     }
