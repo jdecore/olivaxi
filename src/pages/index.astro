@@ -24,16 +24,18 @@ import MapaCalor from '../components/MapaCalor.astro';
 .cta-primary:hover{transform:translateY(-2px)}
 .cta-secondary{padding:12px 24px;background:transparent;border:2px solid var(--color-aceituna);color:var(--color-aceituna);border-radius:8px;font-weight:600;text-decoration:none;transition:background .15s}
 .cta-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}
-.alert-strip{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 16px;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;animation:alertFadeIn .4s ease-out}
+.alert-strip-wrap{max-width:1200px;margin:0 auto 16px;padding:0 1rem}
+.alert-strip{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;animation:alertFadeIn .4s ease-out;gap:12px}
 @keyframes alertFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 .alert-strip.medio{background:rgba(245,158,11,.15);border:2px solid #f59e0b;color:#b45309}
 .alert-strip.alto{background:rgba(239,68,68,.1);border:2px solid #ef4444;color:#991b1b}
-.alert-strip-content{display:flex;align-items:center;gap:10px}
+.alert-strip-content{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .alert-strip-icon{font-size:18px}
-.alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap}
+.alert-strip-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;text-align:center;flex:0 0 160px}
 .alert-strip.medio .alert-strip-btn{background:#f59e0b}
 .alert-strip.alto .alert-strip-btn{background:#ef4444}
-@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}}
+@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}.alert-strip-btn{flex:0 0 auto;width:100%}.alert-strip-text{white-space:normal}}
 .ecosistema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .eco-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;text-decoration:none;transition:transform .15s,border-color .15s}
 .eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
@@ -118,6 +120,9 @@ import MapaCalor from '../components/MapaCalor.astro';
 .narrative-item.positivo .narrative-value{color:#dc2626}
 .narrative-item.negativo .narrative-value{color:#15803d}
 .narrative-conclusion{margin-top:16px;padding:12px 16px;background:rgba(212,232,73,.2);border-left:4px solid var(--color-limon);border-radius:4px;font-size:.9rem;font-weight:600;color:var(--color-aceituna)}
+.consejero-context-link{margin-top:12px}
+.consejero-cta{display:block;padding:12px 16px;background:var(--color-limon);border-radius:6px;font-size:.85rem;font-weight:600;color:var(--color-aceituna);text-decoration:none;text-align:center}
+.consejero-cta:hover{background:#c4d73f}
 .riesgo-badge{position:absolute;top:10px;right:10px;z-index:10;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--color-white-surface);border:2px solid;display:flex;align-items:center;gap:6px;cursor:pointer;transition:transform .15s ease}
 .riesgo-badge:hover{transform:scale(1.05)}
 .riesgo-badge.alto{border-color:#ef4444;color:#dc2626}
@@ -135,12 +140,11 @@ import MapaCalor from '../components/MapaCalor.astro';
 <section class="hero-section">
 <span class="hero-badge">📡 Monitor en tiempo real · 10 provincias · Datos científicos</span>
 <h1 class="hero-title">Tu olivar protegido con datos reales</h1>
-<p class="hero-subtitle">Temperatura, humedad, plagas y riego en un solo lugar. Datos científicos actualizados cada 6 horas.</p>
+<p class="hero-subtitle">Temperatura, humedad, plagas y riego en un solo lugar. Potenciándolos con artículos científicos.</p>
 <div class="hero-stats">
 <span><strong>6</strong><small>variedades</small></span>
 <span><strong>10</strong><small>provincias</small></span>
 <span><strong>4</strong><small>plagas</small></span>
-<span><strong>6h</strong><small>actualización</small></span>
 </div>
 <div class="hero-ctas">
 <a href="#mapa-card-wrapper" class="cta-primary">Ver mi olivar</a>
@@ -148,12 +152,14 @@ import MapaCalor from '../components/MapaCalor.astro';
 </div>
 </section>
 
+<div class="alert-strip-wrap">
 <div id="alert-strip" class="alert-strip" style="display:none">
   <div class="alert-strip-content">
     <span class="alert-strip-icon"></span>
     <span class="alert-strip-text"></span>
   </div>
   <a href="/alertas" class="alert-strip-btn">Activar alertas</a>
+</div>
 </div>
 
 <section class="ecosistema-grid">
@@ -236,6 +242,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="narrative-title">📊 Cambio Climático - Tendencias en tu zona</div>
 <div class="narrative-content" id="narrative-content"></div>
 <div class="narrative-conclusion" id="narrative-conclusion"></div>
+<div class="consejero-context-link" id="consejero-context-link"></div>
 </div>
 </div>
 
@@ -493,7 +500,7 @@ function renderSueloPanel(d) {
   SUELO_PANEL.classList.add('visible');
   
   const tipoSuelo = d.provinciaInfo?.tipoSuelo || 'arcilloso';
-  const humedad = d.suelo?.humedad || 0;
+  const humedad = (d.suelo?.humedad || 0).toFixed(1);
   const eto = d.suelo?.evapotranspiracion || 0;
   
   const soilAdvice = {
@@ -545,22 +552,35 @@ function renderNarrativeSection(d) {
   const tieneDeficit = comp.deficitLluvia;
   
   let conclusion = '';
+  let pregunta = '';
   if (esFrio && tieneDeficit) {
     conclusion = '🌡️ Tu zona está más fría de lo normal con déficit de lluvia. Monitoriza el riego esta semana.';
+    pregunta = '¿Cómo gestiono el riego con déficit de lluvia y temperatura baja?';
   } else if (esCalor && tieneDeficit) {
     conclusion = '🔥 Alerta: temperaturas elevadas y sin lluvia. Riega al amanecer para evitar estrés hídrico.';
+    pregunta = '¿Cómo protejo el olivar del estrés hídrico en temperaturas altas y sin lluvia?';
   } else if (esCalor && comp.riesgoCalor) {
     conclusion = '⚠️ Riesgo de calor extremo. Protege el olivar con riego abundante.';
+    pregunta = '¿Cómo mitigo el riesgo de calor extremo en olivos?';
   } else if (!esFrio && !esCalor && !tieneDeficit) {
     conclusion = '✅ Condiciones climáticas favorables. Ideal para tareas de mantenimiento.';
+    pregunta = '¿Qué tareas de mantenimiento recomiendan para mis olivos?';
   } else if (esFrio) {
     conclusion = '🌨️ Temperaturas por debajo de lo normal. Consulta las previsión de heladas.';
+    pregunta = '¿Cómo protejo los olivos de las heladas tardías?';
   } else if (tieneDeficit) {
     conclusion = '💧 Déficit de lluvia detectado. Aumenta la frecuencia de riego.';
+    pregunta = '¿Cómo optimizo el riego durante un período de déficit de lluvia?';
   } else {
     conclusion = '📊 Situación climática estable. Continúa con el monitoreo habitual.';
+    pregunta = '¿Qué recomendaciones generales tienen para el cuidado del olivar?';
   }
   conclusionEl.textContent = conclusion;
+  
+  const linkEl = $('consejero-context-link');
+  if (linkEl && pregunta) {
+    linkEl.innerHTML = `<a href="/consejero?q=${encodeURIComponent(pregunta)}" class="consejero-cta">💬 ${pregunta}</a>`;
+  }
 }
 
 // --- Render: Dashboard completo ---

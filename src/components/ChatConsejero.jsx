@@ -83,6 +83,15 @@ export default function ChatConsejero() {
       if (state.provincia && state.provincia !== provincia()) seleccionarProvincia(state.provincia);
       if (state.variedad && state.variedad !== variedad()) setVariedad(state.variedad);
     });
+    // Auto-enviar pregunta desde URL
+    const params = new URLSearchParams(window.location.search);
+    const autoPregunta = params.get('q');
+    if (autoPregunta) {
+      setTimeout(() => {
+        setInput(autoPregunta);
+        enviarPregunta();
+      }, 800);
+    }
   });
 
   const handleProvinciaInput = async (text) => {
