@@ -329,6 +329,10 @@ import Layout from '../layouts/Layout.astro';
   const sueloEto = document.getElementById('suelo-eto');
   const sueloLluvia = document.getElementById('suelo-lluvia');
 
+  // Cache local de 5 minutos para evitar llamadas repetidas
+  let cacheProvincias = {};
+  const CACHE_TTL = 5 * 60 * 1000;
+
   async function cargarDatosProvincia(provincia) {
     if (!provincia) {
       if (sueloDatos) sueloDatos.style.display = 'none';
@@ -336,69 +340,82 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     
+    // Verificar cache primero
+    const cached = cacheProvincias[provincia];
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      renderSueloData(cached.data);
+      return;
+    }
+    
     try {
       const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 5000);
+      const t = setTimeout(() => controller.abort(), 4000);
       const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`, { signal: controller.signal });
       clearTimeout(t);
       if (!res.ok) return;
       const d = await res.json();
       
       if (d.ok) {
-        // Cálculo de recomendación de riego
-        const eto = d.suelo.evapotranspiracion || 0;
-        const kc = 0.7; // Coeficiente de cultivo para olivo
-        const necesidadRiego = Math.round(eto * kc * 10) / 10; // L/ha/día
-        const lluvia = d.clima.lluvia || 0;
-        const deficit = Math.max(0, necesidadRiego - lluvia);
-        
-        let recomendacionRiego = '';
-        if (necesidadRiego < 2) {
-          recomendacionRiego = '✅ Riego mínimo o innecesario';
-        } else if (deficit > 3) {
-          recomendacionRiego = `⚠️ RIEGO URGENTE: ~${deficit.toFixed(1)}L/ha/día`;
-        } else if (deficit > 0) {
-          recomendacionRiego = `💧 Riega: ~${deficit.toFixed(1)}L/ha/día`;
-        } else {
-          recomendacionRiego = '✅ Lluvia cubre necesidades';
-        }
-        
-        // Comparar lluvia actual vs media anual
-        const pluvioAnual = d.provinciaInfo.pluviometriaAnual || 600;
-        const lluviaHoy = d.clima.lluvia || 0;
-        const lluviaMensual = lluviaHoy * 30; // Estimación mensual
-        const deficitAnual = pluvioAnual - (lluviaMensual * 12); // Déficit vs media anual
-        const estadoDeficit = deficitAnual < -200 ? '🔴 DÉFICIT ALTO' : deficitAnual < 0 ? '🟡 DÉFICIT LEVE' : '🟢 EXCESO';
-        const estadoLluvia = lluviaHoy > 0 ? `🌧️ Lluvia hoy: ${lluviaHoy}mm` : '☀️ Sin lluvia hoy';
-        
-        if (sueloDatos) {
-          sueloTemp.textContent = `${d.suelo.temperatura}°C`;
-          sueloHumedad.textContent = `${d.suelo.humedad}%`;
-          sueloEto.textContent = d.suelo.evapotranspiracion;
-          sueloLluvia.textContent = `${d.clima.lluvia}mm`;
-          sueloDatos.style.display = 'grid';
-        }
-        
-        if (sueloInfo) {
-          const consejosSuelo = d.provinciaInfo.consejosSuelo?.slice(0, 2).map(c => `<li>💡 ${c}</li>`).join('') || '';
-          sueloInfo.innerHTML = `
-            <div style="background:rgba(212,232,73,0.15);padding:12px;border-radius:8px;margin-top:10px">
-              <strong>🪨 Tipo de suelo:</strong> ${d.provinciaInfo.tipoSuelo}<br/>
-              <strong>🌧️ Pluviometría media:</strong> ${pluvioAnual}mm/año<br/>
-              <strong>📉 vs Media anual:</strong> <span style="font-weight:700">${estadoDeficit}</span> (${Math.abs(Math.round(deficitAnual))}mm)<br/>
-              <strong>⚡ Riego:</strong> ETo ${eto}mm → Kc 0.7 → <strong>${necesidadRiego}L/ha/día</strong>
-              <div style="margin-top:6px;padding:6px;background:rgba(255,255,255,0.5);border-radius:4px;font-size:11px">
-                ${estadoLluvia}<br/>
-                ${recomendacionRiego}
-              </div>
-              ${consejosSuelo ? `<ul style="margin-top:8px;margin-bottom:0">${consejosSuelo}</ul>` : ''}
-            </div>
-          `;
-          sueloInfo.style.display = 'block';
-        }
+        // Guardar en cache
+        cacheProvincias[provincia] = { data: d, timestamp: Date.now() };
+        renderSueloData(d);
       }
     } catch (e) {
       console.error('Error loading suelo data:', e);
+    }
+  }
+
+  function renderSueloData(d) {
+    // Cálculo de recomendación de riego
+    const eto = d.suelo.evapotranspiracion || 0;
+    const kc = 0.7; // Coeficiente de cultivo para olivo
+    const necesidadRiego = Math.round(eto * kc * 10) / 10;
+    const lluvia = d.clima.lluvia || 0;
+    const deficit = Math.max(0, necesidadRiego - lluvia);
+    
+    let recomendacionRiego = '';
+    if (necesidadRiego < 2) {
+      recomendacionRiego = '✅ Riego mínimo o innecesario';
+    } else if (deficit > 3) {
+      recomendacionRiego = `⚠️ RIEGO URGENTE: ~${deficit.toFixed(1)}L/ha/día`;
+    } else if (deficit > 0) {
+      recomendacionRiego = `💧 Riega: ~${deficit.toFixed(1)}L/ha/día`;
+    } else {
+      recomendacionRiego = '✅ Lluvia cubre necesidades';
+    }
+    
+    const pluvioAnual = d.provinciaInfo.pluviometriaAnual || 600;
+    const lluviaHoy = d.clima.lluvia || 0;
+    const lluviaMensual = lluviaHoy * 30;
+    const deficitAnual = pluvioAnual - (lluviaMensual * 12);
+    const estadoDeficit = deficitAnual < -200 ? '🔴 DÉFICIT ALTO' : deficitAnual < 0 ? '🟡 DÉFICIT LEVE' : '🟢 EXCESO';
+    const estadoLluvia = lluviaHoy > 0 ? `🌧️ Lluvia hoy: ${lluviaHoy}mm` : '☀️ Sin lluvia hoy';
+    
+    if (sueloDatos) {
+      const humedadSuelo = Math.round((d.suelo.humedad || 0) * 100);
+      sueloTemp.textContent = `${Math.round(d.suelo.temperatura || 0)}°C`;
+      sueloHumedad.textContent = `${humedadSuelo}%`;
+      sueloEto.textContent = (d.suelo.evapotranspiracion || 0).toFixed(1);
+      sueloLluvia.textContent = `${(d.clima.lluvia || 0).toFixed(1)}mm`;
+      sueloDatos.style.display = 'grid';
+    }
+    
+    if (sueloInfo) {
+      const consejosSuelo = d.provinciaInfo.consejosSuelo?.slice(0, 2).map(c => `<li>💡 ${c}</li>`).join('') || '';
+      sueloInfo.innerHTML = `
+        <div style="background:rgba(212,232,73,0.15);padding:12px;border-radius:8px;margin-top:10px">
+          <strong>🪨 Tipo de suelo:</strong> ${d.provinciaInfo.tipoSuelo}<br/>
+          <strong>🌧️ Pluviometría media:</strong> ${pluvioAnual}mm/año<br/>
+          <strong>📉 vs Media anual:</strong> <span style="font-weight:700">${estadoDeficit}</span> (${Math.abs(Math.round(deficitAnual))}mm)<br/>
+          <strong>⚡ Riego:</strong> ETo ${eto}mm → Kc 0.7 → <strong>${necesidadRiego}L/ha/día</strong>
+          <div style="margin-top:6px;padding:6px;background:rgba(255,255,255,0.5);border-radius:4px;font-size:11px">
+            ${estadoLluvia}<br/>
+            ${recomendacionRiego}
+          </div>
+          ${consejosSuelo ? `<ul style="margin-top:8px;margin-bottom:0">${consejosSuelo}</ul>` : ''}
+        </div>
+      `;
+      sueloInfo.style.display = 'block';
     }
   }
 

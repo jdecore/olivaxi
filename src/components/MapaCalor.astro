@@ -278,5 +278,39 @@ class OlivaxiMapa extends HTMLElement {
 customElements.define('olivaxi-mapa', OlivaxiMapa);
 </script>
 
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin />
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin></script>
+<!-- Preconnect a CDNs críticos -->
+<link rel="preconnect" href="https://unpkg.com" crossorigin />
+<link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin />
+
+<!-- Lazy load MapLibre solo cuando el mapa sea visible -->
+<script>
+(function() {
+  const mapContainer = document.querySelector('olivaxi-mapa');
+  if (!mapContainer) return;
+  
+  // Lazy load MapLibre CSS y JS solo cuando sea necesario
+  const loadMapLibre = () => {
+    if (window.maplibregl) return;
+    
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css';
+    document.head.appendChild(link);
+    
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+    script.crossOrigin = '';
+    document.body.appendChild(script);
+  };
+  
+  // Cargar cuando el componente esté en viewport
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      loadMapLibre();
+      observer.disconnect();
+    }
+  }, { rootMargin: '200px' });
+  
+  observer.observe(mapContainer);
+})();
+</script>

@@ -8,14 +8,10 @@ RUN bun install --frozen-lockfile
 
 FROM base AS builder
 ARG PUBLIC_API_URL
-ENV PUBLIC_API_URL=$PUBLIC_API_URL
-
+ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN echo "========================================" && \
-    echo "PUBLIC_API_URL is: $PUBLIC_API_URL" && \
-    echo "========================================" && \
-    bun run build
+RUN bun run build
 
 FROM base AS runner
 ENV NODE_ENV=production

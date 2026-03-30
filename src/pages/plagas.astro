@@ -188,68 +188,80 @@ const cambioClimatico = [
     xylella: (d) => '🚨 Siempre riesgo (transmitida por vectors)'
   };
 
+  // Cache local de 3 minutos
+  let cacheProv = {};
+  const CACHE_TTL = 3 * 60 * 1000;
+
   async function cargarDatosProvincia(provincia) {
     if (!provincia) {
       if (raifStatusBar) raifStatusBar.innerHTML = '';
-      document.querySelectorAll('.plaga-card').forEach(card => {
-        const estadoDiv = card.querySelector('.plaga-estado-dinamico');
-        if (estadoDiv) estadoDiv.innerHTML = '';
-      });
+      return;
+    }
+    
+    // Verificar cache
+    const cached = cacheProv[provincia];
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      renderPlagasData(cached.data);
       return;
     }
     
     try {
       const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 5000);
+      const t = setTimeout(() => controller.abort(), 4000);
       const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`, { signal: controller.signal });
       clearTimeout(t);
       if (!res.ok) return;
       const d = await res.json();
       
       if (d.ok) {
-        const getIcon = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
-        
-        if (raifStatusBar) {
-          const endemicas = d.provinciaInfo?.plagasEndemicas?.length ? `<span>🏠 Endémicas: ${d.provinciaInfo.plagasEndemicas.join(', ')}</span>` : '';
-          raifStatusBar.innerHTML = `
-            <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel}</span>
-            <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel}</span>
-            <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel}</span>
-            <span>🌡️ ${d.clima.temperatura}°C • 💧 ${d.clima.humedad}%</span>
-            ${endemicas}
-          `;
-        }
-        
-        // Actualizar cada tarjeta de plaga
-        const plagasMap = { 'Mosca del olivo': 'mosca', 'Prays': 'polilla', 'Repilo (Fusarium)': 'repilo', 'Tuberculosis': 'repilo' };
-        document.querySelectorAll('.plaga-card').forEach(card => {
-          const nombre = card.dataset.nombre;
-          const plagaKey = plagasMap[nombre];
-          if (!plagaKey) return;
-          
-          const nivel = d.plagas?.[plagaKey]?.nivel || 'bajo';
-          const condiciones = PLAGAS_CONDICIONES[plagaKey] ? PLAGAS_CONDICIONES[plagaKey](d) : 'N/A';
-          const consejo = PLAGAS_CONSEJOS[plagaKey]?.[nivel] || 'Sin datos';
-          
-          let estadoDiv = card.querySelector('.plaga-estado-dinamico');
-          if (!estadoDiv) {
-            estadoDiv = document.createElement('div');
-            estadoDiv.className = 'plaga-estado-dinamico';
-            card.querySelector('.plaga-front')?.appendChild(estadoDiv);
-          }
-          
-          estadoDiv.innerHTML = `
-            <div class="estado-provincial">
-              <div class="estado-header"><span class="estado-nivel ${nivel}">${getIcon(nivel)} ${nivel.toUpperCase()}</span></div>
-              <div class="estado-detalle">🌡️ ${condiciones}</div>
-              <div class="estado-consejo">💡 ${consejo}</div>
-            </div>
-          `;
-        });
+        cacheProv[provincia] = { data: d, ts: Date.now() };
+        renderPlagasData(d);
       }
     } catch (e) {
       console.error('Error loading RAIF data:', e);
     }
+  }
+  
+  // renderPlagasData moved to after cargarDatosProvincia
+  function renderPlagasData(d) {
+    const getIcon = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
+    
+    if (raifStatusBar) {
+      const endemicas = d.provinciaInfo?.plagasEndemicas?.length ? `<span>🏠 Endémicas: ${d.provinciaInfo.plagasEndemicas.join(', ')}</span>` : '';
+      raifStatusBar.innerHTML = `
+        <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel}</span>
+        <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel}</span>
+        <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel}</span>
+        <span>🌡️ ${d.clima.temperatura}°C • 💧 ${d.clima.humedad}%</span>
+        ${endemicas}
+      `;
+    }
+    
+    const plagasMap = { 'Mosca del olivo': 'mosca', 'Prays': 'polilla', 'Repilo (Fusarium)': 'repilo', 'Tuberculosis': 'repilo' };
+    document.querySelectorAll('.plaga-card').forEach(card => {
+      const nombre = card.dataset.nombre;
+      const plagaKey = plagasMap[nombre];
+      if (!plagaKey) return;
+      
+      const nivel = d.plagas?.[plagaKey]?.nivel || 'bajo';
+      const condiciones = PLAGAS_CONDICIONES[plagaKey] ? PLAGAS_CONDICIONES[plagaKey](d) : 'N/A';
+      const consejo = PLAGAS_CONSEJOS[plagaKey]?.[nivel] || 'Sin datos';
+      
+      let estadoDiv = card.querySelector('.plaga-estado-dinamico');
+      if (!estadoDiv) {
+        estadoDiv = document.createElement('div');
+        estadoDiv.className = 'plaga-estado-dinamico';
+        card.querySelector('.plaga-front')?.appendChild(estadoDiv);
+      }
+      
+      estadoDiv.innerHTML = `
+        <div class="estado-provincial">
+          <div class="estado-header"><span class="estado-nivel ${nivel}">${getIcon(nivel)} ${nivel.toUpperCase()}</span></div>
+          <div class="estado-detalle">🌡️ ${condiciones}</div>
+          <div class="estado-consejo">💡 ${consejo}</div>
+        </div>
+      `;
+    });
   }
 
   const savedProvincia = localStorage.getItem('olivaxi_provincia');
