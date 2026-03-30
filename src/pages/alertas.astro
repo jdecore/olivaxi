@@ -450,6 +450,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   const provinciaInfoPanel = document.getElementById("provincia-info");
+  const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
   
   async function cargarDatosProvincia(provinciaNombre) {
     if (!provinciaNombre || !provinciaInfoPanel) return;

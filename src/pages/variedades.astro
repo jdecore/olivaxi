@@ -123,7 +123,7 @@ const varieties = [
 
     <div class="var-grid">
       {varieties.map((v) => (
-        <div class="var-card" data-categoria={v.categoria.join(",")} data-nombre={v.nombre}>
+        <div class="var-card" data-categoria={v.categoria.join(",")} data-id={v.id}>
           <div class="var-card-header">
             <span class="var-badge">{v.etiqueta}</span>
           </div>
@@ -750,7 +750,7 @@ const varieties = [
 
   function actualizarRiesgos() {
     VARIEDADES_KEYS.forEach(v => {
-      const card = document.querySelector(`.var-card[data-nombre="${v}"]`);
+      const card = Array.from(document.querySelectorAll('.var-card')).find(c => c.dataset.id === v);
       if (!card) return;
       
       const badge = card.querySelector('.dynamic-riesgo-badge');
@@ -788,40 +788,24 @@ const varieties = [
 
   const seleccionadas = [];
 
-  function getCardData(nombre) {
-    const card = document.querySelector(`.var-card[data-nombre="${nombre}"]`);
-    if (!card) return null;
-    
-    const btn = card.querySelector('.var-btn');
-    const name = btn?.dataset.nombre;
-    
-    return {
-      nombre: name,
-      frio: parseInt(card.querySelector('.var-bar-row:nth-child(1) .var-bar-pct')?.textContent || '0'),
-      calor: parseInt(card.querySelector('.var-bar-row:nth-child(2) .var-bar-pct')?.textContent || '0'),
-      sequia: parseInt(card.querySelector('.var-bar-row:nth-child(3) .var-bar-pct')?.textContent || '0'),
-      humedad: parseInt(card.querySelector('.var-bar-row:nth-child(4) .var-bar-pct')?.textContent || '0'),
-      productividad: parseInt(card.querySelector('.var-bar-row:nth-child(5) .var-bar-pct')?.textContent || '0'),
-    };
-  }
-
   document.querySelectorAll('.var-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      const id = btn.closest('.var-card')?.dataset.id;
       const nombre = btn.dataset.nombre;
-      const idx = seleccionadas.indexOf(nombre);
+      const idx = seleccionadas.indexOf(id);
       
       if (idx > -1) {
         seleccionadas.splice(idx, 1);
         btn.textContent = 'COMPARAR';
         btn.classList.remove('selected');
       } else if (seleccionadas.length < 2) {
-        seleccionadas.push(nombre);
+        seleccionadas.push(id);
         btn.textContent = '✓ SELECCIONADA';
         btn.classList.add('selected');
       } else {
-        seleccionadas[1] = nombre;
+        seleccionadas[1] = id;
         document.querySelectorAll('.var-btn').forEach(b => {
-          if (seleccionadas.includes(b.dataset.nombre)) {
+          if (seleccionadas.includes(b.closest('.var-card')?.dataset.id)) {
             b.textContent = '✓ SELECCIONADA';
             b.classList.add('selected');
           } else {
@@ -834,6 +818,24 @@ const varieties = [
       actualizarUI();
     });
   });
+
+  function getCardData(id) {
+    const card = Array.from(document.querySelectorAll('.var-card')).find(c => c.dataset.id === id);
+    if (!card) return null;
+    
+    const btn = card.querySelector('.var-btn');
+    const name = btn?.dataset.nombre;
+    const bars = card.querySelectorAll('.var-bar-row');
+    
+    return {
+      nombre: name,
+      frio: parseInt(bars[0]?.querySelector('.var-bar-pct')?.textContent || '0'),
+      calor: parseInt(bars[1]?.querySelector('.var-bar-pct')?.textContent || '0'),
+      sequia: parseInt(bars[2]?.querySelector('.var-bar-pct')?.textContent || '0'),
+      humedad: parseInt(bars[3]?.querySelector('.var-bar-pct')?.textContent || '0'),
+      productividad: parseInt(bars[4]?.querySelector('.var-bar-pct')?.textContent || '0'),
+    };
+  }
 
   document.getElementById('clear-btn')?.addEventListener('click', () => {
     seleccionadas.length = 0;
