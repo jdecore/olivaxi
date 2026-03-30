@@ -122,11 +122,9 @@ import MapaCalor from '../components/MapaCalor.astro';
     }
 
     .sidebar-panels {
-      display: flex;
-      flex-direction: column;
+      background: var(--color-limon);
     }
 
-    /* Carrusel integrado */
     .carousel-container {
       display: flex;
       flex-direction: column;
@@ -135,7 +133,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 
     .carousel-nav {
       display: flex;
-      background: var(--color-sal);
+      background: var(--color-limon);
       border-bottom: 2px solid var(--color-border);
       flex-shrink: 0;
     }
@@ -148,7 +146,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       background: transparent;
       color: var(--color-aceituna);
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       text-align: center;
       transition: background 0.15s ease;
@@ -157,11 +155,11 @@ import MapaCalor from '../components/MapaCalor.astro';
     .carousel-tab:last-child { border-right: none; }
 
     .carousel-tab:hover {
-      background: var(--color-limon);
+      background: rgba(255,255,255,0.5);
     }
 
     .carousel-tab.active {
-      background: var(--color-limon);
+      background: var(--color-white-surface);
     }
 
     .carousel-slide {
@@ -187,7 +185,7 @@ import MapaCalor from '../components/MapaCalor.astro';
     .provincia-btn, .variedad-btn {
       padding: 10px 8px;
       border: 1.5px solid var(--color-border);
-      background: var(--color-sal);
+      background: var(--color-white-surface);
       border-radius: 4px;
       cursor: pointer;
       font-size: 12px;
@@ -198,13 +196,15 @@ import MapaCalor from '../components/MapaCalor.astro';
     }
 
     .provincia-btn:hover, .variedad-btn:hover {
-      background: var(--color-limon);
+      background: var(--color-aceituna);
+      color: var(--color-sal);
       transform: translateY(-1px);
     }
 
     .provincia-btn.selected, .variedad-btn.selected {
-      background: var(--color-limon);
-      box-shadow: inset 0 -2px 0 var(--color-aceituna);
+      background: var(--color-aceituna);
+      color: var(--color-sal);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
     }
 
     .provincia-btn .riesgo-dot {
@@ -252,7 +252,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       text-align: center;
       padding: 8px;
       margin-top: 8px;
-      background: var(--color-sal);
+      background: var(--color-white-surface);
       border: 1.5px dashed var(--color-border);
       border-radius: 4px;
       color: var(--color-aceituna);
@@ -262,7 +262,8 @@ import MapaCalor from '../components/MapaCalor.astro';
     }
 
     .variedades-link:hover {
-      background: var(--color-limon);
+      background: var(--color-aceituna);
+      color: var(--color-sal);
       border-style: solid;
     }
 
@@ -278,11 +279,12 @@ import MapaCalor from '../components/MapaCalor.astro';
       border-radius: 4px;
       border-left: 3px solid;
       font-size: 11px;
+      background: var(--color-white-surface);
     }
 
-    .alerta-item.alto { background: rgba(239,68,68,0.08); border-color: #ef4444; }
-    .alerta-item.medio { background: rgba(245,158,11,0.08); border-color: #f59e0b; }
-    .alerta-item.bajo { background: rgba(34,197,94,0.08); border-color: #22c55e; }
+    .alerta-item.alto { border-color: #ef4444; }
+    .alerta-item.medio { border-color: #f59e0b; }
+    .alerta-item.bajo { border-color: #22c55e; }
 
     .alerta-actions {
       display: flex;
@@ -294,7 +296,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       flex: 1;
       padding: 8px;
       border: 1.5px solid var(--color-border);
-      background: var(--color-sal);
+      background: var(--color-white-surface);
       border-radius: 4px;
       font-size: 11px;
       font-weight: 600;
@@ -304,14 +306,17 @@ import MapaCalor from '../components/MapaCalor.astro';
     }
 
     .alerta-action-btn:hover {
-      background: var(--color-limon);
+      background: var(--color-aceituna);
+      color: var(--color-sal);
     }
 
     .no-province-msg {
       text-align: center;
       padding: 16px;
-      color: var(--color-muted);
+      color: var(--color-aceituna);
       font-size: 12px;
+      background: var(--color-white-surface);
+      border-radius: 4px;
     }
 
   @media (max-width: 900px) {
