@@ -35,7 +35,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;text-align:center;flex:0 0 160px}
 .alert-strip.medio .alert-strip-btn{background:#f59e0b}
 .alert-strip.alto .alert-strip-btn{background:#ef4444}
-@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}.alert-strip-btn{flex:0 0 auto;width:100%}.alert-strip-text{white-space:normal}}
+@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}.alert-strip-btn{flex:0 0 auto;width:100%;padding:12px 16px;font-size:14px}.alert-strip-text{white-space:normal}}
 .ecosistema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .eco-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;text-decoration:none;transition:transform .15s,border-color .15s}
 .eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
@@ -93,7 +93,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .consejos-panel .titulo{font-size:10px;font-weight:700;color:var(--color-aceituna);margin-bottom:4px}
 .consejos-panel .consejo{font-size:11px;color:var(--color-muted);margin-bottom:2px}
 @media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:320px}.sidebar-panels{min-height:320px}}
-@media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}.suelo-content{grid-template-columns:1fr}}
+@media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}.suelo-content{grid-template-columns:1fr}.quick-stat{padding:10px 6px}.carousel-tab{padding:14px 8px;font-size:11px}.consejos-panel{padding:10px}.riesgo-categoria{padding:10px}.alerta-item{padding:10px}}
 .suelo-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
 .suelo-panel.visible{display:block}
 .suelo-card{background:var(--color-white-surface);border:2px solid var(--color-limon);border-radius:8px;padding:16px}
@@ -146,7 +146,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="hero-stats">
 <span><strong>6</strong><small>variedades</small></span>
 <span><strong>10</strong><small>provincias</small></span>
-<span><strong>4</strong><small>plagas</small></span>
+<span><strong>10</strong><small>plagas</small></span>
 </div>
 <div class="hero-ctas">
 <a href="#mapa-card-wrapper" class="cta-primary">Ver mi olivar</a>

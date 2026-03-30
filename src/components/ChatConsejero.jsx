@@ -17,7 +17,7 @@ const SKILL_PROMPTS = {
   calor: 'Eres un experto en protección térmica de olivares. Enfoca tus respuestas en estrategias de sombreo, riego temprano, y protección contra olas de calor extremas.',
   frio: 'Eres un experto en protección contra heladas en olivares. Enfoca tus respuestas en técnicas de protección, momento de poda, prevención de daños por frío.',
   humedad: 'Eres un experto en enfermedades fúngicas del olivo. Enfoca tus respuestas en repilo, aceituna jabonosa, control de humedad, y tratamientos preventivos.',
-  plaga: 'Eres un experto en control de plagas del olivo. Enfoca tus respuestas en mosca, polilla, tuberculosis, y control integrado de plagas.',
+  plagas: 'Eres un experto en control de plagas del olivo. Enfoca tus respuestas en mosca, polilla, tuberculosis, y control integrado de plagas.',
   fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: brotación, floración, cuaje, endurecimiento del hueso, envero, recolección.',
 };
 
@@ -46,9 +46,17 @@ export default function ChatConsejero() {
     temperatura: d.clima?.temperatura,
     humedad: d.clima?.humedad,
     lluvia: d.clima?.lluvia,
+    estado: d.clima?.estado,
     suelo_temp: d.suelo?.temperatura,
     suelo_humedad: d.suelo?.humedad,
     evapotranspiracion: d.suelo?.evapotranspiracion,
+    necesidadRiego: d.sueloAnalitica?.necesidadRiego,
+    deficitRiego: d.sueloAnalitica?.deficitRiego,
+    tipoSuelo: d.provinciaInfo?.tipoSuelo,
+    altitud: d.provinciaInfo?.altitud,
+    pluviometriaAnual: d.provinciaInfo?.pluviometriaAnual,
+    variedadPredominante: d.provinciaInfo?.variedadPredominante,
+    plagas: d.plagas || {},
     riesgosActivos: d.riesgosActivos || [],
     riesgo: d.clima?.riesgo || 'bajo',
   }) : null;
@@ -97,21 +105,22 @@ export default function ChatConsejero() {
     });
     // Auto-enviar pregunta desde URL
     const params = new URLSearchParams(window.location.search);
-    const autoPregunta = params.get('q');
+    const autoPregunta = params.get('q')?.trim();
     if (autoPregunta) {
       const sendAutoQuestion = async () => {
-        await initChat();
-        await new Promise(r => setTimeout(r, 500));
-        const provEcosistema = OlivaxiEcosistema.provincia;
+        const provEcosistema = OlivaxiEcosistema.provincia || provincia();
         if (provEcosistema) {
-          setProvincia(provEcosistema);
-          setInput(autoPregunta);
-          setTimeout(() => enviarPregunta(), 100);
+          if (provEcosistema !== provincia()) await seleccionarProvincia(provEcosistema);
+          setActiveSkill('libre');
+          await new Promise(r => setTimeout(r, 80));
+          await enviarPregunta(autoPregunta);
         } else {
           setInput(autoPregunta);
         }
       };
-      setTimeout(sendAutoQuestion, 100);
+      // Evita re-disparar la misma pregunta al refrescar.
+      window.history.replaceState({}, "", window.location.pathname);
+      setTimeout(sendAutoQuestion, 250);
     }
   });
 
@@ -145,8 +154,8 @@ export default function ChatConsejero() {
     return await OlivaxiEcosistema.fetchClima();
   };
 
-  const enviarPregunta = async () => {
-    const text = input().trim();
+  const enviarPregunta = async (forcedText = '') => {
+    const text = (forcedText || input()).trim();
     if (!text || isLoading() || isAtLimit()) return;
 
     const pregunta = text;
@@ -219,10 +228,13 @@ export default function ChatConsejero() {
   };
 
   const selectSkill = (skillId) => {
-    setActiveSkill(activeSkill() === skillId ? null : skillId);
-    if (activeSkill()) {
-      const skill = SKILLS.find(s => s.id === activeSkill());
+    const nextSkill = activeSkill() === skillId ? null : skillId;
+    setActiveSkill(nextSkill);
+    if (nextSkill) {
+      const skill = SKILLS.find(s => s.id === nextSkill);
       if (skill) setTitleText(`En qué te puedo ayudar... ${skill.condition}`);
+    } else {
+      setTitleText('');
     }
   };
 
@@ -286,11 +298,13 @@ export default function ChatConsejero() {
           .chat-hero h1 { font-size: 20px; line-height: 1.2; }
           .title-typewriter { font-size: 18px; min-height: 24px; }
           .skills-card { padding: 10px 8px; min-height: 70px; }
-          .skill-btn { padding: 10px 12px; font-size: 12px; }
+          .skill-btn { padding: 10px 12px; font-size: 12px; min-height: 44px; }
           .input-area { padding: 12px; min-height: 80px; }
           .chat-input-wrapper { padding: 6px 10px; min-height: 50px; }
           .chat-input { height: 28px; font-size: 14px; }
           .mode-pill-button { padding: 8px 12px; font-size: 12px; }
+          .clean-btn { padding: 10px 14px; min-width: 44px; min-height: 44px; }
+          .msg-bubble { padding: 10px 14px; font-size: 14px; }
         }
         .limit-message { background: #fff; border-radius: 12px; padding: 16px 20px; text-align: center; color: #666; font-weight: 500; max-width: 700px; margin: 0 auto; }
         .limit-btn { background: #1C1C1C; border: none; border-radius: 8px; padding: 10px 20px; color: #F7F4EE; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 12px auto 0; }
@@ -361,11 +375,57 @@ export default function ChatConsejero() {
               <div class="context-item"><span class="context-label">📍 Provincia:</span><span class="context-value">{provincia()}</span></div>
               {variedad() && <div class="context-item"><span class="context-label">🫒 Variedad:</span><span class="context-value">{variedad()}</span></div>}
               {climaActual() && <>
-                <div class="context-item"><span class="context-label">🌡️ Clima:</span><span class="context-value">{climaActual().temperatura}°C, {climaActual().humedad}% humedad, {climaActual().lluvia}mm lluvia</span></div>
-                {climaActual().suelo_temp && <div class="context-item"><span class="context-label">🌱 Suelo:</span><span class="context-value">{climaActual().suelo_temp}°C, {Math.round(climaActual().suelo_humedad * 100)}% humedad</span></div>}
-                {climaActual().evapotranspiracion && <div class="context-item"><span class="context-label">💧 ETo:</span><span class="context-value">{climaActual().evapotranspiracion} mm/día</span></div>}
+                <div class="context-item"><span class="context-label">🌡️ Clima:</span><span class="context-value">{climaActual().temperatura}°C, {climaActual().humedad}% humedad, {climaActual().lluvia}mm lluvia ({climaActual().estado || 'actual'})</span></div>
+                {(climaActual().suelo_temp !== undefined || climaActual().suelo_humedad !== undefined) && (
+                  <div class="context-item">
+                    <span class="context-label">🌱 Suelo:</span>
+                    <span class="context-value">
+                      {climaActual().suelo_temp ?? '-'}°C, {climaActual().suelo_humedad ?? '-'}% humedad
+                      {climaActual().tipoSuelo ? ` · ${climaActual().tipoSuelo}` : ''}
+                    </span>
+                  </div>
+                )}
+                {climaActual().evapotranspiracion !== undefined && <div class="context-item"><span class="context-label">💧 ETo:</span><span class="context-value">{climaActual().evapotranspiracion} mm/día</span></div>}
+                {(climaActual().necesidadRiego || climaActual().deficitRiego !== undefined) && (
+                  <div class="context-item">
+                    <span class="context-label">🚿 Riego:</span>
+                    <span class="context-value">
+                      {climaActual().necesidadRiego || 'Sin dato'}
+                      {climaActual().deficitRiego !== undefined ? ` · déficit ${climaActual().deficitRiego} mm` : ''}
+                    </span>
+                  </div>
+                )}
+                {(climaActual().pluviometriaAnual || climaActual().altitud) && (
+                  <div class="context-item">
+                    <span class="context-label">🏞️ Zona:</span>
+                    <span class="context-value">
+                      {climaActual().pluviometriaAnual ? `${climaActual().pluviometriaAnual} mm/año` : ''}
+                      {climaActual().pluviometriaAnual && climaActual().altitud ? ' · ' : ''}
+                      {climaActual().altitud ? `${climaActual().altitud} m` : ''}
+                      {climaActual().variedadPredominante ? ` · predomina ${climaActual().variedadPredominante}` : ''}
+                    </span>
+                  </div>
+                )}
+                <div class="context-item">
+                  <span class="context-label">⚠️ Riesgo:</span>
+                  <span class="context-value">
+                    {(climaActual().riesgo || 'bajo').toUpperCase()}
+                    {Array.isArray(climaActual().riesgosActivos) && climaActual().riesgosActivos.length
+                      ? ` · ${climaActual().riesgosActivos.slice(0, 3).map(r => r?.titulo || r?.tipo).filter(Boolean).join(', ')}`
+                      : ' · Sin alertas activas'}
+                  </span>
+                </div>
+                {!!climaActual().plagas && (
+                  <div class="context-item">
+                    <span class="context-label">🦠 Sanidad:</span>
+                    <span class="context-value">
+                      {Object.entries(climaActual().plagas)
+                        .map(([k, v]) => `${k}:${v?.nivel || 'bajo'}`)
+                        .join(' · ') || 'Sin dato'}
+                    </span>
+                  </div>
+                )}
               </>}
-              {climaActual()?.riesgos_plaga && <div class="context-item"><span class="context-label">⚠️ Plagas:</span><span class="context-value">{Object.entries(climaActual().riesgos_plaga).filter(([k,v]) => v?.nivel === 'alto').map(([k]) => k).join(', ') || 'Sin alertas'}</span></div>}
             </div>
           </div>
         </Show>

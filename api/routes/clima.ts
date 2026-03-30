@@ -331,6 +331,7 @@ export async function getClimaData() {
         polilla: { ...riesgos_plaga.polilla, fuente: "RAIF", nivelRAIF: riesgosProvincia.polilla },
         mosca: { ...riesgos_plaga.mosca, fuente: "RAIF", nivelRAIF: riesgosProvincia.mosca },
         repilo: { ...riesgos_plaga.repilo, fuente: "RAIF", nivelRAIF: riesgosProvincia.repilo },
+        xylella: { ...riesgos_plaga.xylella, fuente: "RAIF", nivelRAIF: riesgosProvincia.xylella || riesgos_plaga.xylella?.nivel || 'bajo' },
       })
     };
 
@@ -640,6 +641,7 @@ clima.get("/dashboard", async (c) => {
             variedadPredominante: provData.variedadPredominante,
             epocaCritica: provData.epocaCritica,
             plagasEndemicas: provData.plagasEndemicas || [],
+            plagasUltimaActualizacion: getPlagasProvincia(provincia)?.ultimaActualizacion || null,
             consejosSuelo: provData.consejosSuelo || []
           },
           plagas: {

@@ -12,16 +12,24 @@ const plagas = [
     severidad: 'alta'
   },
   {
-    id: 'prays',
-    nombre: 'Prays',
+    id: 'polilla',
+    nombre: 'Polilla del olivo (Prays)',
     icono: '🦋',
     condiciones: ['Bajas Temperaturas', 'Altas Temperaturas', 'Baja Humedad', 'Baja Lluvia'],
     tratamiento: 'Bacillus thuringiensis en floración; aceites minerales; monitoreo con trampas. Más ciclos por temperaturas cálidas.',
     severidad: 'media'
   },
   {
+    id: 'xylella',
+    nombre: 'Xylella fastidiosa',
+    icono: '🚨',
+    condiciones: ['Altas Temperaturas', 'Baja Humedad'],
+    tratamiento: 'Control de vectores (Philaenus), eliminación de focos y notificación fitosanitaria obligatoria.',
+    severidad: 'alta'
+  },
+  {
     id: 'tuberculosis',
-    nombre: 'Tuberculosis',
+    nombre: 'Tuberculosis del olivo',
     icono: '🦠',
     condiciones: ['Bajas Temperaturas', 'Alta Humedad'],
     tratamiento: 'Aplicar cobre en heridas; mejorar drenaje y poda sanitaria. Tratar inmediatamente después de heladas.',
@@ -29,11 +37,19 @@ const plagas = [
   },
   {
     id: 'repilo',
-    nombre: 'Repilo (Fusarium)',
+    nombre: 'Repilo',
     icono: '🍂',
     condiciones: ['Alta Humedad'],
     tratamiento: 'Cobre (máx 4kg/ha/año); bicarbonatos (500-1000g/hl); tratamientos preventivos post-invierno.',
     severidad: 'alta'
+  },
+  {
+    id: 'barrenillo',
+    nombre: 'Barrenillo',
+    icono: '🪲',
+    condiciones: ['Altas Temperaturas', 'Baja Humedad', 'Estrés hídrico'],
+    tratamiento: 'Retirar leña de poda, trampeo de madera cebo y evitar debilidad del árbol por sequía.',
+    severidad: 'media'
   },
   {
     id: 'cochinilla',
@@ -79,7 +95,7 @@ const cambioClimatico = [
 <Layout title="Plagas del Olivar | olivaξ">
   <div class="page-header">
     <h1>🦠 Plagas del Olivar</h1>
-    <p class="subtitle">Identifica las condiciones que favorecen cada plaga y aprende a tratarla</p>
+    <p class="subtitle">Estado fitosanitario actualizado por provincia (RAIF + riesgos climáticos y de suelo)</p>
     <div class="provincia-bar">
       <ProvinciaSelect id="provincia-select-plagas" placeholder="Selecciona provincia..." />
       <div id="raif-status-bar" class="raif-status"></div>
@@ -167,14 +183,33 @@ const cambioClimatico = [
     mosca: { alto: '🧪 Tratamiento urgente: cebo proteico + trampa McPhail', medio: '🪰 Vigilar: instala trampas masivas', bajo: '✅ Sin riesgo activo' },
     polilla: { alto: '🦋 Tratamiento inmediato: Bacillus thuringiensis', medio: '🪓 Poda sanitaria + monitoreo', bajo: '✅ Sin riesgo activo' },
     repilo: { alto: '🍄 Fungicida urgente: cobre + bicarbonatos', medio: '🌳 Poda para aireación + evitar riego', bajo: '✅ Sin riesgo activo' },
-    xylella: { alto: '🚨 Notificar autoridades + eliminar afectados', medio: '🛡️ Medidas preventivas activas', bajo: '✅ Sin riesgo activo' }
+    xylella: { alto: '🚨 Notificar autoridades + eliminar afectados', medio: '🛡️ Medidas preventivas activas', bajo: '✅ Sin riesgo activo' },
+    tuberculosis: { alto: '🧴 Aplicar cobre tras heridas y heladas', medio: '✂️ Poda sanitaria y desinfección', bajo: '✅ Riesgo controlado' },
+    barrenillo: { alto: '🪲 Retira madera atacada y coloca cebos', medio: '🌳 Vigila ramas débiles', bajo: '✅ Riesgo controlado' },
+    cochinilla: { alto: '🧪 Tratamiento localizado + aceites', medio: '👀 Monitoriza colonias', bajo: '✅ Riesgo bajo' },
+    phytophthora: { alto: '💧 Mejora drenaje + fungicida específico', medio: '🕳️ Evita encharcamiento', bajo: '✅ Riesgo bajo' },
+    lepra: { alto: '🧴 Cobre preventivo y saneo', medio: '🌿 Elimina tejido afectado', bajo: '✅ Riesgo bajo' },
+    verticillium: { alto: '🥀 Arranque sanitario y control estricto', medio: '🛡️ Prevención en suelo', bajo: '✅ Riesgo bajo' }
   };
   
-  const PLAGAS_CONDICIONES = {
+    const PLAGAS_CONDICIONES = {
     mosca: (d) => d.clima.temperatura > 20 && d.clima.humedad < 70 ? '🔥 IDEALES' : d.clima.temperatura > 25 ? '🌡️ FAVORABLES' : '❄️ DESFAVORABLES',
     polilla: (d) => d.clima.temperatura > 15 && d.clima.temperatura < 30 ? '🔥 IDEALES' : '❄️ DESFAVORABLES',
     repilo: (d) => d.clima.humedad > 70 ? '💧 IDEALES (alta humedad)' : d.clima.humedad > 50 ? '💧 FAVORABLES' : '✅ DESFAVORABLES',
-    xylella: (d) => '🚨 Siempre riesgo (transmitida por vectores)'
+    xylella: (d) => '🚨 Siempre riesgo (transmitida por vectores)',
+    tuberculosis: (d) => d.clima.humedad > 70 && d.clima.temperatura < 18 ? '🧫 FAVORABLES' : '✅ DESFAVORABLES',
+    barrenillo: (d) => d.clima.temperatura > 28 && d.clima.humedad < 55 ? '🔥 IDEALES' : '🌡️ MODERADAS',
+    cochinilla: (d) => d.clima.temperatura > 26 && d.clima.humedad < 60 ? '🔥 IDEALES' : '✅ DESFAVORABLES',
+    phytophthora: (d) => d.clima.lluvia > 5 && d.clima.humedad > 75 ? '💧 IDEALES' : '✅ DESFAVORABLES',
+    lepra: (d) => d.clima.humedad > 70 && d.clima.temperatura < 15 ? '🌧️ FAVORABLES' : '✅ DESFAVORABLES',
+    verticillium: (d) => (d.suelo?.humedad ?? 0) > 65 ? '🌱 FAVORABLES (suelo húmedo)' : '✅ DESFAVORABLES'
+  };
+
+  const RIESGO_KEY_BY_TIPO = {
+    repilo_hongo: 'repilo',
+    verticilosis: 'verticillium',
+    antracnosis: 'phytophthora',
+    tuberculosis: 'tuberculosis'
   };
 
   // --- Render datos de plagas ---
@@ -183,24 +218,42 @@ const cambioClimatico = [
     
     if (raifStatusBar) {
       const endemicas = d.provinciaInfo?.plagasEndemicas?.length ? `<span>🏠 Endémicas: ${d.provinciaInfo.plagasEndemicas.join(', ')}</span>` : '';
+      const raifDate = d.provinciaInfo?.plagasUltimaActualizacion ? `<span>🗓️ RAIF: ${d.provinciaInfo.plagasUltimaActualizacion}</span>` : '';
       raifStatusBar.innerHTML = `
         <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel || 'bajo'}</span>
         <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel || 'bajo'}</span>
         <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel || 'bajo'}</span>
+        <span>🚨 Xylella: ${getIcon(d.plagas?.xylella?.nivel)} ${d.plagas?.xylella?.nivel || 'bajo'}</span>
         <span>🌡️ ${d.clima?.temperatura || '?'}°C • 💧 ${d.clima?.humedad || '?'}%</span>
+        ${raifDate}
         ${endemicas}
       `;
     }
     
-    const plagasMap = { 'Mosca del olivo': 'mosca', 'Prays': 'polilla', 'Repilo (Fusarium)': 'repilo', 'Tuberculosis': 'repilo' };
+    const plagasMap = {
+      'Mosca del olivo': 'mosca',
+      'Polilla del olivo (Prays)': 'polilla',
+      'Repilo': 'repilo',
+      'Xylella fastidiosa': 'xylella',
+      'Tuberculosis del olivo': 'tuberculosis',
+      'Barrenillo': 'barrenillo',
+      'Cochinilla': 'cochinilla',
+      'Phytophthora': 'phytophthora',
+      'Lepra': 'lepra',
+      'Verticillium': 'verticillium'
+    };
     document.querySelectorAll('.plaga-card').forEach(card => {
       const nombre = card.dataset.nombre;
       const plagaKey = plagasMap[nombre];
       if (!plagaKey) return;
       
-      const nivel = d.plagas?.[plagaKey]?.nivel || 'bajo';
+      const riesgoEntry = (d.riesgosActivos || []).find(r =>
+        (r.tipo === plagaKey || RIESGO_KEY_BY_TIPO[r.tipo] === plagaKey)
+      );
+      const nivel = d.plagas?.[plagaKey]?.nivel || riesgoEntry?.nivel || 'bajo';
       const condiciones = PLAGAS_CONDICIONES[plagaKey] ? PLAGAS_CONDICIONES[plagaKey](d) : 'N/A';
       const consejo = PLAGAS_CONSEJOS[plagaKey]?.[nivel] || 'Sin datos';
+      const fuente = d.plagas?.[plagaKey]?.fuente === 'RAIF' ? 'RAIF' : (riesgoEntry ? 'Modelo climático/suelo' : 'Base técnica');
       
       let estadoDiv = card.querySelector('.plaga-estado-dinamico');
       if (!estadoDiv) {
@@ -213,6 +266,7 @@ const cambioClimatico = [
         <div class="estado-provincial">
           <div class="estado-header"><span class="estado-nivel ${nivel}">${getIcon(nivel)} ${nivel.toUpperCase()}</span></div>
           <div class="estado-detalle">🌡️ ${condiciones}</div>
+          <div class="estado-detalle">🧾 Fuente: ${fuente}</div>
           <div class="estado-consejo">💡 ${consejo}</div>
         </div>
       `;
@@ -403,15 +457,16 @@ const cambioClimatico = [
   .plagas-section {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    max-width: 64rem;
+    gap: 1.25rem;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
     background: var(--color-sal);
   }
 
-  @media (min-width: 768px) { .plagas-section { grid-template-columns: 1fr 1fr; } }
-  @media (min-width: 1024px) { .plagas-section { grid-template-columns: 1fr 1fr 1fr; } }
+  @media (min-width: 768px) { .plagas-section { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .plagas-section { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1400px) { .plagas-section { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
   .plaga-card {
     perspective: 1000px;

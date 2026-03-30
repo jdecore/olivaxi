@@ -65,11 +65,11 @@ class OlivaxiMapa extends HTMLElement {
         .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 10px; }
         .mapa-loading.hidden { display: none; }
         .spinner { width: 28px; height: 28px; border: 2px solid var(--color-border); border-top-color: var(--color-limon); border-radius: 50%; animation: spin .8s linear infinite; }
-        .mapa-legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: min(92%, 520px); background: rgba(255,255,255,0.9); border: 1px solid var(--color-border); border-radius: 6px; padding: 6px 8px; font-size: 9px; z-index: 10; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; box-sizing: border-box; }
-        .mapa-legend-item { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; }
-        .mapa-legend-label { color: #1C1C1C; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mapa-legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: min(96%, 760px); background: rgba(255,255,255,0.92); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; font-size: 9px; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; box-sizing: border-box; }
+        .mapa-legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 6px; min-width: 0; padding: 2px 4px; border-radius: 4px; }
+        .mapa-legend-label { color: #1C1C1C; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
         @media (max-width: 640px) {
-          .mapa-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(96%, 340px); }
+          .mapa-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(96%, 360px); padding: 6px 8px; }
           .mapa-legend-label { font-size: 9px; }
         }
         .provincia-marker { }
