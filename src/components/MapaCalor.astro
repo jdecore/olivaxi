@@ -112,8 +112,8 @@ class OlivaxiMapa extends HTMLElement {
       container: mapaDiv,
       style: TILE_SERVER,
       center: [-3.5, 40.0],
-      zoom: 7,
-      minZoom: 5,
+      zoom: 5.5,
+      minZoom: 4,
       maxZoom: 10,
       attributionControl: false
     });
@@ -145,6 +145,10 @@ class OlivaxiMapa extends HTMLElement {
       // Actualizar provincia seleccionada para highlight (solo estilo, no recrear)
       if (state.provincia !== this.provinciaSeleccionada) {
         this.provinciaSeleccionada = state.provincia;
+        // Si se deselecciona provincia, mostrar España completa
+        if (!state.provincia) {
+          this.map.flyTo({ center: [-3.5, 40.0], zoom: 5.5, duration: 1000 });
+        }
         if (needsFullRender) {
           this.render();
         } else {
@@ -221,9 +225,8 @@ class OlivaxiMapa extends HTMLElement {
                   this.filtro === 'precipitacion' ? d.lluvia + 'mm' :
                   d.riesgo || 'bajo';
       
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      const bg = isDark ? '#1a1a1a' : '#fff';
-      const txt = isDark ? '#F7F4EE' : '#1C1C1C';
+      const bg = '#fff';
+      const txt = '#1C1C1C';
       
       const riesgoColor = this.getMarkerColor(d);
       
@@ -300,8 +303,7 @@ class OlivaxiMapa extends HTMLElement {
   updateLegend() {
     const legend = this.querySelector('.mapa-legend');
     if (!legend) return;
-    const isDark = document.documentElement.dataset.theme === 'dark';
-    const txt = isDark ? '#F7F4EE' : '#1C1C1C';
+    const txt = '#1C1C1C';
     const L = {
       temperatura: [['<10°C','#74B9FF'],['10-20°C','#55EFC4'],['20-28°C','#A8D8A8'],['28-35°C','#FDCB6E'],['35-38°C','#E17055'],['>38°C','#D63031']],
       humedad: [['<20%','#D63031'],['20-40%','#E17055'],['40-60%','#FDCB6E'],['60-80%','#55EFC4'],['>80%','#74B9FF']],

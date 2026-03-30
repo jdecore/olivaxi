@@ -48,7 +48,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .mapa-card,.sidebar-panels{background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:6px;overflow:hidden}
 .mapa-card{display:flex;flex-direction:column;height:450px}
 .mapa-card :global(olivaxi-mapa){flex:1;min-height:0}
-.sidebar-panels{background:var(--color-limon);height:450px}
+.sidebar-panels{background:var(--color-limon);height:500px}
 .carousel-container{display:flex;flex-direction:column;height:100%}
 .carousel-nav{display:flex;background:var(--color-limon);border-bottom:2px solid var(--color-border);flex-shrink:0}
 .carousel-tab{flex:1;padding:12px 8px;border:none;border-right:1px solid var(--color-border);background:transparent;color:var(--color-aceituna);font-size:12px;font-weight:700;cursor:pointer;text-align:center}
@@ -57,8 +57,9 @@ import MapaCalor from '../components/MapaCalor.astro';
 .carousel-tab.active{background:var(--color-white-surface)}
 .carousel-slide{display:none;flex-direction:column;flex:1;padding:12px;gap:8px;overflow-y:auto}
 .carousel-slide.active{display:flex}
-.provincias-grid,.variedades-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.provincia-btn,.variedad-btn{padding:10px 8px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;color:var(--color-aceituna);text-align:center}
+.provincias-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.variedades-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.provincia-btn,.variedad-btn{padding:12px 10px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--color-aceituna);text-align:center}
 .provincia-btn:hover,.variedad-btn:hover{background:var(--color-aceituna);color:var(--color-sal)}
 .provincia-btn.selected,.variedad-btn.selected{background:var(--color-aceituna);color:var(--color-sal)}
 .provincia-btn .riesgo-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
@@ -89,7 +90,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .consejos-panel{margin-top:8px;padding:8px;background:rgba(255,255,255,0.7);border-radius:4px;border-left:3px solid var(--color-limon)}
 .consejos-panel .titulo{font-size:10px;font-weight:700;color:var(--color-aceituna);margin-bottom:4px}
 .consejos-panel .consejo{font-size:9px;color:var(--color-muted);margin-bottom:2px}
-@media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:300px}.sidebar-panels{min-height:300px}}
+@media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:320px}.sidebar-panels{min-height:320px}}
 @media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}}
 .mi-olivar-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
 .mi-olivar-panel.visible{display:block}
