@@ -14,6 +14,33 @@ import MapaCalor from '../components/MapaCalor.astro';
 .hero-subtitle{animation-delay:.15s}
 .hero-contextual{animation-delay:.3s}
 @media(max-width:640px){.hero-section{min-height:30vh;padding:40px 16px 20px;gap:10px}.hero-title{font-size:1.75rem}.hero-subtitle{font-size:.9rem}}
+.hero-badge{display:inline-block;padding:6px 14px;background:var(--color-limon);border-radius:20px;font-size:12px;font-weight:600;color:var(--color-aceituna);margin-bottom:12px}
+.hero-stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0;font-size:13px;color:var(--color-muted)}
+.hero-stats span{white-space:nowrap}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.cta-primary{padding:12px 24px;background:var(--color-aceituna);color:var(--color-sal);border-radius:8px;font-weight:700;text-decoration:none;transition:transform .15s}
+.cta-primary:hover{transform:translateY(-2px)}
+.cta-secondary{padding:12px 24px;background:transparent;border:2px solid var(--color-aceituna);color:var(--color-aceituna);border-radius:8px;font-weight:600;text-decoration:none;transition:background .15s}
+.cta-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}
+.alert-strip{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 16px;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600}
+.alert-strip.medio{background:rgba(245,158,11,.15);border:2px solid #f59e0b;color:#b45309}
+.alert-strip.alto{background:rgba(239,68,68,.15);border:2px solid #ef4444;color:#dc2626}
+.alert-strip-content{display:flex;align-items:center;gap:10px}
+.alert-strip-icon{font-size:18px}
+.alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap}
+.alert-strip.medio .alert-strip-btn{background:#f59e0b}
+.alert-strip.alto .alert-strip-btn{background:#ef4444}
+@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}}
+.ecosistema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
+.eco-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;text-decoration:none;transition:transform .15s,border-color .15s}
+.eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna)}
+.eco-icon{font-size:1.8rem;flex-shrink:0}
+.eco-content{flex:1;min-width:0}
+.eco-category{font-size:.65rem;font-weight:700;color:var(--color-muted);letter-spacing:.1em}
+.eco-title{font-size:.95rem;font-weight:700;color:var(--color-aceituna);margin:2px 0}
+.eco-desc{font-size:.8rem;color:var(--color-muted);margin:0}
+@media(max-width:900px){.ecosistema-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.ecosistema-grid{grid-template-columns:1fr}}
 .bento-grid{display:grid;grid-template-columns:60fr 40fr;gap:8px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .mapa-card,.sidebar-panels{background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:6px;overflow:hidden}
 .mapa-card{display:flex;flex-direction:column}
@@ -61,27 +88,6 @@ import MapaCalor from '../components/MapaCalor.astro';
 .consejos-panel .consejo{font-size:9px;color:var(--color-muted);margin-bottom:2px}
 @media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:300px}.sidebar-panels{min-height:300px}}
 @media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}}
-.premium-cards{margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
-.cards-wrapper{position:relative}
-.cards-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;padding:8px 0}
-.cards-container::-webkit-scrollbar{display:none}
-.premium-card{flex:0 0 280px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;overflow:hidden;text-decoration:none;scroll-snap-align:center;transition:transform .15s ease}
-.premium-card:hover{transform:translateY(-2px)}
-.card-image{height:100px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--color-limon) 0%,var(--color-aceituna) 100%)}
-.premium-card:nth-child(2) .card-image{background:linear-gradient(135deg,#74B9FF 0%,#0984e3 100%)}
-.premium-card:nth-child(3) .card-image{background:linear-gradient(135deg,#55EFC4 0%,#00b894 100%)}
-.card-icon{font-size:2rem}
-.card-content{padding:12px}
-.card-category{font-size:.7rem;font-weight:700;color:var(--color-muted);letter-spacing:.1em}
-.card-title{font-size:.95rem;font-weight:700;color:var(--color-aceituna);margin:4px 0}
-.card-text{font-size:.85rem;color:var(--color-muted)}
-.card-dynamic{font-size:.8rem;color:var(--color-aceituna);font-weight:600;margin-top:4px}
-.cards-nav{display:flex;justify-content:center;gap:8px;margin-top:8px}
-.cards-nav-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--color-border);background:var(--color-white-surface);color:var(--color-aceituna);font-size:1rem;cursor:pointer}
-.cards-nav-btn:hover{background:var(--color-limon)}
-.cards-dots{display:flex;justify-content:center;gap:6px;margin-top:4px}
-.cards-dot{width:8px;height:8px;border-radius:50%;background:var(--color-muted);opacity:.4}
-.cards-dot.active{background:var(--color-limon);opacity:1}
 .mi-olivar-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
 .mi-olivar-panel.visible{display:block}
 .mi-olivar-card{background:var(--color-white-surface);border:2px solid var(--color-limon);border-radius:8px;padding:16px;position:relative}
@@ -127,10 +133,25 @@ import MapaCalor from '../components/MapaCalor.astro';
 </style>
 
 <section class="hero-section">
-<h1 class="hero-title">Ciencia aplicada al cultivo</h1>
-<p class="hero-subtitle">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
-<div class="hero-contextual" id="hero-contextual">Selecciona una provincia para ver datos en tiempo real</div>
+<span class="hero-badge">📡 Monitor en tiempo real · 10 provincias · Datos científicos</span>
+<h1 class="hero-title">Tu olivar protegido con datos reales</h1>
+<p class="hero-subtitle">Temperatura, humedad, plagas y riego en un solo lugar. Datos científicos actualizados cada 6 horas.</p>
+<div class="hero-stats">
+<span>6 variedades</span>·<span>10 provincias</span>·<span>4 plagas</span>·<span>actualización cada 6h</span>
+</div>
+<div class="hero-ctas">
+<a href="#mapa-card-wrapper" class="cta-primary">Ver mi olivar</a>
+<a href="/consejero" class="cta-secondary">Hablar con el counsellor IA</a>
+</div>
 </section>
+
+<div id="alert-strip" class="alert-strip" style="display:none">
+  <div class="alert-strip-content">
+    <span class="alert-strip-icon"></span>
+    <span class="alert-strip-text"></span>
+  </div>
+  <a href="/alertas" class="alert-strip-btn">Activar alertas</a>
+</div>
 
 <div class="bento-grid">
   <div class="mapa-card" id="mapa-card-wrapper"><MapaCalor id="mapa-calor" /><div class="riesgo-badge bajo" id="riesgo-badge">✅ Sin riesgo</div></div>
@@ -146,16 +167,55 @@ import MapaCalor from '../components/MapaCalor.astro';
 </div>
 </div>
 
-<section class="premium-cards">
-<div class="cards-wrapper">
-<div class="cards-container" id="cards-container">
-<a href="/agua-suelos" class="premium-card" id="card-suelo"><div class="card-image"><span class="card-icon">🌡️</span></div><div class="card-content"><span class="card-category">SUELO</span><h3 class="card-title">Estado del suelo</h3><p class="card-dynamic" id="card-suelo-text">Cargando datos...</p></div></a>
-<a href="/variedades" class="premium-card"><div class="card-image"><span class="card-icon">🫒</span></div><div class="card-content"><span class="card-category">VARIEDAD</span><h3 class="card-title">Predominante</h3><p class="card-dynamic" id="card-variedad-text">Selecciona provincia</p></div></a>
-<a href="/consejero" class="premium-card" id="card-consejo"><div class="card-image"><span class="card-icon">💡</span></div><div class="card-content"><span class="card-category">CONSEJO</span><h3 class="card-title">Consejo del día</h3><p class="card-dynamic" id="card-consejo-text">Sin datos aún</p></div><div class="card-actions"><span class="card-btn-secondary" id="card-chat-btn">💬 Preguntar al asesor</span></div></a>
+<section class="ecosistema-grid">
+<a href="#mapa-card-wrapper" class="eco-card">
+<div class="eco-icon">🗺️</div>
+<div class="eco-content">
+<span class="eco-category">MAPA</span>
+<h3 class="eco-title">Mapa de riesgo</h3>
+<p class="eco-desc">Visualiza el riesgo climático por provincia</p>
 </div>
-<div class="cards-nav"><button class="cards-nav-btn" id="prev-btn">←</button><button class="cards-nav-btn" id="next-btn">→</button></div>
-<div class="cards-dots"><span class="cards-dot active" data-index="0"></span><span class="cards-dot" data-index="1"></span><span class="cards-dot" data-index="2"></span></div>
+</a>
+<a href="/consejero" class="eco-card">
+<div class="eco-icon">💬</div>
+<div class="eco-content">
+<span class="eco-category">IA</span>
+<h3 class="eco-title">Consejero IA</h3>
+<p class="eco-desc">Chat con inteligencia artificial especializada</p>
 </div>
+</a>
+<a href="/variedades" class="eco-card">
+<div class="eco-icon">🫒</div>
+<div class="eco-content">
+<span class="eco-category">VARIEDADES</span>
+<h3 class="eco-title">Catálogo</h3>
+<p class="eco-desc">6 variedades con análisis climático</p>
+</div>
+</a>
+<a href="/plagas" class="eco-card">
+<div class="eco-icon">🦟</div>
+<div class="eco-content">
+<span class="eco-category">PLAGAS</span>
+<h3 class="eco-title">Guía RAIF</h3>
+<p class="eco-desc">Mosca, Polilla, Repilo, Xylella</p>
+</div>
+</a>
+<a href="/agua-suelos" class="eco-card">
+<div class="eco-icon">💧</div>
+<div class="eco-content">
+<span class="eco-category">AGUA</span>
+<h3 class="eco-title">Agua y suelos</h3>
+<p class="eco-desc">Estado del suelo y recomendaciones de riego</p>
+</div>
+</a>
+<a href="/alertas" class="eco-card">
+<div class="eco-icon">🔔</div>
+<div class="eco-content">
+<span class="eco-category">ALERTAS</span>
+<h3 class="eco-title">Notificaciones</h3>
+<p class="eco-desc">Recibe avisos cuando haya riesgos</p>
+</div>
+</a>
 </section>
 
 <div class="mi-olivar-panel" id="mi-olivar-panel">
@@ -189,10 +249,6 @@ const $ = (id) => document.getElementById(id);
 const PROVINCIAS_GRID = $('provincias-grid');
 const VARIEDADES_GRID = $('variedades-grid');
 const ALERTAS_LIST = $('alertas-list');
-const HERO_CONTEXTUAL = $('hero-contextual');
-const CARD_SUELO_TEXT = $('card-suelo-text');
-const CARD_VARIEDAD_TEXT = $('card-variedad-text');
-const CARD_CONSEJO_TEXT = $('card-consejo-text');
 const MI_OLIVAR_PANEL = $('mi-olivar-panel');
 const MI_OLIVAR_CONTENT = $('mi-olivar-content');
 const MI_OLIVAR_ALERTS = $('mi-olivar-alerts');
@@ -201,9 +257,6 @@ const NARRATIVE_SECTION = $('narrative-section');
 const NARRATIVE_CONTENT = $('narrative-content');
 const MAPA_CARD = $('mapa-card-wrapper');
 const RIESGO_BADGE = $('riesgo-badge');
-const CARD_CHAT_BTN = $('card-chat-btn');
-const CAROUSEL_TABS = document.querySelectorAll('.carousel-tab');
-const CAROUSEL_SLIDES = document.querySelectorAll('.carousel-slide');
 
 // --- Estado local (derivado del ecosistema) ---
 let datosClima = [];
@@ -215,6 +268,55 @@ function getRiesgoClass(r) {
   if (r === 'alto' || r === 'crítico') return 'alto';
   if (r === 'medio' || r === 'media') return 'medio';
   return 'bajo';
+}
+
+// --- Alert Strip: Calcular riesgo máximo entre todas las provincias ---
+function renderAlertStrip() {
+  const strip = document.getElementById('alert-strip');
+  if (!strip || !datosClima.length) { 
+    if(strip) strip.style.display = 'none';
+    return;
+  }
+
+  const PLAGAS = ['mosca', 'polilla', 'repilo', 'xylella'];
+  const plagaIcons = { mosca: '🪰', polilla: '🦋', repilo: '🍂', xylella: '🚨' };
+  
+  let maxRiesgo = 'bajo';
+  let provinciaMax = '';
+  let detalle = '';
+  
+  for (const p of datosClima) {
+    if (p.riesgo === 'alto' && maxRiesgo !== 'alto') {
+      maxRiesgo = 'alto';
+      provinciaMax = p.provincia;
+      detalle = `Temperatura ${p.temperatura}°C`;
+    }
+    const rp = p.riesgos_plaga || {};
+    for (const plaga of PLAGAS) {
+      const nivel = rp[plaga]?.nivel;
+      if (nivel === 'alto') {
+        maxRiesgo = 'alto';
+        provinciaMax = p.provincia;
+        detalle = `${plagaIcons[plaga]} ${plaga.charAt(0).toUpperCase() + plaga.slice(1)} activa`;
+        break;
+      } else if (nivel === 'medio' && maxRiesgo === 'bajo') {
+        maxRiesgo = 'medio';
+        provinciaMax = p.provincia;
+        detalle = `${plagaIcons[plaga]} ${plaga.charAt(0).toUpperCase() + plaga.slice(1)}`;
+      }
+    }
+    if (maxRiesgo === 'alto') break;
+  }
+  
+  if (maxRiesgo === 'bajo') {
+    strip.style.display = 'none';
+    return;
+  }
+  
+  strip.className = `alert-strip ${maxRiesgo}`;
+  strip.querySelector('.alert-strip-icon').textContent = maxRiesgo === 'alto' ? '🔴' : '🟡';
+  strip.querySelector('.alert-strip-text').textContent = `⚠️ Riesgo ${maxRiesgo.toUpperCase()} en ${provinciaMax}: ${detalle}`;
+  strip.style.display = 'flex';
 }
 
 function getRiesgoGlobal(d) {
@@ -392,20 +494,6 @@ function renderNarrativeSection(d) {
 // --- Render: Dashboard completo ---
 function renderDashboard(d) {
   dashboardData = d;
-  const plaga = d.plagas;
-  const plagaIcons = (l) => l === 'alto' ? '🔴' : l === 'medio' ? '🟡' : '🟢';
-  HERO_CONTEXTUAL.textContent = `${d.clima.temperatura}°C • 💧 ${d.clima.humedad}% • ${plaga.polilla ? `Polilla ${plagaIcons(plaga.polilla.nivel)}` : ''}`;
-  CARD_SUELO_TEXT.textContent = `${Math.round(d.suelo?.temperatura || 0)}°C • 💧 ${Math.round((d.suelo?.humedad || 0) * 100)}% • 📈 ${(d.suelo?.evapotranspiracion || 0).toFixed(1)}mm`;
-  CARD_VARIEDAD_TEXT.textContent = d.provinciaInfo?.variedadPredominante || 'N/A';
-  CARD_CONSEJO_TEXT.textContent = d.consejos?.[0]?.replace(/^\S+\s/, '') || 'Sin consejo';
-  if (CARD_CHAT_BTN) {
-    const prov = OlivaxiEcosistema.provincia;
-    const var_ = OlivaxiEcosistema.variedad;
-    CARD_CHAT_BTN.onclick = (e) => {
-      e.preventDefault();
-      window.location.href = '/consejero?provincia=' + encodeURIComponent(prov) + (var_ ? '&variedad=' + encodeURIComponent(var_) : '');
-    };
-  }
   renderMiOlivarPanel(d);
   renderNarrativeSection(d);
   updateRiesgoBadge(d);
@@ -441,6 +529,7 @@ async function loadData() {
     retryCount = 0;
     if (datosClima.length) {
       renderAll();
+      renderAlertStrip();
       // Si hay provincia guardada, fetch dashboard
       if (OlivaxiEcosistema.provincia) {
         const d = await OlivaxiEcosistema.fetchDashboard();
@@ -462,6 +551,7 @@ async function loadData() {
 OlivaxiEcosistema.onChange((state) => {
   renderProvinciasGrid();
   renderVariedadesGrid();
+  renderAlertStrip();
 
   // Si hay datos de clima, renderizar alertas
   if (datosClima.length && state.provincia) {

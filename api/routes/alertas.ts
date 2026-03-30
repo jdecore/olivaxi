@@ -360,6 +360,24 @@ const NORMALIZAR_TIPO_ALERTA: Record<string, string> = {
 const callRiesgosPlaga = (t: number, h: number, l: number) => calcularRiesgosPlaga({ temp: t, humedad: h, lluvia: l });
 const callRiesgosOlivar = (t: number, h: number, l: number) => calcularRiesgosOlivar({ temp: t, humedad: h, lluvia: l });
 
+function getFrontendBaseUrl(): string {
+  const explicitWeb = process.env.PUBLIC_WEB_URL || process.env.ALERTAS_WEB_URL;
+  if (explicitWeb) return explicitWeb.replace(/\/$/, '');
+
+  const apiBase = (process.env.PUBLIC_API_URL || '')
+    .replace(/\/$/, '')
+    .replace(/\/api$/, '');
+
+  if (apiBase) {
+    return apiBase
+      .replace(/:3000$/, ':4321')
+      .replace(/:3001$/, ':4321')
+      .replace(/:3002$/, ':4321');
+  }
+
+  return 'http://45.90.237.135:4321';
+}
+
 function normalizarHumedadSuelo(humedadSuelo: number | undefined): number {
   const valor = Number(humedadSuelo ?? 0);
   if (!Number.isFinite(valor)) return 0;
@@ -722,7 +740,7 @@ alertas.post("/", async (c) => {
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   if (gmailPass) {
     try {
-      const verifyUrl = `${process.env.PUBLIC_API_URL?.replace('/api', '') || 'https://olivaxi.duckdns.org'}/alertas?verify=${verifyToken}`;
+      const verifyUrl = `${getFrontendBaseUrl()}/alertas?verify=${verifyToken}`;
       const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
 <p>Confirma tu alerta para <strong>${provincia}</strong> haciendo clic en el botón:</p>
 <p style="text-align: center; margin: 20px 0;">

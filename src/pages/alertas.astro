@@ -487,6 +487,43 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     }
   }
 
+  async function confirmarTokenDesdeURL() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('verify');
+    if (!token) return;
+
+    if (msg) {
+      msg.textContent = "⏳ Confirmando alerta...";
+      msg.className = "warning show";
+      msg.removeAttribute("hidden");
+    }
+
+    try {
+      const res = await fetch(apiUrl('/api/alertas/verify'), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No se pudo confirmar");
+
+      if (msg) {
+        msg.textContent = "✅ Alerta confirmada correctamente. Ya recibirás notificaciones.";
+        msg.className = "success show";
+        msg.removeAttribute("hidden");
+      }
+
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+    } catch (e) {
+      if (msg) {
+        msg.textContent = `❌ ${e?.message || "Error al confirmar alerta"}`;
+        msg.className = "error show";
+        msg.removeAttribute("hidden");
+      }
+    }
+  }
+
   // --- Escuchar cambios del ecosistema ---
   OlivaxiEcosistema.onChange((state) => {
     if (provinciaSelect && state.provincia && provinciaSelect.value !== state.provincia) {
@@ -546,6 +583,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   });
 
   // --- Carga inicial si ya hay provincia ---
+  confirmarTokenDesdeURL();
+
   if (OlivaxiEcosistema.provincia) {
     if (provinciaSelect && !provinciaSelect.value) provinciaSelect.value = OlivaxiEcosistema.provincia;
     if (variedadSelect && OlivaxiEcosistema.variedad && !variedadSelect.value) variedadSelect.value = OlivaxiEcosistema.variedad;
