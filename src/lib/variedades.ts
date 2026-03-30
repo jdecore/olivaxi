@@ -85,6 +85,7 @@ export const ICONOS_ALERTAS: Record<string, { icon: string; label: string }> = {
   suelo_caliente: { icon: "🔥", label: "Suelo caliente" },
   eto_alta: { icon: "☀️", label: "Evapotranspiración alta" },
   deficit_pluviometrico: { icon: "📉", label: "Déficit pluviométrico" },
+  todas_alertas: { icon: "🧠", label: "Todas las alertas activas" },
   condiciones_optimas: { icon: "✅", label: "Condiciones óptimas" }
 };
 

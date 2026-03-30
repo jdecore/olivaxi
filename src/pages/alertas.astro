@@ -198,8 +198,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     box-shadow: 0 10px 30px rgba(28, 28, 28, 0.3);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease;
     will-change: transform;
-    opacity: 0;
-    animation: btnEntry 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.75s forwards;
+    opacity: 1;
+    animation: none;
     position: relative;
     overflow: hidden;
   }
@@ -393,6 +393,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const form = document.getElementById("form-alerta");
   const provinciaInfoPanel = document.getElementById("provincia-info");
   const selectTipo = document.getElementById("tipo");
+  const provinciaSelect = document.getElementById("provincia");
+  const variedadSelect = document.getElementById("variedad");
 
   // --- Cargar datos de provincia via ecosistema ---
   async function cargarDatosProvincia() {
@@ -473,6 +475,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         opt.value = "condiciones_optimas";
         opt.textContent = ICONOS_ALERTAS.condiciones_optimas.label;
         selectTipo.appendChild(opt);
+        selectTipo.value = "condiciones_optimas";
       } else {
         alertas.forEach((alerta) => {
           const opt = document.createElement("option");
@@ -480,6 +483,11 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
           opt.textContent = ICONOS_ALERTAS[alerta]?.label || alerta;
           selectTipo.appendChild(opt);
         });
+        if (alertas.includes('todas_alertas')) {
+          selectTipo.value = 'todas_alertas';
+        } else {
+          selectTipo.value = alertas[0];
+        }
       }
     } catch (e) {
       console.error("Error calculating alert types:", e);
@@ -488,6 +496,12 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   // --- Escuchar cambios del ecosistema ---
   OlivaxiEcosistema.onChange((state) => {
+    if (provinciaSelect && state.provincia && provinciaSelect.value !== state.provincia) {
+      provinciaSelect.value = state.provincia;
+    }
+    if (variedadSelect && state.variedad && variedadSelect.value !== state.variedad) {
+      variedadSelect.value = state.variedad;
+    }
     if (state.provincia) {
       cargarDatosProvincia();
       actualizarTipoAlerta();
@@ -521,13 +535,15 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       });
 
       if (res.ok) {
-        msg.textContent = "✅ ¡Alerta activada! Se te avisará cuando cualquier riesgo aparezca en tu zona.";
+        const data = await res.json().catch(() => ({}));
+        msg.textContent = data.message ? `✅ ${data.message}` : "✅ ¡Alerta activada!";
         msg.className = "success show";
       } else {
-        throw new Error("Respuesta no OK");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Respuesta no OK");
       }
-    } catch {
-      msg.textContent = "❌ Algo salió mal. Inténtalo de nuevo.";
+    } catch (e) {
+      msg.textContent = `❌ ${e?.message || "Algo salió mal. Inténtalo de nuevo."}`;
       msg.className = "error show";
     } finally {
       msg.removeAttribute("hidden");
@@ -538,6 +554,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   // --- Carga inicial si ya hay provincia ---
   if (OlivaxiEcosistema.provincia) {
+    if (provinciaSelect && !provinciaSelect.value) provinciaSelect.value = OlivaxiEcosistema.provincia;
+    if (variedadSelect && OlivaxiEcosistema.variedad && !variedadSelect.value) variedadSelect.value = OlivaxiEcosistema.variedad;
     cargarDatosProvincia();
     actualizarTipoAlerta();
   }

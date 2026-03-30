@@ -327,6 +327,16 @@ const CONSEJOS: Record<string, string[]> = {
   polilla: ['🪓 Poda afectada', '🧪 Aplica tratamiento', '🔒 Trampas de feromonas', '🥅 Redes anti-insectos'],
   xylella: ['🚨 Notifica a authorities', '🪓 Elimina árboles afectados', '🛡️ Medidas preventivas', '🔬 Confirma laboratorio'],
   repilo: ['🍄 Aplica fungicida', '🌳 Poda para aireación', '💧 Evita exceso de riego', '🔍 Monitorea regularmente'],
+  verticilosis: ['🍄 Mejora drenaje y evita exceso de humedad', '🌳 Retira ramas secas y desinfecta herramientas'],
+  antracnosis: ['🧫 Retira frutos afectados', '💨 Mejora aireación y evita heridas en fruto'],
+  tuberculosis: ['✂️ Desinfecta herramientas de poda', '🧯 Evita poda con lluvia o alta humedad'],
+  suelo_seco: ['🚿 Programa riego de apoyo por la mañana', '🪵 Refuerza acolchado para retener agua'],
+  suelo_encharcado: ['🌊 Abre drenajes y evita compactación', '🚫 Suspende riego hasta normalizar suelo'],
+  suelo_frio: ['🧊 Evita labores agresivas en raíz', '🌤️ Prioriza labores en horas templadas'],
+  suelo_caliente: ['🔥 Reduce evaporación con cobertura', '🌅 Evita riegos en horas de máximo calor'],
+  eto_alta: ['☀️ Ajusta riego por ETo diaria', '📉 Divide riego en pulsos cortos'],
+  deficit_pluviometrico: ['📉 Compensa déficit con riego controlado', '🧪 Revisa humedad del bulbo húmedo'],
+  todas_alertas: ['🔔 Recibirás avisos de cualquier riesgo activo', '📲 Revisa alertas a diario en episodios extremos'],
   condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
 };
 
@@ -342,6 +352,8 @@ const NORMALIZAR_TIPO_ALERTA: Record<string, string> = {
   helada: 'helada',
   sequia: 'sequia_extrema',
   humedad: 'alta_humedad',
+  todas: 'todas_alertas',
+  todas_las_alertas: 'todas_alertas',
 };
 
 // Helper to call imported functions (they use object params)
@@ -407,6 +419,7 @@ function normalizarTipoAlerta(tipo: string): string {
 
 function activarPorTipo(tipo: string, riesgosActivos: any[]): boolean {
   const normalizado = normalizarTipoAlerta(tipo);
+  if (normalizado === 'todas_alertas') return riesgosActivos.length > 0;
   if (normalizado === 'condiciones_optimas') return riesgosActivos.length === 0;
   return riesgosActivos.some(r => r.tipo === normalizado);
 }
@@ -511,7 +524,7 @@ function calcularTiposAlerta(provincia: string, variedad: string): string[] {
   if (!provinciaData) return ['condiciones_optimas'];
   const riesgosActivos = getRiesgosActivosDesdeProvinciaData(provinciaData);
   const tipos = [...new Set(riesgosActivos.map(r => r.tipo).filter((t: string) => VALID_TIPOS.includes(t)))];
-  return tipos.length ? tipos : ['condiciones_optimas'];
+  return tipos.length ? ['todas_alertas', ...tipos] : ['condiciones_optimas'];
 }
 
 // ============================================
