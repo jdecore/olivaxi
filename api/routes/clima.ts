@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import db from "../db/sqlite";
-import { PROVINCIAS } from "../data/provincias";
+import { PROVINCIAS, PROVINCIAS_DATA, getDatosProvincia, getPlagasProvincia, getConsejoSuelo } from "../data/provincias";
 
 export interface DatosClima {
   provincia: string;
@@ -414,8 +414,24 @@ export async function getClimaData() {
       riesgos_variedad[key] = calcularScoreRiesgo(temp, humedad, lluvia, varData.clima);
     }
 
+    const nombreProvincia = item.provincia.nombre;
+    const datosProvincia = getDatosProvincia(nombreProvincia);
+    const riesgosProvincia = getPlagasProvincia(nombreProvincia);
+    const consejos = getConsejoSuelo(nombreProvincia);
+    
+    // Combinar riesgos genéricos con RAIF
+    const riesgosPlagaCombinados = {
+      ...riesgos_plaga,
+      // Sobrescribir con datos RAIF si existen
+      ...(riesgosProvincia && {
+        polilla: { ...riesgos_plaga.polilla, fuente: "RAIF", nivelRAIF: riesgosProvincia.polilla },
+        mosca: { ...riesgos_plaga.mosca, fuente: "RAIF", nivelRAIF: riesgosProvincia.mosca },
+        repilo: { ...riesgos_plaga.repilo, fuente: "RAIF", nivelRAIF: riesgosProvincia.repilo },
+      })
+    };
+
     return {
-      provincia: item.provincia.nombre,
+      provincia: nombreProvincia,
       lat: item.provincia.lat,
       lon: item.provincia.lon,
       temperatura: temp,
@@ -424,10 +440,19 @@ export async function getClimaData() {
       riesgo,
       estado,
       source: "api",
+      // Datos del suelo (Open-Meteo)
       suelo_temp: item.suelo_temp,
       suelo_humedad: item.suelo_humedad,
       evapotranspiracion: item.evapotranspiracion,
-      riesgos_plaga,
+      // Datos provinciales estáticos
+      altitud: datosProvincia?.altitud,
+      pluviometriaAnual: datosProvincia?.pluviometriaAnual,
+      tipoSuelo: datosProvincia?.suelo,
+      variedadPredominante: datosProvincia?.variedadPredominante,
+      epocaCritica: datosProvincia?.epocaCritica,
+      consejosSuelo: consejos,
+      // Riesgos
+      riesgos_plaga: riesgosPlagaCombinados,
       riesgos_olivar,
       riesgos_variedad,
     };

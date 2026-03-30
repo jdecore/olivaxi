@@ -562,7 +562,20 @@ import MapaCalor from '../components/MapaCalor.astro';
   function renderAlertasPanel(datos) {
     if (!ALERTAS_LIST) return;
     
+    // Datos provinciales nuevos
+    const provinciaInfo = `
+      <div class="provincia-info" style="margin-bottom:12px;padding:8px;background:rgba(212,232,73,0.15);border-radius:8px;font-size:11px">
+        ${datos?.variedadPredominante ? `<div><strong>🫒 Variedad:</strong> ${datos.variedadPredominante}</div>` : ''}
+        ${datos?.tipoSuelo ? `<div><strong>🪨 Suelo:</strong> ${datos.tipoSuelo}</div>` : ''}
+        ${datos?.altitud ? `<div><strong>⛰️ Altitud:</strong> ${datos.altitud}m</div>` : ''}
+        ${datos?.pluviometriaAnual ? `<div><strong>🌧️ Lluvia:</strong> ${datos.pluviometriaAnual}mm/año</div>` : ''}
+        ${datos?.epocaCritica ? `<div><strong>⚠️ Época crítica:</strong> ${datos.epocaCritica}</div>` : ''}
+      </div>
+    `;
+
     const alertas = [];
+    
+    // Riesgos de la variedad seleccionada
     const rv = datos?.riesgos_variedad?.[variedadSeleccionada];
     if (rv) {
       const nivel = rv.nivel === 'crítico' ? 'alto' : rv.nivel === 'medio' ? 'medio' : 'bajo';
@@ -571,6 +584,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       rv.detalle?.forEach(d => alertas.push({ icon: '⚠️', text: d, level: nivel }));
     }
 
+    // Riesgos climáticos
     const ro = datos?.riesgos_olivar || {};
     const addRiesgo = (r, icon, txt) => { if (r?.nivel === 'alto') alertas.push({ icon, text: txt, level: 'alto' }); };
     addRiesgo(ro.calor, '🔥', 'Ola de calor');
@@ -578,6 +592,7 @@ import MapaCalor from '../components/MapaCalor.astro';
     addRiesgo(ro.alta_humedad, '🦠', 'Alta humedad');
     addRiesgo(ro.baja_lluvia, '🏜️', 'Sequía');
 
+    // Riesgos de plagas
     const rp = datos?.riesgos_plaga || {};
     const addRiesgoPlaga = (r, icon, txt) => { if (r?.nivel === 'alto') alertas.push({ icon, text: txt, level: 'alto' }); };
     addRiesgoPlaga(rp.mosca, '🦟', 'Mosca activa');
@@ -590,15 +605,12 @@ import MapaCalor from '../components/MapaCalor.astro';
       return;
     }
 
-    if (alertas.length === 0) {
-      ALERTAS_LIST.innerHTML = '<div class="alerta-item bajo"><span class="icono">✅</span>Sin alertas activas. Condiciones normales.</div>';
-    } else {
-      ALERTAS_LIST.innerHTML = alertas.map(a => `
-        <div class="alerta-item ${a.level}">
-          <span class="icono">${a.icon}</span>${a.text}
-        </div>
-      `).join('');
-    }
+    // Mostrar info provincial + alertas
+    const alertasHtml = alertas.length === 0 
+      ? '<div class="alerta-item bajo"><span class="icono">✅</span>Sin alertas activas. Condiciones normales.</div>'
+      : alertas.map(a => `<div class="alerta-item ${a.level}"><span class="icono">${a.icon}</span>${a.text}</div>`).join('');
+    
+    ALERTAS_LIST.innerHTML = provinciaInfo + alertasHtml;
   }
 
   async function loadData() {
