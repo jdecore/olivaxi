@@ -482,10 +482,10 @@ function renderAlertasPanel(d) {
   const ordered = ['clima', 'suelo', 'plagas', 'hongos'];
   
   const resumenRiesgos = riesgos.length > 0 
-    ? `<div class="riesgo-resumen" style="background:${nivelColor}10;border:1px solid ${nivelColor}30;border-radius:8px;padding:10px;margin-bottom:12px">
-        <div style="font-weight:bold;color:${nivelColor};margin-bottom:6px">📊 Resumen de riesgos (${nivelTexto})</div>
+    ? `<div class="riesgo-resumen" style="background:#f7f4ee;border:1px solid #ccc;border-radius:8px;padding:10px;margin-bottom:12px">
+        <div style="font-weight:bold;color:#1C1C1C;margin-bottom:6px">📊 Riesgos activos (${nivelTexto})</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${riesgos.map(r => `<span style="background:${r.level === 'alto' ? '#ef4444' : r.level === 'medio' ? '#f59e0b' : '#22c55e'}20;color:${r.level === 'alto' ? '#ef4444' : r.level === 'medio' ? '#f59e0b' : '#22c55e'};padding:4px 8px;border-radius:4px;font-size:11px;font-weight:500">${r.icon} ${r.text}</span>`).join('')}
+          ${riesgos.map(r => `<span style="background:${r.level === 'alto' ? '#fef2f2' : r.level === 'medio' ? '#fffbeb' : '#f0fdf4'};border:1px solid ${r.level === 'alto' ? '#dc2626' : r.level === 'medio' ? '#d97706' : '#15803d'};color:${r.level === 'alto' ? '#dc2626' : r.level === 'medio' ? '#b45309' : '#166534'};padding:4px 8px;border-radius:4px;font-size:11px;font-weight:500">${r.icon} ${r.text}</span>`).join('')}
         </div>
       </div>`
     : '';
@@ -519,11 +519,18 @@ function updateRiesgoBadge(d) {
   if (activos.length === 0) {
     RIESGO_BADGE.className = 'riesgo-badge bajo';
     RIESGO_BADGE.textContent = '✅ ' + prov + ': Sin riesgo';
-  } else {
+  } else if (activos.length === 1) {
     const mainRisk = activos[0];
     const riskEmoji = nivel === 'alto' ? '🔴' : '🟡';
     RIESGO_BADGE.className = 'riesgo-badge ' + nivel;
     RIESGO_BADGE.textContent = riskEmoji + ' ' + prov + ': ' + mainRisk.titulo;
+  } else {
+    const mainRisk = activos[0];
+    const otrosCount = activos.length - 1;
+    const riskEmoji = nivel === 'alto' ? '🔴' : '🟡';
+    RIESGO_BADGE.className = 'riesgo-badge ' + nivel;
+    const otrosText = otrosCount === 1 ? '+1 otro' : `+${otrosCount} otros`;
+    RIESGO_BADGE.textContent = riskEmoji + ' ' + prov + ': ' + mainRisk.titulo + ' (' + otrosText + ')';
   }
   
   RIESGO_BADGE.onclick = () => switchToAlertasTab();
@@ -592,45 +599,37 @@ function renderNarrativeSection(d) {
   const esCalor = comp.variacion > 0 || comp.riesgoCalor;
   const tieneDeficit = deficitRiego > 0;
   
-  const diffTemp = Math.abs(comp.variacion);
+  let pregunta = '';
   let linea1 = '';
   let linea2 = '';
-  let situacion = '';
   
   if (esFrio && tieneDeficit) {
-    linea1 = `Tu zona está más fría de lo normal (${comp.temperaturaActual}°C) con déficit de lluvia.`;
+    linea1 = 'Tu zona está más fría de lo normal con déficit de lluvia.';
     linea2 = 'Monitoriza el riego esta semana y evita encharcamientos.';
-    situacion = `más fría de lo normal con déficit de lluvia`;
-    pregunta = `Mi zona está más fría de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?`;
+    pregunta = 'Mi zona está más fría de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?';
   } else if (esCalor && tieneDeficit) {
-    linea1 = `Tu zona está más caliente de lo normal (${comp.temperaturaActual}°C) con déficit de lluvia.`;
+    linea1 = 'Tu zona está más caliente de lo normal con déficit de lluvia.';
     linea2 = 'Riega al amanecer y aplica mulch para retener humedad.';
-    situacion = `más caliente de lo normal con déficit de lluvia`;
-    pregunta = `Mi zona está más caliente de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?`;
+    pregunta = 'Mi zona está más caliente de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?';
   } else if (esCalor && comp.riesgoCalor) {
-    linea1 = `Tu zona tiene riesgo de calor extremo (${comp.temperaturaActual}°C).`;
+    linea1 = 'Tu zona tiene riesgo de calor extremo.';
     linea2 = 'Protege el olivar con riego abundante y evita podas.';
-    situacion = `con riesgo de calor extremo`;
-    pregunta = `Mi zona tiene riesgo de calor extremo. ¿Cómo protejo el olivar?`;
+    pregunta = 'Mi zona tiene riesgo de calor extremo. ¿Cómo protejo el olivar?';
   } else if (!esFrio && !esCalor && !tieneDeficit) {
-    linea1 = `Tu zona tiene condiciones óptimas (${comp.temperaturaActual}°C).`;
-    linea2 = 'Es ideal para tareas de mantenimiento del olivar.';
-    situacion = `con condiciones óptimas`;
-    pregunta = 'Las condiciones son normales. ¿Qué tareas de mantenimiento recomiendan para mis olivos?';
+    linea1 = 'Tu zona tiene condiciones óptimas para el olivar.';
+    linea2 = 'Es ideal para tareas de mantenimiento.';
+    pregunta = 'Las condiciones son óptimas. ¿Qué tareas de mantenimiento recomiendan para mis olivos?';
   } else if (esFrio) {
-    linea1 = `Tu zona está más fría de lo normal (${comp.temperaturaActual}°C).`;
+    linea1 = 'Tu zona está más fría de lo normal.';
     linea2 = 'Consulta la previsión de heladas y protege árboles jóvenes.';
-    situacion = `más fría de lo normal`;
-    pregunta = `Tengo ${comp.temperaturaActual}°C. ¿Cómo protejo los olivos de las heladas tardías?`;
+    pregunta = 'Mi zona está más fría de lo normal. ¿Cómo protejo los olivos de las heladas tardías?';
   } else if (tieneDeficit) {
-    linea1 = `Tu zona tiene déficit hídrico (${deficitRiego.toFixed(1)}mm).`;
+    linea1 = 'Tu zona tiene déficit hídrico.';
     linea2 = 'Aumenta la frecuencia de riego gradualmente.';
-    situacion = `con déficit hídrico`;
-    pregunta = `Tengo déficit de ${deficitRiego.toFixed(1)}mm. ¿Cómo optimizo el riego durante este déficit?`;
+    pregunta = 'Tengo déficit hídrico. ¿Cómo optimizo el riego durante este déficit?';
   } else {
-    linea1 = `Situación estable en tu zona (${comp.temperaturaActual}°C).`;
+    linea1 = 'Situación estable en tu zona.';
     linea2 = 'Continúa monitoreando las condiciones climáticas.';
-    situacion = `estable`;
     pregunta = '¿Qué recomendaciones generales tienen para el cuidado del olivar?';
   }
   
@@ -638,7 +637,7 @@ function renderNarrativeSection(d) {
   
   const linkEl = $('consejero-context-link');
   if (linkEl && pregunta) {
-    linkEl.innerHTML = `<a href="/consejero?q=${encodeURIComponent(pregunta)}" class="consejero-cta">${pregunta} → Preguntar al consejero</a>`;
+    linkEl.innerHTML = `<a href="/consejero?q=${encodeURIComponent(pregunta)}" class="consejero-cta">¿Cómo adapto mi riego a estas condiciones? → Preguntar al consejero</a>`;
   }
 }
 
@@ -712,11 +711,18 @@ function updateRiesgoBadgeFromClima(p) {
   if (activos.length === 0) {
     RIESGO_BADGE.className = 'riesgo-badge bajo';
     RIESGO_BADGE.textContent = '✅ ' + prov + ': Sin riesgo';
-  } else {
+  } else if (activos.length === 1) {
     const mainRisk = activos[0];
     const riskEmoji = nivel === 'alto' ? '🔴' : '🟡';
     RIESGO_BADGE.className = 'riesgo-badge ' + nivel;
     RIESGO_BADGE.textContent = riskEmoji + ' ' + prov + ': ' + mainRisk.titulo;
+  } else {
+    const mainRisk = activos[0];
+    const otrosCount = activos.length - 1;
+    const riskEmoji = nivel === 'alto' ? '🔴' : '🟡';
+    RIESGO_BADGE.className = 'riesgo-badge ' + nivel;
+    const otrosText = otrosCount === 1 ? '+1 otro' : `+${otrosCount} otros`;
+    RIESGO_BADGE.textContent = riskEmoji + ' ' + prov + ': ' + mainRisk.titulo + ' (' + otrosText + ')';
   }
   
   RIESGO_BADGE.onclick = () => switchToAlertasTab();

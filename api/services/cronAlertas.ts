@@ -5,12 +5,13 @@ import { calcularRiesgosOlivar } from "./riesgos";
 
 // Configuración de email
 const gmailUser = process.env.GMAIL_USER;
+const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: gmailUser,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    pass: getGmailPass(),
   },
 });
 
@@ -107,7 +108,7 @@ function activarPorTipo(tipo: string, riesgosActivos: any[]): boolean {
 }
 
 export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: number; enviados: number }> {
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const gmailPass = getGmailPass();
   if (!gmailPass) {
     console.log("[CRON] Sin Gmail config, saltando");
     return { ok: false, alertas: 0, enviados: 0 };

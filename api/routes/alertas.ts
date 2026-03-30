@@ -66,12 +66,13 @@ function generateVerificationToken(): string {
 }
 
 const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
+const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: gmailUser,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    pass: getGmailPass(),
   },
 });
 
@@ -301,6 +302,63 @@ async function generarEmailConLLM(
 
   console.error(`[LLM-Alertas] Todos los providers fallaron:`, errors.map(e => e.message).join(", "));
   return null;
+}
+
+async function enviarAlertaInmediata(alerta: any, ip: string): Promise<boolean> {
+  const tipo = normalizarTipoAlerta(alerta.tipo || 'condiciones_optimas');
+  await getClimaData();
+  const provData = getClimaByProvincia(alerta.provincia);
+  const temp = provData?.temperatura ?? 0;
+  const riesgosActivos = getRiesgosActivosDesdeProvinciaData(provData);
+  const activar = activarPorTipo(tipo, riesgosActivos);
+
+  if (!activar) {
+    logAudit(ip, 'VERIFY_IMMEDIATE_SKIP', true, 'Sin riesgo activo ahora');
+    return false;
+  }
+
+  const contexto = await obtenerContextoAlerta(
+    alerta.provincia,
+    alerta.variedad,
+    alerta.fenologia,
+    alerta.nombre,
+    tipo
+  );
+
+  let emailHtml: string | null = null;
+  let llmUsed = false;
+
+  if (contexto) {
+    emailHtml = await generarEmailConLLM(contexto, "alerta");
+    if (emailHtml) llmUsed = true;
+  }
+
+  if (!emailHtml) {
+    const icon = tipo === 'helada' ? '❄️' : tipo === 'inundacion' ? '🌊' : tipo === 'mosca' ? '🪰' : tipo === 'polilla' ? '🦋' : tipo === 'repilo' ? '🍂' : tipo === 'xylella' ? '🚨' : tipo === 'hongos_criticos' ? '🍄' : '🔥';
+    const titulo = `ALERTA ${tipo.replaceAll('_', ' ').toUpperCase()}`;
+    const consejos = CONSEJOS[tipo] || [];
+    emailHtml = `<p>Hola <strong>${alerta.nombre}</strong>,</p>
+<p><strong>${icon} ${titulo}</strong></p>
+<p>Tu provincia <strong>${alerta.provincia}</strong> presenta riesgo activo ahora mismo.</p>
+<p>🌡️ Temperatura actual: <strong>${temp.toFixed(1)}°C</strong></p>
+<p><strong>Riesgos activos:</strong> ${riesgosActivos.slice(0, 3).map(r => `${r.icono} ${r.titulo}`).join(' · ') || 'Sin riesgos críticos'}</p>
+<p><strong>Acciones recomendadas:</strong></p>
+<ul>${consejos.map(c => `<li>${c}</li>`).join('') || ''}</ul>
+<p>🫒 Equipo olivaξ</p>`;
+  }
+
+  await transporter.sendMail({
+    from: `olivaξ <${gmailUser}>`,
+    to: alerta.email,
+    subject: llmUsed ? `🚨 ALERTA URGENTE - ${alerta.provincia}: ${temp.toFixed(1)}°C` : `🚨 ALERTA INMEDIATA - ${alerta.provincia}`,
+    html: emailHtml,
+  });
+
+  db.query("UPDATE alertas SET last_notified_at = ? WHERE id = ?")
+    .run(Date.now(), alerta.id);
+
+  logAudit(ip, 'VERIFY_IMMEDIATE_SENT', true, `id=${alerta.id} email=${alerta.email}`);
+  return true;
 }
 
 const VARIEDADES_INFO: Record<string, any> = {
@@ -620,16 +678,17 @@ alertas.post("/verify", async (c) => {
   }
   
   // Insertar en DB
+  const createdAt = Date.now();
   const insert = db.query(
     "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
   );
-  insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
+  insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, createdAt);
   
   pendingVerifications.delete(token);
   logAudit(ip, 'VERIFY_SUCCESS', true, `Alerta creada para ${email}`);
   
   // Enviar email de confirmación
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const gmailPass = getGmailPass();
   if (gmailPass) {
     try {
       const varInfo = VARIEDADES_INFO[variedad];
@@ -648,6 +707,20 @@ ${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
       logAudit(ip, 'EMAIL_SENT', true, 'Confirmación enviada');
     } catch (e) {
       logAudit(ip, 'EMAIL_FAIL', false, String(e));
+    }
+  }
+
+  // Disparo inmediato de evaluación de riesgo tras confirmar.
+  if (gmailPass) {
+    try {
+      const alertaCreada = db.query(
+        "SELECT * FROM alertas WHERE email = ? AND provincia = ? AND created_at = ? ORDER BY id DESC LIMIT 1"
+      ).get(email, provincia, createdAt) as any;
+      if (alertaCreada) {
+        await enviarAlertaInmediata(alertaCreada, ip);
+      }
+    } catch (e) {
+      logAudit(ip, 'VERIFY_IMMEDIATE_FAIL', false, String(e));
     }
   }
   
@@ -737,7 +810,7 @@ alertas.post("/", async (c) => {
   logAudit(ip, 'ALERTA_VERIFY_SENT', true, `Token enviado a ${email}`);
 
   // Enviar email de verificación
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const gmailPass = getGmailPass();
   if (gmailPass) {
     try {
       const verifyUrl = `${getFrontendBaseUrl()}/alertas?verify=${verifyToken}`;
@@ -800,7 +873,7 @@ alertas.post("/check", async (c) => {
     return c.json({ error: "No autorizado" }, 401);
   }
   
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const gmailPass = getGmailPass();
   if (!gmailPass) return c.json({ error: "Sin Gmail config" }, 500);
 
   logAudit(ip, 'CHECK_START', true);
