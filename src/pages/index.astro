@@ -98,12 +98,12 @@ import MapaCalor from '../components/MapaCalor.astro';
   .bento-grid {
     display: grid;
     grid-template-columns: 60fr 40fr;
-    grid-template-rows: 1fr;
     gap: 4px;
     max-width: 1200px;
     margin: 2px auto 1rem;
     padding: 0 1rem;
     align-items: stretch;
+    height: 480px;
   }
 
     .mapa-card {
@@ -111,11 +111,15 @@ import MapaCalor from '../components/MapaCalor.astro';
       grid-row: 1;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      border: 3px solid var(--color-border);
+      background: var(--color-white-surface);
     }
 
     .mapa-card :global(#mapa-container) {
       flex: 1;
-      min-height: 400px;
+      min-height: unset;
     }
 
     .sidebar-panels {
@@ -123,74 +127,29 @@ import MapaCalor from '../components/MapaCalor.astro';
       grid-row: 1;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      height: 100%;
+      overflow: hidden;
+      border: 3px solid var(--color-border);
+      background: var(--color-white-surface);
     }
-
-  .panel-card {
-    background: var(--color-white-surface);
-    border: 3px solid var(--color-border);
-    border-radius: 0;
-    padding: 16px;
-  }
-
-  .panel-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--color-aceituna);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .panel-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 3px solid var(--color-border);
-    border-radius: 0;
-    background: var(--color-sal);
-    color: var(--color-aceituna);
-    font-size: 14px;
-    font-family: 'Outfit', system-ui, sans-serif;
-  }
-
-  .panel-msg {
-    font-size: 12px;
-    color: var(--color-muted);
-    margin-top: 8px;
-    line-height: 1.4;
-  }
-
-  .panel-link {
-    font-size: 12px;
-    color: var(--color-aceituna);
-    text-decoration: underline;
-    cursor: pointer;
-    margin-top: 8px;
-    display: inline-block;
-  }
-
-  .panel-link:hover {
-    color: var(--color-limon);
-  }
-
-  .panel-alertas {
-    max-height: 200px;
-    overflow-y: auto;
-  }
 
   @media (max-width: 900px) {
     .bento-grid { 
       grid-template-columns: 1fr; 
+      height: auto;
     }
     .mapa-card {
       grid-row: auto;
+      height: 320px;
     }
     .mapa-card :global(#mapa-container) {
-      height: 280px;
+      height: 100%;
     }
     .sidebar-panels {
       grid-column: 1;
+      height: auto;
+      max-height: 400px;
+      overflow-y: auto;
     }
   }
 
@@ -200,23 +159,111 @@ import MapaCalor from '../components/MapaCalor.astro';
       margin: 2px auto 1rem;
       padding: 0 0.5rem;
     }
-    .mapa-card :global(#mapa-container) {
-      height: 220px;
-    }
-    .panel-card {
-      padding: 12px;
-    }
-    .panel-title {
-      font-size: 13px;
-    }
-    .panel-select {
-      padding: 8px 10px;
-      font-size: 13px;
-    }
-    .panel-msg {
-      font-size: 11px;
+    .mapa-card {
+      height: 250px;
     }
   }
+
+    /* CARRUSEL SIDEBAR */
+    .carousel-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .carousel-nav {
+      display: flex;
+      gap: 2px;
+      padding: 8px;
+      background: var(--color-sal);
+      border-bottom: 2px solid var(--color-border);
+      flex-shrink: 0;
+    }
+
+    .carousel-tab {
+      flex: 1;
+      padding: 10px 4px;
+      border: 2px solid var(--color-border);
+      background: var(--color-white-surface);
+      color: var(--color-aceituna);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .carousel-tab:hover {
+      background: var(--color-limon);
+    }
+
+    .carousel-tab.active {
+      background: var(--color-limon);
+      border-color: var(--color-aceituna);
+    }
+
+    .carousel-slide {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 8px;
+    }
+
+    .carousel-slide.active {
+      display: flex;
+    }
+
+    /* Slide 1: Provincias Grid */
+    .provincias-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .provincia-btn {
+      padding: 10px 8px;
+      border: 2px solid var(--color-border);
+      background: var(--color-sal);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-aceituna);
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .provincia-btn:hover {
+      background: var(--color-limon);
+      border-color: var(--color-aceituna);
+    }
+
+    .provincia-btn.selected {
+      background: var(--color-limon);
+      border-color: var(--color-aceituna);
+      box-shadow: 0 2px 0 var(--color-aceituna);
+    }
+
+    .provincia-btn .riesgo-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    .riesgo-dot.alto { background: #ef4444; }
+    .riesgo-dot.medio { background: #f59e0b; }
+    .riesgo-dot.bajo { background: #22c55e; }
+
+    .provincia-btn .temp {
+      font-size: 10px;
+      color: var(--color-muted);
+      margin-top: 2px;
+    }
 
   .bento-card {
     background: var(--color-white-surface);
@@ -1120,45 +1167,36 @@ import MapaCalor from '../components/MapaCalor.astro';
       color: var(--color-muted);
       font-size: 0.85rem;
     }
+
     /* CARRUSEL SIDEBAR */
     .carousel-container {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-    }
-
-    .carousel-slide {
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .carousel-slide.active {
-      display: flex;
+      height: 100%;
+      overflow: hidden;
     }
 
     .carousel-nav {
       display: flex;
-      gap: 4px;
-      padding: 8px 0;
+      gap: 2px;
+      padding: 8px;
+      background: var(--color-sal);
       border-bottom: 2px solid var(--color-border);
+      flex-shrink: 0;
     }
 
     .carousel-tab {
       flex: 1;
-      padding: 8px 4px;
+      padding: 10px 4px;
       border: 2px solid var(--color-border);
-      background: var(--color-sal);
+      background: var(--color-white-surface);
       color: var(--color-aceituna);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s ease;
     }
-
-    .carousel-tab:first-child { border-radius: 4px 0 0 4px; }
-    .carousel-tab:last-child { border-radius: 0 4px 4px 0; }
 
     .carousel-tab:hover {
       background: var(--color-limon);
@@ -1167,6 +1205,19 @@ import MapaCalor from '../components/MapaCalor.astro';
     .carousel-tab.active {
       background: var(--color-limon);
       border-color: var(--color-aceituna);
+    }
+
+    .carousel-slide {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 8px;
+    }
+
+    .carousel-slide.active {
+      display: flex;
     }
 
     /* Slide 1: Provincias Grid */
@@ -1192,7 +1243,6 @@ import MapaCalor from '../components/MapaCalor.astro';
     .provincia-btn:hover {
       background: var(--color-limon);
       border-color: var(--color-aceituna);
-      transform: translateY(-1px);
     }
 
     .provincia-btn.selected {
@@ -1287,7 +1337,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 
     /* Slide 3: Alertas */
     .alertas-list {
-      max-height: 180px;
+      flex: 1;
       overflow-y: auto;
     }
 
@@ -1322,6 +1372,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       display: flex;
       gap: 8px;
       margin-top: 8px;
+      flex-shrink: 0;
     }
 
     .alerta-action-btn {
@@ -1359,7 +1410,6 @@ import MapaCalor from '../components/MapaCalor.astro';
         font-size: 11px;
       }
     }
-
   </style>
 
   <!-- HERO MINIMALISTA -->
