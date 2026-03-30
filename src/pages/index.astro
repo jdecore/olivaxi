@@ -15,14 +15,17 @@ import MapaCalor from '../components/MapaCalor.astro';
 .hero-contextual{animation-delay:.3s}
 @media(max-width:640px){.hero-section{min-height:30vh;padding:40px 16px 20px;gap:10px}.hero-title{font-size:1.75rem}.hero-subtitle{font-size:.9rem}}
 .hero-badge{display:inline-block;padding:6px 14px;background:var(--color-limon);border-radius:20px;font-size:12px;font-weight:600;color:var(--color-aceituna);margin-bottom:12px}
-.hero-stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0;font-size:13px;color:var(--color-muted)}
-.hero-stats span{white-space:nowrap}
+.hero-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.hero-stats span{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.hero-stats strong{font-size:28px;font-weight:700;color:var(--color-aceituna)}
+.hero-stats small{font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px}
 .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .cta-primary{padding:12px 24px;background:var(--color-aceituna);color:var(--color-sal);border-radius:8px;font-weight:700;text-decoration:none;transition:transform .15s}
 .cta-primary:hover{transform:translateY(-2px)}
 .cta-secondary{padding:12px 24px;background:transparent;border:2px solid var(--color-aceituna);color:var(--color-aceituna);border-radius:8px;font-weight:600;text-decoration:none;transition:background .15s}
 .cta-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}
-.alert-strip{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 16px;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600}
+.alert-strip{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 16px;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;animation:alertFadeIn .4s ease-out}
+@keyframes alertFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 .alert-strip.medio{background:rgba(245,158,11,.15);border:2px solid #f59e0b;color:#b45309}
 .alert-strip.alto{background:rgba(239,68,68,.1);border:2px solid #ef4444;color:#991b1b}
 .alert-strip-content{display:flex;align-items:center;gap:10px}
@@ -137,11 +140,14 @@ import MapaCalor from '../components/MapaCalor.astro';
 <h1 class="hero-title">Tu olivar protegido con datos reales</h1>
 <p class="hero-subtitle">Temperatura, humedad, plagas y riego en un solo lugar. Datos científicos actualizados cada 6 horas.</p>
 <div class="hero-stats">
-<span>6 variedades</span>·<span>10 provincias</span>·<span>4 plagas</span>·<span>actualización cada 6h</span>
+<span><strong>6</strong><small>variedades</small></span>
+<span><strong>10</strong><small>provincias</small></span>
+<span><strong>4</strong><small>plagas</small></span>
+<span><strong>6h</strong><small>actualización</small></span>
 </div>
 <div class="hero-ctas">
 <a href="#mapa-card-wrapper" class="cta-primary">Ver mi olivar</a>
-<a href="/consejero" class="cta-secondary">Hablar con el counsellor IA</a>
+<a href="/consejero" class="cta-secondary">Hablar con el consejero IA</a>
 </div>
 </section>
 
@@ -217,47 +223,6 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="carousel-slide" id="slide-alertas"><div class="alertas-list" id="alertas-list"><div class="no-province-msg">Selecciona una provincia para ver riesgos.</div></div><div class="alerta-actions"><a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a><a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a></div></div>
 </div>
 </div>
-<a href="/consejero" class="eco-card">
-<div class="eco-icon">💬</div>
-<div class="eco-content">
-<span class="eco-category">IA</span>
-<h3 class="eco-title">Consejero IA</h3>
-<p class="eco-desc">Chat con inteligencia artificial especializada</p>
-</div>
-</a>
-<a href="/variedades" class="eco-card">
-<div class="eco-icon">🫒</div>
-<div class="eco-content">
-<span class="eco-category">VARIEDADES</span>
-<h3 class="eco-title">Catálogo</h3>
-<p class="eco-desc">6 variedades con análisis climático</p>
-</div>
-</a>
-<a href="/plagas" class="eco-card">
-<div class="eco-icon">🦟</div>
-<div class="eco-content">
-<span class="eco-category">PLAGAS</span>
-<h3 class="eco-title">Guía RAIF</h3>
-<p class="eco-desc">Mosca, Polilla, Repilo, Xylella</p>
-</div>
-</a>
-<a href="/agua-suelos" class="eco-card">
-<div class="eco-icon">💧</div>
-<div class="eco-content">
-<span class="eco-category">AGUA</span>
-<h3 class="eco-title">Agua y suelos</h3>
-<p class="eco-desc">Estado del suelo y recomendaciones de riego</p>
-</div>
-</a>
-<a href="/alertas" class="eco-card">
-<div class="eco-icon">🔔</div>
-<div class="eco-content">
-<span class="eco-category">ALERTAS</span>
-<h3 class="eco-title">Notificaciones</h3>
-<p class="eco-desc">Recibe avisos cuando haya riesgos</p>
-</div>
-</a>
-</section>
 
 <div class="mi-olivar-panel" id="mi-olivar-panel">
 <div class="mi-olivar-card">
@@ -314,6 +279,29 @@ function getRiesgoClass(r) {
 }
 
 // --- Alert Strip: Calcular riesgo máximo entre todas las provincias ---
+function getRiesgosActivos(p) {
+  const riesgos = [];
+  const ro = p.riesgos_olivar || {};
+  if (ro.calor?.nivel === 'alto') riesgos.push({ tipo: 'calor', titulo: 'Calor extremo', icono: '🔥' });
+  else if (ro.calor?.nivel === 'medio') riesgos.push({ tipo: 'calor', titulo: 'Calor', icono: '🔥' });
+  if (ro.frio?.nivel === 'alto') riesgos.push({ tipo: 'frio', titulo: 'Frío extremo', icono: '❄️' });
+  else if (ro.frio?.nivel === 'medio') riesgos.push({ tipo: 'frio', titulo: 'Frío', icono: '❄️' });
+  if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️' });
+  if (ro.viento?.nivel === 'alto') riesgos.push({ tipo: 'viento', titulo: 'Viento fuerte', icono: '💨' });
+  
+  const rp = p.riesgos_plaga || {};
+  if (rp.mosca?.nivel === 'alto') riesgos.push({ tipo: 'mosca', titulo: 'Mosca activa', icono: '🪰' });
+  else if (rp.mosca?.nivel === 'medio') riesgos.push({ tipo: 'mosca', titulo: 'Mosca', icono: '🪰' });
+  if (rp.polilla?.nivel === 'alto') riesgos.push({ tipo: 'polilla', titulo: 'Polilla activa', icono: '🦋' });
+  else if (rp.polilla?.nivel === 'medio') riesgos.push({ tipo: 'polilla', titulo: 'Polilla', icono: '🦋' });
+  if (rp.repilo?.nivel === 'alto') riesgos.push({ tipo: 'repilo', titulo: 'Repilo activo', icono: '🍂' });
+  else if (rp.repilo?.nivel === 'medio') riesgos.push({ tipo: 'repilo', titulo: 'Repilo', icono: '🍂' });
+  if (rp.xylella?.nivel === 'alto') riesgos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨' });
+  else if (rp.xylella?.nivel === 'medio') riesgos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨' });
+  
+  return riesgos;
+}
+
 function renderAlertStrip() {
   const strip = document.getElementById('alert-strip');
   if (!strip || !datosClima.length) { 
@@ -321,34 +309,30 @@ function renderAlertStrip() {
     return;
   }
 
-  const PLAGAS = ['mosca', 'polilla', 'repilo', 'xylella'];
-  const plagaIcons = { mosca: '🪰', polilla: '🦋', repilo: '🍂', xylella: '🚨' };
-  
   let maxRiesgo = 'bajo';
   let provinciaMax = '';
   let detalle = '';
   
   for (const p of datosClima) {
-    if (p.riesgo === 'alto' && maxRiesgo !== 'alto') {
-      maxRiesgo = 'alto';
-      provinciaMax = p.provincia;
-      detalle = `Temperatura ${p.temperatura}°C`;
-    }
-    const rp = p.riesgos_plaga || {};
-    for (const plaga of PLAGAS) {
-      const nivel = rp[plaga]?.nivel;
-      if (nivel === 'alto') {
+    const riesgos = getRiesgosActivos(p);
+    const prioritario = riesgos.reduce((prev, curr) => {
+      const prio = { 'alto': 3, 'medio': 2, 'bajo': 1 };
+      const nivel = p.riesgos_olivar?.[curr.tipo]?.nivel || p.riesgos_plaga?.[curr.tipo]?.nivel || 'bajo';
+      return prio[nivel] > (prio[prev?.nivel] || 0) ? { ...curr, nivel } : prev;
+    }, null);
+    
+    if (prioritario) {
+      if (prioritario.nivel === 'alto') {
         maxRiesgo = 'alto';
         provinciaMax = p.provincia;
-        detalle = `${plagaIcons[plaga]} ${plaga.charAt(0).toUpperCase() + plaga.slice(1)} activa`;
+        detalle = `${prioritario.icono} ${prioritario.titulo}`;
         break;
-      } else if (nivel === 'medio' && maxRiesgo === 'bajo') {
+      } else if (prioritario.nivel === 'medio' && maxRiesgo === 'bajo') {
         maxRiesgo = 'medio';
         provinciaMax = p.provincia;
-        detalle = `${plagaIcons[plaga]} ${plaga.charAt(0).toUpperCase() + plaga.slice(1)}`;
+        detalle = `${prioritario.icono} ${prioritario.titulo}`;
       }
     }
-    if (maxRiesgo === 'alto') break;
   }
   
   if (maxRiesgo === 'bajo') {
