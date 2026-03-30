@@ -45,7 +45,9 @@ app.use("*", rateLimitMiddleware);
 const defaultAllowedOrigins = [
   "http://localhost:4321",
   "http://127.0.0.1:4321",
+  "http://olivaxi.duckdns.org",
   "https://olivaxi.duckdns.org",
+  "http://45.90.237.135:4321",
 ];
 const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
   .split(",")

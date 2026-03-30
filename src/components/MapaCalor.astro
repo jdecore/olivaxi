@@ -106,8 +106,16 @@ class OlivaxiMapa extends HTMLElement {
       if (!this.datos || this.datos.length === 0) throw new Error('Sin datos');
     } catch (e) {
       console.error('Error datos:', e);
-      loading.querySelector('p').textContent = 'Error de datos';
-      return;
+      loading.querySelector('p').textContent = 'Error de datos. Reintentando...';
+      try {
+        await new Promise(r => setTimeout(r, 700));
+        this.datos = await Ecosistema.fetchClima();
+      } catch (_) {}
+      if (!this.datos || this.datos.length === 0) {
+        loading.querySelector('p').textContent = 'Error de datos';
+        return;
+      }
+      loading.querySelector('p').textContent = 'Datos cargados';
     }
 
     // Restaurar provincia seleccionada desde ecosistema
