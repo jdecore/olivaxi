@@ -6,7 +6,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
 <style is:global>
 .hero-section{min-height:40vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:50px 24px 30px;gap:16px}
-.hero-title{font-size:clamp(36px,6vw,56px);font-weight:700;color:var(--color-aceituna);margin:0;max-width:700px}
+.hero-title{font-size:clamp(28px,5vw,48px);font-weight:500;color:var(--color-aceituna);margin:0;max-width:700px}
 .hero-subtitle{font-size:clamp(16px,2vw,20px);font-weight:400;color:var(--color-muted);margin:0;max-width:600px;line-height:1.5}
 .hero-contextual{font-size:clamp(14px,1.5vw,16px);font-weight:600;color:var(--color-aceituna);margin-top:8px;padding:8px 16px;background:rgba(212,232,73,0.2);border-radius:20px}
 @keyframes heroFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -24,7 +24,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .cta-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}
 .alert-strip{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 16px;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600}
 .alert-strip.medio{background:rgba(245,158,11,.15);border:2px solid #f59e0b;color:#b45309}
-.alert-strip.alto{background:rgba(239,68,68,.15);border:2px solid #ef4444;color:#dc2626}
+.alert-strip.alto{background:rgba(239,68,68,.1);border:2px solid #ef4444;color:#991b1b}
 .alert-strip-content{display:flex;align-items:center;gap:10px}
 .alert-strip-icon{font-size:18px}
 .alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap}
@@ -33,7 +33,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 @media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}}
 .ecosistema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .eco-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;text-decoration:none;transition:transform .15s,border-color .15s}
-.eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna)}
+.eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .eco-icon{font-size:1.8rem;flex-shrink:0}
 .eco-content{flex:1;min-width:0}
 .eco-category{font-size:.65rem;font-weight:700;color:var(--color-muted);letter-spacing:.1em}
@@ -153,6 +153,57 @@ import MapaCalor from '../components/MapaCalor.astro';
   <a href="/alertas" class="alert-strip-btn">Activar alertas</a>
 </div>
 
+<section class="ecosistema-grid">
+<a href="#mapa-card-wrapper" class="eco-card">
+<div class="eco-icon">🗺️</div>
+<div class="eco-content">
+<span class="eco-category">MAPA</span>
+<h3 class="eco-title">Ver todas las provincias</h3>
+<p class="eco-desc">Explora el mapa interactivo por provincia</p>
+</div>
+</a>
+<a href="/consejero" class="eco-card">
+<div class="eco-icon">💬</div>
+<div class="eco-content">
+<span class="eco-category">IA</span>
+<h3 class="eco-title">Consejero IA</h3>
+<p class="eco-desc">Chat con inteligencia artificial especializada</p>
+</div>
+</a>
+<a href="/variedades" class="eco-card">
+<div class="eco-icon">🫒</div>
+<div class="eco-content">
+<span class="eco-category">VARIEDADES</span>
+<h3 class="eco-title">Catálogo</h3>
+<p class="eco-desc">6 variedades con análisis climático</p>
+</div>
+</a>
+<a href="/plagas" class="eco-card">
+<div class="eco-icon">🦟</div>
+<div class="eco-content">
+<span class="eco-category">PLAGAS</span>
+<h3 class="eco-title">Guía RAIF</h3>
+<p class="eco-desc">Mosca, Polilla, Repilo, Xylella</p>
+</div>
+</a>
+<a href="/agua-suelos" class="eco-card">
+<div class="eco-icon">💧</div>
+<div class="eco-content">
+<span class="eco-category">AGUA</span>
+<h3 class="eco-title">Agua y suelos</h3>
+<p class="eco-desc">Estado del suelo y recomendaciones de riego</p>
+</div>
+</a>
+<a href="/alertas" class="eco-card">
+<div class="eco-icon">🔔</div>
+<div class="eco-content">
+<span class="eco-category">ALERTAS</span>
+<h3 class="eco-title">Notificaciones</h3>
+<p class="eco-desc">Recibe avisos cuando haya riesgos</p>
+</div>
+</a>
+</section>
+
 <div class="bento-grid">
   <div class="mapa-card" id="mapa-card-wrapper"><MapaCalor id="mapa-calor" /><div class="riesgo-badge bajo" id="riesgo-badge">✅ Sin riesgo</div></div>
 <div class="sidebar-panels carousel-container">
@@ -166,16 +217,6 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="carousel-slide" id="slide-alertas"><div class="alertas-list" id="alertas-list"><div class="no-province-msg">Selecciona una provincia para ver riesgos.</div></div><div class="alerta-actions"><a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a><a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a></div></div>
 </div>
 </div>
-
-<section class="ecosistema-grid">
-<a href="#mapa-card-wrapper" class="eco-card">
-<div class="eco-icon">🗺️</div>
-<div class="eco-content">
-<span class="eco-category">MAPA</span>
-<h3 class="eco-title">Mapa de riesgo</h3>
-<p class="eco-desc">Visualiza el riesgo climático por provincia</p>
-</div>
-</a>
 <a href="/consejero" class="eco-card">
 <div class="eco-icon">💬</div>
 <div class="eco-content">
