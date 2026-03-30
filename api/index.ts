@@ -12,7 +12,7 @@ const app = new Hono();
 // Allowed origins for CORS (production + dev)
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
-  : ['https://olivaxi.duckdns.org', 'http://olivaxi.duckdns.org:4321', 'http://localhost:4321', 'http://localhost:3000'];
+  : ['http://45.90.237.135', 'http://45.90.237.135:4321', 'http://localhost:4321', 'http://localhost:3000'];
 
 // Rate limiting simple en memoria con cleanup periódico
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
