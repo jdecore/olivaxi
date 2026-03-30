@@ -426,6 +426,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       <div class="info-section">
         <div class="info-title">🪨 SUELO</div>
         <div class="info-grid">
+          <div class="info-item">🌡️ suelo <b>${Math.round(d.suelo?.temperatura || 0)}°C</b></div>
+          <div class="info-item">💧 suelo <b>${Math.round(d.suelo?.humedad || 0)}%</b></div>
+          <div class="info-item">📈 ETo <b>${(d.suelo?.evapotranspiracion || 0).toFixed(1)}mm</b></div>
+          <div class="info-item">🚿 déficit <b>${(d.sueloAnalitica?.deficitRiego || 0).toFixed(1)}mm</b></div>
           <div class="info-item">🫒 <b>${d.provinciaInfo?.variedadPredominante || 'N/A'}</b></div>
           <div class="info-item">🪨 <b>${d.provinciaInfo?.tipoSuelo || 'N/A'}</b></div>
           <div class="info-item">⛰️ <b>${d.provinciaInfo?.altitud || '?'}m</b></div>

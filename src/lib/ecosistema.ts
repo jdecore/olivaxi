@@ -6,6 +6,10 @@ import { PROVINCIAS, VARIEDADES, CACHE_TTL, API_ENDPOINTS, KC_OLIVO } from './co
 import { apiUrl } from './api';
 import { olivaxiCache } from './cache';
 
+// --- Constantes para validación ---
+const VARIEDADES_VALIDAS = VARIEDADES.map(v => v.id);
+const PROVINCIAS_VALIDAS = [...PROVINCIAS];
+
 // --- Tipos ---
 export interface EcosistemaState {
   provincia: string;
@@ -36,6 +40,15 @@ export function getRiesgoLabel(nivel: string | undefined | null): string {
   return 'Riesgo bajo';
 }
 
+// --- Validaciones ---
+function isVariedadValida(v: string): boolean {
+  return VARIEDADES_VALIDAS.includes(v.toLowerCase());
+}
+
+function isProvinciaValida(p: string): boolean {
+  return PROVINCIAS_VALIDAS.some(v => v.toLowerCase() === p.toLowerCase());
+}
+
 // --- Constantes reexportadas ---
 export { PROVINCIAS, VARIEDADES, CACHE_TTL, API_ENDPOINTS, KC_OLIVO };
 
@@ -54,6 +67,7 @@ const OlivaxiEcosistema = {
   _dashboardData: null as any | null,
   _listeners: new Set<EcosistemaListener>(),
   _initialized: false,
+  _fetchId: 0,
 
   // ═══════════════════════════════
   // GETTERS
@@ -76,6 +90,11 @@ const OlivaxiEcosistema = {
   // SETTERS (notifican a todos)
   // ═══════════════════════════════
   setProvincia(value: string, options?: { silent?: boolean; fetchDashboard?: boolean }) {
+    if (value && !isProvinciaValida(value)) {
+      console.warn('[Ecosistema] Provincia inválida:', value);
+      return;
+    }
+    
     const opts = { silent: false, fetchDashboard: true, ...options };
     const prev = this._provincia;
     this._provincia = value;
@@ -99,6 +118,11 @@ const OlivaxiEcosistema = {
   },
 
   setVariedad(value: string, options?: { silent?: boolean; fetchDashboard?: boolean }) {
+    if (value && !isVariedadValida(value)) {
+      console.warn('[Ecosistema] Variedad inválida:', value);
+      return;
+    }
+    
     const opts = { silent: false, fetchDashboard: true, ...options };
     const prev = this._variedad;
     this._variedad = value;
@@ -143,7 +167,7 @@ const OlivaxiEcosistema = {
   // ═══════════════════════════════
   // FETCH centralizados
   // ═══════════════════════════════
-  async fetchClima(): Promise<any[]> {
+  async fetchClima(retries = 3): Promise<any[]> {
     // Cache primero
     const cached = olivaxiCache.get<any[]>(API_ENDPOINTS.CLIMA, undefined, CACHE_TTL.CLIMA);
     if (cached) {
@@ -151,17 +175,23 @@ const OlivaxiEcosistema = {
       return cached;
     }
 
-    try {
-      const res = await fetch(apiUrl(API_ENDPOINTS.CLIMA));
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      const data = await res.json();
-      olivaxiCache.set(API_ENDPOINTS.CLIMA, data);
-      this._climaData = data;
-      return data;
-    } catch (e) {
-      console.error('[Ecosistema] Error fetchClima:', e);
-      return this._climaData || [];
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const res = await fetch(apiUrl(API_ENDPOINTS.CLIMA));
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+        olivaxiCache.set(API_ENDPOINTS.CLIMA, data);
+        this._climaData = data;
+        return data;
+      } catch (e) {
+        console.error(`[Ecosistema] fetchClima intento ${attempt + 1} falló:`, e);
+        if (attempt < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        }
+      }
     }
+    console.error('[Ecosistema] fetchClima falló después de', retries, 'intentos');
+    return this._climaData || [];
   },
 
   async fetchDashboard(): Promise<any | null> {
@@ -177,12 +207,21 @@ const OlivaxiEcosistema = {
       return cached;
     }
 
+    // Prevenir race conditions: incrementar fetchId antes de cada request
+    const fetchId = ++this._fetchId;
+
     try {
       const query = new URLSearchParams(params).toString();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(apiUrl(`${API_ENDPOINTS.DASHBOARD}?${query}`), { signal: controller.signal });
       clearTimeout(timeout);
+
+      // Verificar que este fetch aún es el más reciente
+      if (fetchId !== this._fetchId) {
+        console.log('[Ecosistema] fetchDashboard descartado (hay uno más reciente)');
+        return null;
+      }
 
       if (!res.ok) throw new Error(`API ${res.status}`);
       const data = await res.json();
@@ -193,6 +232,10 @@ const OlivaxiEcosistema = {
         return data;
       }
     } catch (e) {
+      // Verificar que este fetch aún es el más reciente antes de reportar error
+      if (fetchId !== this._fetchId) {
+        return null;
+      }
       console.error('[Ecosistema] Error fetchDashboard:', e);
     }
     return null;
@@ -204,6 +247,16 @@ const OlivaxiEcosistema = {
 
   // Seleccionar provincia y opcionalmente variedad juntos
   seleccionar(provincia: string, variedad?: string) {
+    // Validar antes de proceder
+    if (provincia && !isProvinciaValida(provincia)) {
+      console.warn('[Ecosistema] Provincia inválida:', provincia);
+      return;
+    }
+    if (variedad !== undefined && variedad && !isVariedadValida(variedad)) {
+      console.warn('[Ecosistema] Variedad inválida:', variedad);
+      return;
+    }
+
     const provChanged = provincia !== this._provincia;
     const varChanged = variedad !== undefined && variedad !== this._variedad;
 

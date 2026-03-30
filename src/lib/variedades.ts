@@ -76,6 +76,15 @@ export const ICONOS_ALERTAS: Record<string, { icon: string; label: string }> = {
   polilla: { icon: "🦋", label: "Polilla del olivo activa" },
   xylella: { icon: "🦠", label: "Xylella fastidiosa - Riesgo crítico" },
   repilo: { icon: "🍄", label: "Repilo activo" },
+  verticilosis: { icon: "🍄", label: "Verticilosis (hongo de suelo)" },
+  antracnosis: { icon: "🦠", label: "Antracnosis (hongo)" },
+  tuberculosis: { icon: "🧫", label: "Tuberculosis del olivo" },
+  suelo_seco: { icon: "🏜️", label: "Suelo seco" },
+  suelo_encharcado: { icon: "🌊", label: "Suelo encharcado" },
+  suelo_frio: { icon: "🧊", label: "Suelo frío" },
+  suelo_caliente: { icon: "🔥", label: "Suelo caliente" },
+  eto_alta: { icon: "☀️", label: "Evapotranspiración alta" },
+  deficit_pluviometrico: { icon: "📉", label: "Déficit pluviométrico" },
   condiciones_optimas: { icon: "✅", label: "Condiciones óptimas" }
 };
 
