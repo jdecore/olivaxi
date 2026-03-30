@@ -4,6 +4,58 @@ import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
 import { getClimaByProvincia, getClimaData } from "./clima";
 
+// ============================================
+// SEGURIDAD - Rate Limiting simple (in-memory)
+// ============================================
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minuto
+const RATE_LIMIT_MAX = 10; // máximo 10 requests por IP
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = requestCounts.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    requestCounts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+function getClientIP(c: any): string {
+  return c.req.header('x-forwarded-for')?.split(',')[0]?.trim() 
+    || c.req.header('x-real-ip') 
+    || 'unknown';
+}
+
+// ============================================
+// AUDITORÍA - Logging
+// ============================================
+const AUDIT_LOG: { timestamp: number; ip: string; action: string; success: boolean; details?: string }[] = [];
+
+function logAudit(ip: string, action: string, success: boolean, details?: string) {
+  const entry = { timestamp: Date.now(), ip, action, success, details };
+  AUDIT_LOG.push(entry);
+  // Mantener solo últimos 1000 registros
+  if (AUDIT_LOG.length > 1000) AUDIT_LOG.shift();
+  console.log(`[AUDIT] ${action} - ${ip} - ${success ? 'OK' : 'FAIL'}${details ? ' - ' + details : ''}`);
+}
+
+// ============================================
+// Verificación de Email (Double Opt-in)
+// ============================================
+const pendingVerifications = new Map<string, { email: string; nombre: string; provincia: string; variedad: string; tipo: string; fenologia: string; expires: number }>();
+
+function generateVerificationToken(): string {
+  return crypto.randomUUID() + '-' + Date.now();
+}
+
 const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
 
 const transporter = nodemailer.createTransport({
@@ -418,14 +470,17 @@ async function obtenerContextoAlerta(
 }
 
 // ============================================
-// Sanitización
-// ====================================
+// Sanitización mejorada
+// ============================================
 const sanitizeStr = (str: string, maxLen = 100): string => {
-  return str.replace(/[<>'";]/g, '').trim().slice(0, maxLen);
+  if (typeof str !== 'string') return '';
+  return str.replace(/[<>'";&\\]/g, '').trim().slice(0, maxLen);
 };
 
 const isValidEmail = (email: string): boolean => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (typeof email !== 'string') return false;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
 };
 
 // ============================================
@@ -433,7 +488,100 @@ const isValidEmail = (email: string): boolean => {
 // ============================================
 const alertas = new Hono();
 
+// Endpoint para verificar email (double opt-in)
+alertas.post("/verify", async (c) => {
+  const ip = getClientIP(c);
+  
+  if (!checkRateLimit(ip)) {
+    logAudit(ip, 'VERIFY_RATE_LIMIT', false);
+    return c.json({ error: "Demasiadas solicitudes" }, 429);
+  }
+  
+  const body = await c.req.json().catch(() => ({}));
+  const token = sanitizeStr(body.token || '', 100);
+  
+  const verification = pendingVerifications.get(token);
+  if (!verification || Date.now() > verification.expires) {
+    logAudit(ip, 'VERIFY_INVALID', false, 'Token inválido o expirado');
+    return c.json({ error: "Token inválido o expirado" }, 400);
+  }
+  
+  // Validar de nuevo todos los datos
+  const { email, nombre, provincia, variedad, tipo, fenologia } = verification;
+  
+  // Verificar límites
+  const alertasExistentes = db.query("SELECT COUNT(*) as count FROM alertas WHERE email = ? AND activa = 1").get(email) as { count: number };
+  if (alertasExistentes.count >= 3) {
+    logAudit(ip, 'VERIFY_LIMIT', false, 'Máximo 3 alertas');
+    pendingVerifications.delete(token);
+    return c.json({ error: "Máximo 3 alertas por email" }, 400);
+  }
+  
+  const alertaDuplicada = db.query(
+    "SELECT id FROM alertas WHERE email = ? AND provincia = ? AND variedad = ? AND activa = 1"
+  ).get(email, provincia, variedad || '') as { id: number } | undefined;
+  
+  if (alertaDuplicada) {
+    logAudit(ip, 'VERIFY_DUPLICATE', false, 'Alerta duplicada');
+    pendingVerifications.delete(token);
+    return c.json({ error: "Ya tienes una alerta activa para esta combinación" }, 400);
+  }
+  
+  const alertasProvincia = db.query(
+    "SELECT COUNT(*) as count FROM alertas WHERE email = ? AND provincia = ? AND activa = 1"
+  ).get(email, provincia) as { count: number };
+  if (alertasProvincia.count >= 2) {
+    logAudit(ip, 'VERIFY_PROVINCIA_LIMIT', false, 'Máximo 2 por provincia');
+    pendingVerifications.delete(token);
+    return c.json({ error: "Máximo 2 alertas por provincia" }, 400);
+  }
+  
+  // Insertar en DB
+  const insert = db.query(
+    "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
+  );
+  insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
+  
+  pendingVerifications.delete(token);
+  logAudit(ip, 'VERIFY_SUCCESS', true, `Alerta creada para ${email}`);
+  
+  // Enviar email de confirmación
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (gmailPass) {
+    try {
+      const varInfo = VARIEDADES_INFO[variedad];
+      const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
+<p>✅ Tu alerta está confirmada en olivaξ para <strong>${provincia}</strong>.</p>
+${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
+<p>Te avisaremos cuando las condiciones climáticas afecten a tu cultivo de olivo.</p>
+<p>🫒 Equipo olivaξ</p>`;
+      
+      await transporter.sendMail({
+        from: `olivaξ <${gmailUser}>`,
+        to: email,
+        subject: `✅ Alerta confirmada - ${provincia}`,
+        html: emailHtml,
+      });
+      logAudit(ip, 'EMAIL_SENT', true, 'Confirmación enviada');
+    } catch (e) {
+      logAudit(ip, 'EMAIL_FAIL', false, String(e));
+    }
+  }
+  
+  return c.json({ ok: true, message: "Alerta confirmada" });
+});
+
+// Endpoint principal - solo prepara verificación
 alertas.post("/", async (c) => {
+  const ip = getClientIP(c);
+  logAudit(ip, 'ALERTA_REQUEST', true);
+  
+  // Rate limiting
+  if (!checkRateLimit(ip)) {
+    logAudit(ip, 'ALERTA_RATE_LIMIT', false);
+    return c.json({ error: "Demasiadas solicitudes. Intenta en un minuto." }, 429);
+  }
+  
   const body = await c.req.json().catch(() => ({}));
   
   const nombreRaw = body.nombre || '';
@@ -444,6 +592,7 @@ alertas.post("/", async (c) => {
   const fenologiaRaw = body.fenologia || '';
 
   if (!nombreRaw || !emailRaw || !provinciaRaw) {
+    logAudit(ip, 'ALERTA_MISSING_FIELDS', false);
     return c.json({ error: "Faltan datos requeridos" }, 400);
   }
 
@@ -455,104 +604,124 @@ alertas.post("/", async (c) => {
   const fenologia = fenologiaRaw ? sanitizeStr(fenologiaRaw, 20) : '';
 
   if (!isValidEmail(email)) {
+    logAudit(ip, 'ALERTA_INVALID_EMAIL', false);
     return c.json({ error: "Email inválido" }, 400);
   }
 
   if (!VALID_PROVINCIAS.includes(provincia)) {
+    logAudit(ip, 'ALERTA_INVALID_PROVINCIA', false);
     return c.json({ error: "Provincia inválida" }, 400);
   }
 
   if (variedad && !VALID_VARIEDADES.includes(variedad)) {
+    logAudit(ip, 'ALERTA_INVALID_VARIEDAD', false);
     return c.json({ error: "Variedad inválida" }, 400);
   }
 
-  // LIMITACIONES PARA EVITAR ABUSO
-  // 1. Máximo 3 alertas por email
+  // Verificar límites ANTES de crear verificación
   const alertasExistentes = db.query("SELECT COUNT(*) as count FROM alertas WHERE email = ? AND activa = 1").get(email) as { count: number };
   if (alertasExistentes.count >= 3) {
-    return c.json({ error: "Máximo 3 alertas por email. Gestiona tus alertas desde el correo recibido." }, 400);
+    logAudit(ip, 'ALERTA_LIMIT_3', false);
+    return c.json({ error: "Máximo 3 alertas por email." }, 400);
   }
 
-  // 2. Verificar alerta duplicada (misma provincia + variedad)
   const alertaDuplicada = db.query(
     "SELECT id FROM alertas WHERE email = ? AND provincia = ? AND variedad = ? AND activa = 1"
   ).get(email, provincia, variedad || '') as { id: number } | undefined;
 
   if (alertaDuplicada) {
+    logAudit(ip, 'ALERTA_DUPLICATE', false);
     return c.json({ error: "Ya tienes una alerta activa para esta combinación" }, 400);
   }
 
-  // 3. Limitar a 2 alertas por provincia (distintas variedades)
   const alertasProvincia = db.query(
     "SELECT COUNT(*) as count FROM alertas WHERE email = ? AND provincia = ? AND activa = 1"
   ).get(email, provincia) as { count: number };
   if (alertasProvincia.count >= 2) {
-    return c.json({ error: "Máximo 2 alertas por provincia. Gestiona tus alertas desde el correo recibido." }, 400);
+    logAudit(ip, 'ALERTA_LIMIT_PROVINCIA', false);
+    return c.json({ error: "Máximo 2 alertas por provincia." }, 400);
   }
 
-  const insert = db.query(
-    "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
-  );
-  insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
+  // DOUBLE OPT-IN: Crear token de verificación
+  const verifyToken = generateVerificationToken();
+  const VERIFY_EXPIRES = 24 * 60 * 60 * 1000; // 24 horas
+  
+  pendingVerifications.set(verifyToken, {
+    email, nombre, provincia, variedad, tipo, fenologia,
+    expires: Date.now() + VERIFY_EXPIRES
+  });
 
+  logAudit(ip, 'ALERTA_VERIFY_SENT', true, `Token enviado a ${email}`);
+
+  // Enviar email de verificación
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
-  console.log("[ALERTAS] GMAIL_PASS presente:", !!gmailPass);
-
   if (gmailPass) {
     try {
-      // Obtener contexto para LLM
-      const contexto = await obtenerContextoAlerta(provincia, variedad, fenologia, nombre, tipo);
-      let emailHtml: string | null = null;
-      let emailSubject = `✅ Tu alerta está activa - ${provincia}`;
-      let llmUsed = false;
-
-      // Intentar generar email con LLM
-      if (contexto) {
-        console.log("[ALERTAS] Generando email con LLM...");
-        emailHtml = await generarEmailConLLM(contexto, "bienvenida");
-        if (emailHtml) {
-          llmUsed = true;
-          console.log("[ALERTAS] Email personalizado generado con LLM");
-        }
-      }
-
-      // Fallback al template tradicional si LLM falla
-      if (!emailHtml) {
-        console.log("[ALERTAS] Usando template tradicional (fallback)");
-        const varInfo = VARIEDADES_INFO[variedad];
-        const consejos = CONSEJOS[tipo] || [];
-        emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
-<p>Tu alerta está activa en olivaξ para <strong>${provincia}</strong>.</p>
-${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
-${fenologia ? `<p>Fase fenológica: <strong>${fenologia}</strong></p>` : ''}
-<p>Te avisaremos cuando las condiciones climáticas afecten a tu cultivo de olivo.</p>
-<p><strong>Consejos para condiciones actuales:</strong></p>
-<ul>${consejos.map(c => `<li>${c}</li>`).join('') || '<li>✅ Sin acciones necesarias</li>'}</ul>
+      const verifyUrl = `${process.env.PUBLIC_API_URL?.replace('/api', '') || 'https://olivaxi.duckdns.org'}/alertas?verify=${verifyToken}`;
+      const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
+<p>Confirma tu alerta para <strong>${provincia}</strong> haciendo clic en el botón:</p>
+<p style="text-align: center; margin: 20px 0;">
+  <a href="${verifyUrl}" style="background: #D4E849; color: #1C1C1C; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">✅ Confirmar mi alerta</a>
+</p>
+<p>Si no solicitaste esta alerta, ignora este email.</p>
+<p style="color: #666; font-size: 12px;">Este enlace expira en 24 horas.</p>
 <p>🫒 Equipo olivaξ</p>`;
-      } else {
-        // Añadir footer al email generado por LLM
-        emailHtml += `<p style="margin-top: 20px; font-size: 12px; color: #666;">🫒 Equipo olivaξ</p>`;
-      }
-
+      
       await transporter.sendMail({
         from: `olivaξ <${gmailUser}>`,
         to: email,
-        subject: llmUsed ? `✅ Bienvenido a olivaξ - ${provincia}` : emailSubject,
+        subject: `Confirma tu alerta - ${provincia}`,
         html: emailHtml,
       });
-      console.log("[ALERTAS] Email de confirmación enviado a:", email, llmUsed ? "(con LLM)" : "(template)");
     } catch (e) {
-      console.log("[ALERTAS] Error enviando email:", e);
+      logAudit(ip, 'ALERTA_VERIFY_EMAIL_FAIL', false, String(e));
+      return c.json({ error: "Error al enviar email de verificación" }, 500);
     }
+  } else {
+    // Sin email, crear directamente (modo desarrollo)
+    const insert = db.query(
+      "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
+    );
+    insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
+    logAudit(ip, 'ALERTA_CREATED_DEV', true);
+    return c.json({ ok: true, message: "Alerta creada (modo desarrollo)" });
   }
 
-  return c.json({ ok: true });
+  return c.json({ ok: true, message: "Revisa tu email para confirmar la alerta" });
 });
 
+// Endpoint de auditoría (protegido)
+alertas.get("/audit", async (c) => {
+  const apiKey = c.req.header('x-api-key');
+  const validKey = process.env.ALERTAS_AUDIT_KEY;
+  
+  if (!validKey || apiKey !== validKey) {
+    return c.json({ error: "No autorizado" }, 401);
+  }
+  
+  const since = Date.now() - (24 * 60 * 60 * 1000); // últimas 24 horas
+  const recent = AUDIT_LOG.filter(e => e.timestamp > since);
+  return c.json({ audit: recent, total: AUDIT_LOG.length });
+});
+
+// Endpoint de check (protegido con API key)
 alertas.post("/check", async (c) => {
+  const ip = getClientIP(c);
+  
+  // Proteger con API key
+  const apiKey = c.req.header('x-api-key');
+  const validKey = process.env.ALERTAS_CHECK_KEY;
+  
+  if (!validKey || apiKey !== validKey) {
+    logAudit(ip, 'CHECK_UNAUTHORIZED', false);
+    return c.json({ error: "No autorizado" }, 401);
+  }
+  
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   if (!gmailPass) return c.json({ error: "Sin Gmail config" }, 500);
 
+  logAudit(ip, 'CHECK_START', true);
+  
   const alertasActivas = db
     .query("SELECT * FROM alertas WHERE activa = 1")
     .all() as any[];
