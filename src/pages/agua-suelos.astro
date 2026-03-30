@@ -84,9 +84,15 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 
     @media(max-width: 600px) {
       .suelo-datos { grid-template-columns: repeat(2, 1fr); }
+      .suelo-dato { padding: 10px 8px; }
+      .suelo-dato .value { font-size: 1rem; }
+      .suelo-dato .label { font-size: 0.8rem; }
       .agua-hero { padding: 80px 1rem 1.5rem; }
-      .agua-hero h1 { font-size: 1.75rem; }
-      .agua-hero p { font-size: 0.95rem; }
+      .agua-hero h1 { font-size: 1.5rem; }
+      .agua-hero p { font-size: 0.9rem; }
+      .agua-grid { grid-template-columns: 1fr; }
+      .agua-card { padding: 1rem; }
+      .agua-card h2 { font-size: 1.1rem; }
     }
 
     .agua-section {
@@ -100,11 +106,23 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     }
 
     .tabs-container { margin-bottom: 2rem; }
-    .tabs-nav { display: flex; gap: 8px; margin-bottom: 1.5rem; justify-content: center; }
-    .tab-btn { padding: 10px 20px; border: 1px solid var(--color-border); background: var(--color-white-surface); color: var(--color-aceituna); border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .tab-btn.active { background: var(--color-limon); border-color: var(--color-limon); }
-    .tab-content { display: none; }
-    .tab-content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .tabs-nav { display: flex; gap: 8px; margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap; }
+    .tab-btn { 
+      padding: 10px 20px; 
+      border: 1px solid var(--color-border); 
+      background: var(--color-white-surface); 
+      color: var(--color-aceituna); 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.25s ease;
+    }
+    .tab-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .tab-btn[data-tab="agua"].active { background: #7EC8E3; border-color: #5BA3C6; color: #1A4A5E; }
+    .tab-btn[data-tab="suelo"].active { background: #D4B896; border-color: #B89B7A; color: #5C4A2E; }
+    .tab-btn[data-tab="conservacion"].active { background: #8FBC8F; border-color: #6B8E6B; color: #2E4A2E; }
+    .tab-content { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .tab-content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; opacity: 1; transform: translateY(0); }
     @media (max-width: 768px) { .tab-content.active { grid-template-columns: 1fr; } }
 
     .agua-card {
@@ -189,6 +207,23 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .geopolitics-content { background: var(--color-white-surface); border: 1px solid var(--color-border); border-top: none; padding: 16px; border-radius: 0 0 8px 8px; }
     .geopolitics-content ul { margin: 0; padding-left: 20px; }
     .geopolitics-content li { color: var(--color-muted); font-size: 0.9rem; margin-bottom: 8px; }
+
+    .consejos-carousel { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .consejos-title { font-size: 1.1rem; font-weight: 700; color: var(--color-aceituna); text-align: center; margin-bottom: 1rem; }
+    .consejos-container { position: relative; overflow: hidden; }
+    .consejos-track { display: flex; transition: transform 0.4s ease; }
+    .consejo-card { flex: 0 0 100%; padding: 20px; background: var(--color-white-surface); border: 1px solid var(--color-border); border-radius: 12px; text-align: center; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+    .consejo-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .consejo-text { font-size: 1rem; color: var(--color-aceituna); font-weight: 600; margin-bottom: 8px; }
+    .consejo-desc { font-size: 0.85rem; color: var(--color-muted); }
+    .consejo-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+    .consejo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-border); cursor: pointer; transition: all 0.3s ease; }
+    .consejo-dot.active { background: var(--color-limon); transform: scale(1.2); }
+    .consejo-nav { position: absolute; top: 50%; transform: translateY(-50%); background: var(--color-white-surface); border: 1px solid var(--color-border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s ease; z-index: 2; }
+    .consejo-nav:hover { background: var(--color-limon); }
+    .consejo-nav.prev { left: 0; }
+    .consejo-nav.next { right: 0; }
+    @media(max-width: 600px) { .consejo-card { min-height: 140px; padding: 16px; } .consejo-nav { width: 30px; height: 30px; font-size: 14px; } }
   </style>
 
   <section class="agua-hero">
@@ -230,7 +265,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     <div class="alert-strip">
       <div class="alert-strip-content">
         <span class="alert-strip-icon">⚠️</span>
-        <span class="alert-strip-text">Los fertilizantes pueden encarecerse por la tensión en Oriente Medio. Existen alternativas naturales para tu olivar.</span>
+        <span class="alert-strip-text">Los fertilizantes pueden encarecerse por la tensión en Oriente Medio. Existen alternativas naturales para tu olivo.</span>
       </div>
       <button class="alert-strip-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('open')">Ver alternativas</button>
     </div>
@@ -370,6 +405,47 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     </div>
   </section>
 
+  <div class="consejos-carousel">
+    <div class="consejos-title">💡 Consejo del día</div>
+    <div class="consejos-container">
+      <button class="consejo-nav prev" onclick="slideConsejo(-1)">‹</button>
+      <div class="consejos-track" id="consejos-track">
+        <div class="consejo-card">
+          <div class="consejo-icon">💧</div>
+          <div class="consejo-text">Riega al amanecer</div>
+          <div class="consejo-desc">El riego matinal reduce evaporación y previene hongos</div>
+        </div>
+        <div class="consejo-card">
+          <div class="consejo-icon">🪵</div>
+          <div class="consejo-text">Añade mulch al suelo</div>
+          <div class="consejo-desc">Una capa de 5cm retiene humedad y reduce malezas</div>
+        </div>
+        <div class="consejo-card">
+          <div class="consejo-icon">🌿</div>
+          <div class="consejo-text">Usa cubiertas vegetales</div>
+          <div class="consejo-desc">Fijan nitrógeno y reducen erosión hasta un 50%</div>
+        </div>
+        <div class="consejo-card">
+          <div class="consejo-icon">📊</div>
+          <div class="consejo-text">Mide la humedad del suelo</div>
+          <div class="consejo-desc">Sensor a 30cm de profundidad para decisiones precisas</div>
+        </div>
+        <div class="consejo-card">
+          <div class="consejo-icon">🫒</div>
+          <div class="consejo-text">Podar después de cosecha</div>
+          <div class="consejo-desc">Reduce estrés hídrico y mejora aireación del árbol</div>
+        </div>
+        <div class="consejo-card">
+          <div class="consejo-icon">⬛</div>
+          <div class="consejo-text">Prueba el biochar</div>
+          <div class="consejo-desc">Aumenta retención de agua hasta 3 veces</div>
+        </div>
+      </div>
+      <button class="consejo-nav next" onclick="slideConsejo(1)">›</button>
+    </div>
+    <div class="consejo-dots" id="consejo-dots"></div>
+  </div>
+
   <details class="geopolitics-section">
     <summary>🌍 Contexto: olivar y geopolítica</summary>
     <div class="geopolitics-content">
@@ -380,6 +456,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       </ul>
     </div>
   </details>
+
 </Layout>
 
 <script>
@@ -397,6 +474,24 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
   const aguaPlan = document.getElementById('agua-plan');
   const aguaPlanText = document.getElementById('agua-plan-text');
   const aguaPlanBtn = document.getElementById('agua-plan-btn');
+
+  function getQuickDataFromClima() {
+    const prov = OlivaxiEcosistema.provincia;
+    const clima = OlivaxiEcosistema.climaData;
+    if (!prov || !Array.isArray(clima)) return null;
+    const row = clima.find(r => r.provincia === prov);
+    if (!row) return null;
+    return {
+      provincia: row.provincia,
+      clima: { lluvia: row.lluvia ?? 0 },
+      suelo: {
+        temperatura: row.suelo_temp ?? 0,
+        humedad: row.suelo_humedad ?? 0,
+        evapotranspiracion: row.evapotranspiracion ?? 0
+      },
+      provinciaInfo: { tipoSuelo: row.tipoSuelo || '' }
+    };
+  }
 
   function getStatusClass(value, type) {
     if (type === 'temp') {
@@ -420,6 +515,18 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       return { class: 'ok', text: '☀️ Sin lluvia' };
     }
     return { class: '', text: '' };
+  }
+
+  async function loadDashboardData() {
+    const prov = OlivaxiEcosistema.provincia;
+    if (!prov) return null;
+    
+    const existing = OlivaxiEcosistema.dashboardData;
+    if (existing && existing.provincia === prov) {
+      return existing;
+    }
+    
+    return await OlivaxiEcosistema.fetchDashboard();
   }
 
   function renderSueloData(d) {
@@ -499,21 +606,65 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     });
   });
 
-  OlivaxiEcosistema.onChange((state) => {
-    if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
-      renderSueloData(state.dashboardData);
-    } else if (state.provincia) {
-      OlivaxiEcosistema.fetchDashboard().then(d => {
+  function syncWithEcosistema() {
+    const prov = OlivaxiEcosistema.provincia;
+    
+    if (prov) {
+      // Pintado rápido: usa datos de dashboard cacheado o clima compartido
+      const cachedDashboard = OlivaxiEcosistema.dashboardData;
+      if (cachedDashboard && cachedDashboard.provincia === prov) {
+        renderSueloData(cachedDashboard);
+      } else {
+        const quick = getQuickDataFromClima();
+        if (quick) renderSueloData(quick);
+      }
+
+      // Refresco definitivo con dashboard completo
+      loadDashboardData().then(d => {
         if (d) renderSueloData(d);
       });
     } else {
       renderSueloData(null);
     }
-  });
+  }
 
-  if (OlivaxiEcosistema.provincia) {
-    OlivaxiEcosistema.fetchDashboard().then(d => {
-      if (d) renderSueloData(d);
+  OlivaxiEcosistema.onChange(() => {
+    syncWithEcosistema();
+  }, { immediate: true });
+
+  // Carrusel de consejos
+  let currentConsejo = 0;
+  const totalConsejos = 6;
+  const track = document.getElementById('consejos-track');
+  const dotsContainer = document.getElementById('consejo-dots');
+  
+  if (track && dotsContainer) {
+    for (let i = 0; i < totalConsejos; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'consejo-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToConsejo(i);
+      dotsContainer.appendChild(dot);
+    }
+  }
+  
+  window.slideConsejo = function(dir) {
+    currentConsejo = (currentConsejo + dir + totalConsejos) % totalConsejos;
+    updateConsejo();
+  }
+  
+  function goToConsejo(index) {
+    currentConsejo = index;
+    updateConsejo();
+  }
+  
+  function updateConsejo() {
+    if (track) {
+      track.style.transform = `translateX(-${currentConsejo * 100}%)`;
+    }
+    document.querySelectorAll('.consejo-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentConsejo);
     });
   }
+  
+  setInterval(() => slideConsejo(1), 6000);
 </script>

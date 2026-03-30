@@ -13,29 +13,8 @@ import MapaCalor from '../components/MapaCalor.astro';
 .hero-title,.hero-subtitle,.hero-contextual{animation:heroFadeIn .8s ease-out both}
 .hero-subtitle{animation-delay:.15s}
 .hero-contextual{animation-delay:.3s}
-@media(max-width:640px){.hero-section{min-height:30vh;padding:40px 16px 20px;gap:10px}.hero-title{font-size:1.75rem}.hero-subtitle{font-size:.9rem}}
-.hero-badge{display:inline-block;padding:6px 14px;background:var(--color-limon);border-radius:20px;font-size:12px;font-weight:600;color:var(--color-aceituna);margin-bottom:12px}
-.hero-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:20px 0}
-.hero-stats span{display:flex;flex-direction:column;align-items:center;line-height:1.2}
-.hero-stats strong{font-size:28px;font-weight:700;color:var(--color-aceituna)}
-.hero-stats small{font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px}
-.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.cta-primary{padding:12px 24px;background:var(--color-aceituna);color:var(--color-sal);border-radius:8px;font-weight:700;text-decoration:none;transition:transform .15s}
-.cta-primary:hover{transform:translateY(-2px)}
-.cta-secondary{padding:12px 24px;background:transparent;border:2px solid var(--color-aceituna);color:var(--color-aceituna);border-radius:8px;font-weight:600;text-decoration:none;transition:background .15s}
-.cta-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}
-.alert-strip-wrap{max-width:1200px;margin:0 auto 16px;padding:0 1rem}
-.alert-strip{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;animation:alertFadeIn .4s ease-out;gap:12px}
-@keyframes alertFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-.alert-strip.medio{background:rgba(245,158,11,.15);border:2px solid #f59e0b;color:#b45309}
-.alert-strip.alto{background:rgba(239,68,68,.1);border:2px solid #ef4444;color:#991b1b}
-.alert-strip-content{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.alert-strip-icon{font-size:18px}
-.alert-strip-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.alert-strip-btn{padding:8px 16px;background:currentColor;color:white;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;text-align:center;flex:0 0 160px}
-.alert-strip.medio .alert-strip-btn{background:#f59e0b}
-.alert-strip.alto .alert-strip-btn{background:#ef4444}
-@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}.alert-strip-btn{flex:0 0 auto;width:100%;padding:12px 16px;font-size:14px}.alert-strip-text{white-space:normal}}
+@media(max-width:640px){.hero-section{min-height:30vh;padding:40px 16px 20px;gap:10px}.hero-title{font-size:1.75rem}.hero-subtitle{font-size:.9rem}.hero-stats{gap:10px}.hero-stats strong{font-size:22px}.hero-stats small{font-size:9px}.cta-primary,.cta-secondary{padding:10px 16px;font-size:14px}}
+@media(max-width:600px){.alert-strip{flex-direction:column;gap:10px;text-align:center}.alert-strip-btn{flex:0 0 auto;width:100%;padding:12px 16px;font-size:14px}.alert-strip-text{white-space:normal}.eco-card{padding:12px}.eco-icon{font-size:24px}.eco-title{font-size:.85rem}.eco-desc{font-size:.75rem}}
 .ecosistema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .eco-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;text-decoration:none;transition:transform .15s,border-color .15s}
 .eco-card:hover{transform:translateY(-2px);border-color:var(--color-aceituna);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
@@ -45,7 +24,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .eco-title{font-size:.95rem;font-weight:700;color:var(--color-aceituna);margin:2px 0}
 .eco-desc{font-size:.8rem;color:var(--color-muted);margin:0}
 @media(max-width:900px){.ecosistema-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:500px){.ecosistema-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.ecosistema-grid{grid-template-columns:1fr;gap:8px}.eco-card{flex-direction:column;text-align:center}.eco-icon{font-size:28px}.eco-content{width:100%}}
 .bento-grid{display:grid;grid-template-columns:60fr 40fr;gap:8px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
 .mapa-card,.sidebar-panels{background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:6px;overflow:hidden}
 .mapa-card{display:flex;flex-direction:column;height:450px}
@@ -574,7 +553,7 @@ function renderNarrativeSection(d) {
   const aguaSub = necesidadRiego > 0 ? `Riego objetivo: ${necesidadRiego.toFixed(1)} mm/día` : 'No requiere ajuste de riego';
   const sanidadTexto = plagasAltas > 0 ? `🦟 ${plagasAltas} plaga(s) en ALTO` : (hongosActivos > 0 ? `🍄 ${hongosActivos} riesgo(s) de hongos` : '✅ Sanidad estable');
   const sanidadSub = d.provinciaInfo?.epocaCritica ? `Época crítica: ${d.provinciaInfo.epocaCritica}` : 'Monitoreo preventivo recomendado';
-  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Riesgo global hoy</div><div class="narrative-value">${riesgoGlobal.toUpperCase()}</div><div class="narrative-sub">${resumenRiesgo}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Agua y suelo</div><div class="narrative-value">${aguaTexto}</div><div class="narrative-sub">${aguaSub}</div></div><div class="narrative-item ${(plagasAltas > 0 || hongosActivos > 0) ? 'positivo' : ''}"><div class="narrative-label">Sanidad del olivar</div><div class="narrative-value">${sanidadTexto}</div><div class="narrative-sub">${sanidadSub}</div></div>`;
+  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Riesgo global hoy</div><div class="narrative-value">${riesgoGlobal.toUpperCase()}</div><div class="narrative-sub">${resumenRiesgo}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Agua y suelo</div><div class="narrative-value">${aguaTexto}</div><div class="narrative-sub">${aguaSub}</div></div><div class="narrative-item ${(plagasAltas > 0 || hongosActivos > 0) ? 'positivo' : ''}"><div class="narrative-label">Sanidad del olivar</div><div class="narrative-value">${sanidadTexto}</div><div class="narrative-sub">${sanidadSub}</div></div><div class="narrative-item"><div class="narrative-label">🌍 Contexto: olivar y geopolítica</div><div class="narrative-sub">España es el mayor productor de aceite de oliva mundial (~45%). El Estrecho de Hormuz controla el 20% del petróleo mundial. La tensión geopolítica puede encarecer fertilizantes nitrogenados.</div></div>`;
   
   // Generar conclusión accionable
   const conclusionEl = $('narrative-conclusion');
