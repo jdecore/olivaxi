@@ -59,7 +59,7 @@ class OlivaxiMapa extends HTMLElement {
         .mapa-wrapper { position: relative; height: 100%; width: 100%; overflow: hidden; background: #e8e8e8; }
         .mapa-inner { height: 100%; width: 100%; }
         .mapa-filters { position: absolute; top: 8px; left: 8px; z-index: 10; display: flex; gap: 4px; }
-        .filter-btn { padding: 5px 8px; font-size: 12px; border: 1.5px solid var(--color-border); border-radius: 4px; background: var(--color-white-surface); color: var(--color-aceituna); cursor: pointer; font-weight: 600; }
+        .filter-btn { padding: 8px 12px; font-size: 12px; border: 1.5px solid var(--color-border); border-radius: 4px; background: var(--color-white-surface); color: var(--color-aceituna); cursor: pointer; font-weight: 600; }
         .filter-btn:hover { background: var(--color-limon); }
         .filter-btn.active { background: var(--color-limon); }
         .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 10px; }
@@ -201,6 +201,13 @@ class OlivaxiMapa extends HTMLElement {
     return '🟢';
   }
 
+  getRiesgosActivos(datos) {
+    if (Array.isArray(datos?.riesgosActivos) && datos.riesgosActivos.length) {
+      return datos.riesgosActivos;
+    }
+    return [];
+  }
+
   render() {
     if (!this.map || !this.map.loaded()) return;
     
@@ -235,16 +242,9 @@ class OlivaxiMapa extends HTMLElement {
       
       const riesgoColor = this.getMarkerColor(d);
       
-      const riesgosActivos = [];
-      if (d.riesgos_olivar?.calor?.nivel === 'alto') riesgosActivos.push({ icon: '🔥', text: 'Calor extremo' });
-      if (d.riesgos_olivar?.baja_humedad?.nivel === 'alto') riesgosActivos.push({ icon: '🏜️', text: 'Sequía' });
-      if (d.riesgos_olivar?.alta_humedad?.nivel === 'alto') riesgosActivos.push({ icon: '🦠', text: 'Humedad alta' });
-      if (d.riesgos_plaga?.mosca?.nivel === 'alto') riesgosActivos.push({ icon: '🦟', text: 'Mosca activa' });
-      if (d.riesgos_plaga?.polilla?.nivel === 'alto') riesgosActivos.push({ icon: '🦋', text: 'Polilla activa' });
-      if (d.riesgos_plaga?.xylella?.nivel === 'alto') riesgosActivos.push({ icon: '☠️', text: 'Xylella' });
-      
+      const riesgosActivos = this.getRiesgosActivos(d).slice(0, 6);
       const riesgosHtml = riesgosActivos.length > 0 
-        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${riesgosActivos.map(r => `<span style="background:${riesgoColor}20;color:${riesgoColor};padding:2px 6px;border-radius:4px;font-size:10px">${r.icon} ${r.text}</span>`).join('')}</div>`
+        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${riesgosActivos.map(r => `<span style="background:${riesgoColor}20;color:${riesgoColor};padding:2px 6px;border-radius:4px;font-size:10px">${r.icono || '⚠️'} ${r.titulo || r.tipo || 'Riesgo'} (${(r.nivel || 'medio').toUpperCase()})</span>`).join('')}</div>`
         : '';
       
       const popupHtml = `

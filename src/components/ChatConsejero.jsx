@@ -266,6 +266,11 @@ export default function ChatConsejero() {
         .typing-dots .dot2 { animation-delay: 0.2s; }
         .typing-dots .dot3 { animation-delay: 0.4s; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @media (max-width: 640px) {
+          .chat-hero h1 { font-size: 28px; }
+          .title-typewriter { font-size: 22px; min-height: 28px; }
+          .skill-btn { padding: 12px 16px; }
+        }
         .limit-message { background: #fff; border-radius: 12px; padding: 16px 20px; text-align: center; color: #666; font-weight: 500; max-width: 700px; margin: 0 auto; }
         .limit-btn { background: #1C1C1C; border: none; border-radius: 8px; padding: 10px 20px; color: #F7F4EE; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 12px auto 0; }
         .chat-input-wrapper { max-width: 100%; width: 100%; margin: 0; padding: 8px 16px; background: #fff; border-radius: 16px; border: 2px solid #1C1C1C; box-shadow: 0 2px 8px rgba(0,0,0,0.08); box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 70px; }

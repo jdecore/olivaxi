@@ -49,6 +49,21 @@ function calcularRiesgo(riesgos_olivar: any): string {
   return 'bajo';
 }
 
+function nivelToPriority(nivel: string | undefined): number {
+  if (nivel === "crítico") return 4;
+  if (nivel === "alto") return 3;
+  if (nivel === "medio" || nivel === "media") return 2;
+  return 1;
+}
+
+function riesgoDesdeActivos(riesgosActivos: any[]): string {
+  if (!Array.isArray(riesgosActivos) || riesgosActivos.length === 0) return "bajo";
+  const max = riesgosActivos.reduce((acc, r) => Math.max(acc, nivelToPriority(r?.nivel)), 1);
+  if (max >= 3) return "alto";
+  if (max >= 2) return "medio";
+  return "bajo";
+}
+
 function getEstado(temp: number): string {
   if (temp < 10) return "Frío";
   if (temp < 20) return "Fresco";
@@ -294,7 +309,6 @@ export async function getClimaData() {
     const humedad = item.humedad;
     const lluvia = item.lluvia;
     const riesgos_olivar = calcularRiesgosOlivar({ temp, humedad, lluvia });
-    const riesgo = calcularRiesgo(riesgos_olivar);
     const estado = getEstado(temp);
     const riesgos_plaga = calcularRiesgosPlaga({ temp, humedad, lluvia });
 
@@ -320,7 +334,7 @@ export async function getClimaData() {
       })
     };
 
-    return {
+    const provData = {
       provincia: nombreProvincia,
       lat: item.provincia.lat,
       lon: item.provincia.lon,
@@ -345,6 +359,13 @@ export async function getClimaData() {
       riesgos_plaga: riesgosPlagaCombinados,
       riesgos_olivar,
       riesgos_variedad,
+    };
+    const riesgosActivos = getRiesgosActivos(provData);
+    const riesgo = riesgoDesdeActivos(riesgosActivos);
+    return {
+      ...provData,
+      riesgo,
+      riesgosActivos,
     };
   });
 

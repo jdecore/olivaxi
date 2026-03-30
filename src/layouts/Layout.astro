@@ -241,7 +241,7 @@ const { title = "olivaξ" } = Astro.props;
   h1 { font-size: var(--font-xl); }
 
   main {
-    padding-top: 56px;
+    padding-top: 72px;
   }
 
   .navbar {
@@ -305,6 +305,12 @@ const { title = "olivaξ" } = Astro.props;
 
   @media (max-width: 900px) {
     .nav-center.desktop-nav {
+      display: none;
+    }
+    .hamburger-btn {
+      display: flex;
+    }
+    .btn-alertas {
       display: none;
     }
   }

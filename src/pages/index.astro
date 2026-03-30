@@ -61,7 +61,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .carousel-slide.active{display:flex}
 .provincias-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .variedades-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.provincia-btn,.variedad-btn{padding:12px 10px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--color-aceituna);text-align:center}
+.provincia-btn,.variedad-btn{padding:14px 16px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--color-aceituna);text-align:center}
 .provincia-btn:hover,.variedad-btn:hover{background:var(--color-aceituna);color:var(--color-sal)}
 .provincia-btn.selected,.variedad-btn.selected{background:var(--color-aceituna);color:var(--color-sal)}
 .provincia-btn .riesgo-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
@@ -69,17 +69,17 @@ import MapaCalor from '../components/MapaCalor.astro';
 .provincia-btn .temp{font-size:10px;color:var(--color-muted);display:block;margin-top:2px}
 .variedad-btn{text-align:left}.variedad-btn .nombre{font-weight:700}
 .variedad-btn .riesgo-label{font-size:9px;padding:2px 5px;border-radius:3px;display:inline-block;margin-top:4px}
-.riesgo-label.alto{background:rgba(239,68,68,.15);color:#dc2626}.riesgo-label.medio{background:rgba(245,158,11,.15);color:#b45309}.riesgo-label.bajo{background:rgba(34,197,94,.15);color:#15803d}
-.variedades-link{display:block;text-align:center;padding:8px;margin-top:8px;background:var(--color-white-surface);border:1.5px dashed var(--color-border);border-radius:4px;color:var(--color-aceituna);font-size:11px;font-weight:600;text-decoration:none}
+.riesgo-label.alto{background:#fef2f2;border:1px solid #dc2626;color:#dc2626}.riesgo-label.medio{background:#fffbeb;border:1px solid #d97706;color:#b45309}.riesgo-label.bajo{background:#fff;border:1px solid #15803d;color:#15803d}
+.variedades-link{display:block;text-align:center;padding:14px 16px;margin-top:8px;background:var(--color-white-surface);border:1.5px dashed var(--color-border);border-radius:4px;color:var(--color-aceituna);font-size:11px;font-weight:600;text-decoration:none}
 .variedades-link:hover{background:var(--color-aceituna);color:var(--color-sal);border-style:solid}
 .alertas-list{flex:1;overflow-y:auto}
 .riesgos-categorias{display:flex;flex-direction:column;gap:8px}
 .riesgo-categoria{padding:8px;background:rgba(255,255,255,.55);border:1px solid var(--color-border);border-radius:6px}
-.riesgo-categoria-titulo{font-size:10px;font-weight:700;color:var(--color-aceituna);margin-bottom:6px}
+.riesgo-categoria-titulo{font-size:11px;font-weight:700;color:var(--color-aceituna);margin-bottom:6px}
 .alerta-item{padding:8px;margin-bottom:6px;border-radius:4px;border-left:3px solid;font-size:11px;background:var(--color-white-surface)}
 .alerta-item.alto{border-color:#ef4444}.alerta-item.medio{border-color:#f59e0b}.alerta-item.bajo{border-color:#22c55e}
 .alerta-actions{display:flex;gap:8px;flex-shrink:0}
-.alerta-action-btn{flex:1;padding:8px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:4px;font-size:11px;font-weight:600;color:var(--color-aceituna);text-decoration:none;text-align:center}
+.alerta-action-btn{flex:1;padding:12px 16px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:4px;font-size:11px;font-weight:600;color:var(--color-aceituna);text-decoration:none;text-align:center}
 .alerta-action-btn:hover{background:var(--color-aceituna);color:var(--color-sal)}
 .no-province-msg{text-align:center;padding:16px;color:var(--color-aceituna);font-size:12px;background:var(--color-white-surface);border-radius:4px}
 .provincia-info{padding:8px;margin-bottom:8px;background:rgba(212,232,73,0.15);border-radius:6px;font-size:10px}
@@ -88,12 +88,12 @@ import MapaCalor from '../components/MapaCalor.astro';
 .quick-stat{padding:6px;text-align:center;background:var(--color-white-surface);border-radius:4px;border:1px solid var(--color-border)}
 .quick-stat .icon{font-size:14px}
 .quick-stat .value{font-size:11px;font-weight:700;color:var(--color-aceituna)}
-.quick-stat .label{font-size:8px;color:var(--color-muted)}
+.quick-stat .label{font-size:10px;color:var(--color-muted)}
 .consejos-panel{margin-top:8px;padding:8px;background:rgba(255,255,255,0.7);border-radius:4px;border-left:3px solid var(--color-limon)}
 .consejos-panel .titulo{font-size:10px;font-weight:700;color:var(--color-aceituna);margin-bottom:4px}
-.consejos-panel .consejo{font-size:9px;color:var(--color-muted);margin-bottom:2px}
+.consejos-panel .consejo{font-size:11px;color:var(--color-muted);margin-bottom:2px}
 @media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:320px}.sidebar-panels{min-height:320px}}
-@media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}}
+@media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}.suelo-content{grid-template-columns:1fr}}
 .suelo-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
 .suelo-panel.visible{display:block}
 .suelo-card{background:var(--color-white-surface);border:2px solid var(--color-limon);border-radius:8px;padding:16px}
@@ -279,26 +279,10 @@ function getRiesgoClass(r) {
 
 // --- Alert Strip: Calcular riesgo máximo entre todas las provincias ---
 function getRiesgosActivos(p) {
-  const riesgos = [];
-  const ro = p.riesgos_olivar || {};
-  if (ro.calor?.nivel === 'alto') riesgos.push({ tipo: 'calor', titulo: 'Calor extremo', icono: '🔥' });
-  else if (ro.calor?.nivel === 'medio') riesgos.push({ tipo: 'calor', titulo: 'Calor', icono: '🔥' });
-  if (ro.frio?.nivel === 'alto') riesgos.push({ tipo: 'frio', titulo: 'Frío extremo', icono: '❄️' });
-  else if (ro.frio?.nivel === 'medio') riesgos.push({ tipo: 'frio', titulo: 'Frío', icono: '❄️' });
-  if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️' });
-  if (ro.viento?.nivel === 'alto') riesgos.push({ tipo: 'viento', titulo: 'Viento fuerte', icono: '💨' });
-  
-  const rp = p.riesgos_plaga || {};
-  if (rp.mosca?.nivel === 'alto') riesgos.push({ tipo: 'mosca', titulo: 'Mosca activa', icono: '🪰' });
-  else if (rp.mosca?.nivel === 'medio') riesgos.push({ tipo: 'mosca', titulo: 'Mosca', icono: '🪰' });
-  if (rp.polilla?.nivel === 'alto') riesgos.push({ tipo: 'polilla', titulo: 'Polilla activa', icono: '🦋' });
-  else if (rp.polilla?.nivel === 'medio') riesgos.push({ tipo: 'polilla', titulo: 'Polilla', icono: '🦋' });
-  if (rp.repilo?.nivel === 'alto') riesgos.push({ tipo: 'repilo', titulo: 'Repilo activo', icono: '🍂' });
-  else if (rp.repilo?.nivel === 'medio') riesgos.push({ tipo: 'repilo', titulo: 'Repilo', icono: '🍂' });
-  if (rp.xylella?.nivel === 'alto') riesgos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨' });
-  else if (rp.xylella?.nivel === 'medio') riesgos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨' });
-  
-  return riesgos;
+  if (Array.isArray(p?.riesgosActivos) && p.riesgosActivos.length) {
+    return p.riesgosActivos;
+  }
+  return [];
 }
 
 function renderAlertStrip() {
@@ -316,7 +300,7 @@ function renderAlertStrip() {
     const riesgos = getRiesgosActivos(p);
     const prioritario = riesgos.reduce((prev, curr) => {
       const prio = { 'alto': 3, 'medio': 2, 'bajo': 1 };
-      const nivel = p.riesgos_olivar?.[curr.tipo]?.nivel || p.riesgos_plaga?.[curr.tipo]?.nivel || 'bajo';
+      const nivel = curr?.nivel || 'bajo';
       return prio[nivel] > (prio[prev?.nivel] || 0) ? { ...curr, nivel } : prev;
     }, null);
     
@@ -346,7 +330,29 @@ function renderAlertStrip() {
 }
 
 function getRiesgoGlobal(d) {
-  const activos = d?.riesgosActivos || [];
+  let activos = d?.riesgosActivos || [];
+  
+  if (activos.length === 0) {
+    activos = [];
+    const ro = d?.riesgos_olivar || {};
+    const rp = d?.riesgos_plaga || {};
+    
+    if (ro.calor?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    else if (ro.calor?.nivel === 'medio') activos.push({ nivel: 'medio' });
+    if (ro.baja_humedad?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    else if (ro.baja_humedad?.nivel === 'medio') activos.push({ nivel: 'medio' });
+    if (ro.baja_lluvia?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    else if (ro.baja_lluvia?.nivel === 'medio') activos.push({ nivel: 'medio' });
+    if (ro.frio?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    if (ro.alta_humedad?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    if (ro.alta_lluvia?.nivel === 'alto') activos.push({ nivel: 'alto' });
+    
+    if (rp.mosca?.nivel === 'alto' || rp.mosca?.nivel === 'medio') activos.push({ nivel: rp.mosca?.nivel });
+    if (rp.polilla?.nivel === 'alto' || rp.polilla?.nivel === 'medio') activos.push({ nivel: rp.polilla?.nivel });
+    if (rp.repilo?.nivel === 'alto' || rp.repilo?.nivel === 'medio') activos.push({ nivel: rp.repilo?.nivel });
+    if (rp.xylella?.nivel === 'alto') activos.push({ nivel: 'alto' });
+  }
+  
   if (activos.length === 0) return 'bajo';
   const priority = { 'crítico': 4, 'alto': 3, 'medio': 2, 'bajo': 1 };
   return activos.reduce((prev, curr) =>
@@ -513,7 +519,33 @@ function updateRiesgoBadge(d) {
     return;
   }
 
-  const activos = d?.riesgosActivos || [];
+  let activos = d?.riesgosActivos || [];
+  
+  if (activos.length === 0) {
+    activos = [];
+    const ro = d?.riesgos_olivar || {};
+    const rp = d?.riesgos_plaga || {};
+    
+    if (ro.calor?.nivel === 'alto') activos.push({ tipo: 'calor', titulo: 'Calor extremo', icono: '🔥', nivel: 'alto' });
+    else if (ro.calor?.nivel === 'medio') activos.push({ tipo: 'calor', titulo: 'Calor', icono: '🔥', nivel: 'medio' });
+    if (ro.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: 'alto' });
+    else if (ro.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Humedad baja', icono: '🏜️', nivel: 'medio' });
+    if (ro.baja_lluvia?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: 'alto' });
+    else if (ro.baja_lluvia?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Lluvia baja', icono: '🌧️', nivel: 'medio' });
+    if (ro.frio?.nivel === 'alto') activos.push({ tipo: 'frio', titulo: 'Helada', icono: '❄️', nivel: 'alto' });
+    else if (ro.frio?.nivel === 'medio') activos.push({ tipo: 'frio', titulo: 'Frío', icono: '❄️', nivel: 'medio' });
+    if (ro.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'humedad', titulo: 'Humedad alta', icono: '💧', nivel: 'alto' });
+    if (ro.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', titulo: 'Lluvia intensa', icono: '🌧️', nivel: 'alto' });
+    
+    if (rp.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', titulo: 'Mosca activa', icono: '🪰', nivel: 'alto' });
+    else if (rp.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', titulo: 'Mosca', icono: '🪰', nivel: 'medio' });
+    if (rp.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', titulo: 'Polilla activa', icono: '🦋', nivel: 'alto' });
+    else if (rp.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', titulo: 'Polilla', icono: '🦋', nivel: 'medio' });
+    if (rp.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', titulo: 'Repilo activo', icono: '🍂', nivel: 'alto' });
+    else if (rp.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', titulo: 'Repilo', icono: '🍂', nivel: 'medio' });
+    if (rp.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨', nivel: 'alto' });
+  }
+  
   const nivel = getRiesgoGlobal(d);
   
   if (activos.length === 0) {
@@ -588,8 +620,8 @@ function renderNarrativeSection(d) {
   const tempClass = comp.variacion > 0 ? 'positivo' : comp.variacion < 0 ? 'negativo' : '';
   const deficitRiego = d.sueloAnalitica?.deficitRiego || 0;
   const lluviaSub = deficitRiego > 0 
-    ? `⚠️ Te faltan ${deficitRiego.toFixed(1)}mm` 
-    : `${comp.precipitacionActual}mm · dentro de lo normal`;
+    ? `💧 Necesitas regar` 
+    : `✅ No necesitas regar`;
   NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${deficitRiego.toFixed(1)}mm</div><div class="narrative-sub">${lluviaSub}</div></div>`;
   
   // Generar conclusión accionable
