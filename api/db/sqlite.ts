@@ -27,4 +27,17 @@ db.exec(`
   )
 `);
 
+// Migraciones no destructivas para instalaciones antiguas
+const columnasAlertas = db.query("PRAGMA table_info(alertas)").all() as { name: string }[];
+const tieneVariedad = columnasAlertas.some(c => c.name === "variedad");
+const tieneFenologia = columnasAlertas.some(c => c.name === "fenologia");
+
+if (!tieneVariedad) {
+  db.exec("ALTER TABLE alertas ADD COLUMN variedad TEXT DEFAULT ''");
+}
+
+if (!tieneFenologia) {
+  db.exec("ALTER TABLE alertas ADD COLUMN fenologia TEXT DEFAULT ''");
+}
+
 export default db;
