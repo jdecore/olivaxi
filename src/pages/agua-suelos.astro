@@ -106,19 +106,47 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     }
 
     .suelo-dato .icon { font-size: 1.3rem; margin-bottom: 4px; }
-    .suelo-dato .value { font-size: 1.25rem; font-weight: 700; }
+    .suelo-dato .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      transition: opacity .24s ease, transform .24s ease, color .24s ease, filter .24s ease;
+      will-change: opacity, transform;
+    }
     .suelo-dato .value.ok { color: #15803d; }
     .suelo-dato .value.warning { color: #d97706; }
     .suelo-dato .value.danger { color: #dc2626; }
     .suelo-dato .label { font-size: 0.7rem; color: var(--color-muted); margin-top: 4px; }
-    .suelo-dato .status { font-size: 0.65rem; margin-top: 4px; font-weight: 600; }
+    .suelo-dato .status {
+      font-size: 0.65rem;
+      margin-top: 4px;
+      font-weight: 600;
+      transition: opacity .24s ease, transform .24s ease, color .24s ease, filter .24s ease;
+      will-change: opacity, transform;
+    }
     .suelo-dato .status.ok { color: #15803d; }
     .suelo-dato .status.warning { color: #d97706; }
     .suelo-dato .status.danger { color: #dc2626; }
+    .suelo-dato .value.updating,
+    .suelo-dato .status.updating {
+      opacity: .35;
+      transform: translateY(2px);
+      filter: blur(.2px);
+    }
+    .suelo-dato.updated {
+      animation: metricPulse .28s ease-out;
+    }
+    @keyframes metricPulse {
+      from { box-shadow: 0 0 0 rgba(212, 232, 73, 0); }
+      50% { box-shadow: 0 0 0 3px rgba(212, 232, 73, .22); }
+      to { box-shadow: 0 0 0 rgba(212, 232, 73, 0); }
+    }
     @media (prefers-reduced-motion: reduce) {
       .suelo-datos.loading .suelo-dato::after,
       .suelo-datos.animated .suelo-dato { animation: none !important; }
       .suelo-dato { transition: none !important; }
+      .suelo-dato .value,
+      .suelo-dato .status { transition: none !important; }
+      .suelo-dato.updated { animation: none !important; }
     }
 
     @media(max-width: 600px) {
@@ -134,57 +162,79 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       .agua-card h2 { font-size: 1.1rem; }
     }
 
-    .agua-section {
-      background: var(--color-bg);
+    .area-section {
       padding: 2rem 1rem;
+      margin-bottom: 1rem;
+      transition: all 0.4s ease;
     }
+    
+    .area-section.agua { background: linear-gradient(135deg, #F5FAFC 0%, #EBF4F7 100%); }
+    .area-section.agua.selected { background: linear-gradient(135deg, #D4E8F0 0%, #C5DDE9 100%); }
+    
+    .area-section.suelo { background: linear-gradient(135deg, #FAF7F2 0%, #F3EDE3 100%); }
+    .area-section.suelo.selected { background: linear-gradient(135deg, #E8DDD0 0%, #DDD2C4 100%); }
+    
+    .area-section.conservacion { background: linear-gradient(135deg, #F6F9F4 0%, #EDF2EB 100%); }
+    .area-section.conservacion.selected { background: linear-gradient(135deg, #D8E5D4 0%, #CADBC6 100%); }
 
-    .agua-container {
+    .area-container {
       max-width: 1000px;
       margin: 0 auto;
     }
 
-    .tabs-container { margin-bottom: 2rem; }
-    .tabs-nav { display: flex; gap: 8px; margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap; }
-    .tab-btn { 
-      padding: 10px 20px; 
-      border: 1px solid var(--color-border); 
-      background: var(--color-white-surface); 
-      color: var(--color-aceituna); 
-      border-radius: 8px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      transition: all 0.25s ease;
+    .area-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
     }
-    .tab-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .tab-btn[data-tab="agua"].active { background: #7EC8E3; border-color: #5BA3C6; color: #1A4A5E; }
-    .tab-btn[data-tab="suelo"].active { background: #D4B896; border-color: #B89B7A; color: #5C4A2E; }
-    .tab-btn[data-tab="conservacion"].active { background: #8FBC8F; border-color: #6B8E6B; color: #2E4A2E; }
+    
+    .area-header:hover .area-title {
+      transform: scale(1.02);
+    }
+    
+    .area-title {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 1.5rem;
+      color: var(--color-aceituna);
+      margin-bottom: 0.5rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .area-title.agua { color: #2A6B7C; }
+    .area-title.suelo { color: #6B5344; }
+    .area-title.conservacion { color: #3D5A3D; }
+    
+    .area-subtitle {
+      color: var(--color-muted);
+      font-size: 0.9rem;
+    }
 
-    .tab-wrapper { position: relative; overflow: hidden; border-radius: 12px; transition: background 0.4s ease; }
-    .tab-wrapper[data-tab="agua"] { background: linear-gradient(135deg, #E8F4F8 0%, #D4EEF5 100%); }
-    .tab-wrapper[data-tab="suelo"] { background: linear-gradient(135deg, #F5EDE0 0%, #E8DFD0 100%); }
-    .tab-wrapper[data-tab="conservacion"] { background: linear-gradient(135deg, #E8F0E8 0%, #D4E5D4 100%); }
-    .tab-content-carousel { display: flex; transition: transform 0.4s ease; }
-    .tab-content { 
-      flex: 0 0 100%; 
-      padding: 20px; 
-      display: grid; 
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 16px; 
+    .carousel-wrapper {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+    }
+
+    .carousel-slide {
+      flex: 0 0 100%;
+      padding: 0 50px;
       box-sizing: border-box;
     }
-    @media (max-width: 768px) { .tab-content { grid-template-columns: 1fr; } }
 
-    .carousel-nav-btn {
+    .carousel-nav {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--color-white-surface);
-      border: 1px solid var(--color-border);
+      border: 2px solid var(--color-border);
       cursor: pointer;
       font-size: 20px;
       display: flex;
@@ -194,12 +244,51 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       transition: all 0.2s ease;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .carousel-nav-btn:hover { background: var(--color-limon); }
-    .carousel-nav-btn.prev { left: 10px; }
-    .carousel-nav-btn.next { right: 10px; }
-    .carousel-dots { display: flex; justify-content: center; gap: 8px; padding-bottom: 16px; }
-    .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; }
-    .carousel-dot.active { background: var(--color-aceituna); transform: scale(1.2); }
+    
+    .carousel-nav:hover { 
+      background: var(--color-limon); 
+      border-color: var(--color-limon);
+    }
+    
+    .carousel-nav.prev { left: 0; }
+    .carousel-nav.next { right: 0; }
+    
+    .carousel-nav.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    
+    .carousel-nav.disabled:hover {
+      background: var(--color-white-surface);
+      border-color: var(--color-border);
+    }
+
+    .carousel-dots { 
+      display: flex; 
+      justify-content: center; 
+      gap: 8px; 
+      margin-top: 16px; 
+    }
+    
+    .carousel-dot { 
+      width: 10px; 
+      height: 10px; 
+      border-radius: 50%; 
+      background: rgba(0,0,0,0.15); 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      border: none;
+    }
+    
+    .carousel-dot:hover { background: rgba(0,0,0,0.3); }
+    .carousel-dot.active { 
+      background: var(--color-aceituna); 
+      transform: scale(1.2); 
+    }
+    
+    .area-section.agua .carousel-dot.active { background: #1A4A5E; }
+    .area-section.suelo .carousel-dot.active { background: #5C4A2E; }
+    .area-section.conservacion .carousel-dot.active { background: #2E4A2E; }
 
     .agua-card {
       background: var(--color-white-surface);
@@ -348,112 +437,161 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     <a href="#" class="agua-plan-btn" id="agua-plan-btn">¿Necesitas un plan personalizado? → Consejero IA</a>
   </div>
 
-  <section class="agua-section">
-    <div class="agua-container">
-      <div class="tabs-container">
-        <div class="tabs-nav">
-          <button class="tab-btn active" data-tab="agua">💧 Agua</button>
-          <button class="tab-btn" data-tab="suelo">🪨 Suelo</button>
-          <button class="tab-btn" data-tab="conservacion">🛡️ Conservación</button>
-        </div>
-        
-        <div class="tab-content active" id="tab-agua">
-          <div class="agua-card">
-            <h2>💧 Gestión del Agua</h2>
-            <p>El olivo es tolerante a la sequía, pero el cambio climático está alterando los patrones de precipitación. Una gestión eficiente del agua es crucial.</p>
-            <div class="agua-tip">
-              <div class="agua-tip-title">📊 Necesidades hídricas</div>
-              <p>Un olivo adulto necesita 1.000-1.500 mm/año. El riego deficitario puede reducir el consumo hasta 40% sin pérdidas significativas de rendimiento.</p>
-            </div>
-          </div>
-          <div class="agua-card">
-            <h2>🛠️ Riego por Goteo</h2>
-            <p>El sistema de riego por goteo es el más eficiente para olivares. Permite un control preciso del agua y la fertilización.</p>
-            <ul class="agua-list">
-              <li>💧 Caudal recomendado: 4 L/h/árbol</li>
-              <li>⏱️ Frecuencia: 2-3 veces/semana</li>
-              <li>📏 Laterales: 1 por hilera</li>
-              <li>🔧 Goteros: 2-4 por árbol</li>
-            </ul>
-            <div class="agua-tip">
-              <div class="agua-tip-title">⚡ Ahorro</div>
-              <p>El goteo consume 30-40% menos agua que el riego por gravedad.</p>
-            </div>
-          </div>
-          <div class="agua-card">
-            <h2>🧪 Calidad del Agua</h2>
-            <p>La calidad del agua de riego afecta directamente la salud del olivo y la calidad del aceite.</p>
-            <ul class="agua-list">
-              <li><span class="agua-stat">CE</span> Conductividad: &lt;4 dS/m</li>
-              <li><span class="agua-stat">SAR</span> Sodio: &lt;10 meq/L</li>
-              <li><span class="agua-stat">CL</span> Cloruros: &lt;400 mg/L</li>
-              <li><span class="agua-stat">pH</span> Agua: 6.5-8.0</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-suelo">
-          <div class="agua-card">
-            <h2>🪨 Tipos de Suelo</h2>
-            <p>El olivo se adapta a diversos suelos, pero prospera en profundo, bien drenado y con buena capacidad de retención de agua.</p>
-            <ul class="agua-list">
-              <li><span class="agua-stat">ÓPTIMO</span> Franco-arcilloso con buen drenaje</li>
-              <li><span class="agua-stat">BUENO</span> Suelos calcáreos (hasta 40% caliza)</li>
-              <li><span class="agua-stat">LIMITADO</span> Suelos muy arcillosos (&gt;50%)</li>
-              <li><span class="agua-stat">PROBLEMA</span> Suelos encharcadizos</li>
-            </ul>
-          </div>
-          <div class="agua-card">
-            <h2>🌱 Materia Orgánica</h2>
-            <p>La materia orgánica mejora la estructura del suelo, la capacidad de retención de agua y la disponibilidad de nutrientes.</p>
-            <ul class="agua-list">
-              <li>✅ Objetivo: &gt;2% materia orgánica</li>
-              <li>📈 Medios actuales: 0.5-1.5%</li>
-              <li>🧪 Enmienda: Compost, estiércol, biochar</li>
-              <li>🌿 Cubiertas vegetales incrementan 0.5%/año</li>
-            </ul>
-            <div class="agua-tip">
-              <div class="agua-tip-title">💡 Dato clave</div>
-              <p>Cada 1% de materia orgánica aumenta la capacidad de retención de agua en 20.000 litros/ha.</p>
-            </div>
-          </div>
-          <div class="agua-card">
-            <h2>🔬 Análisis de Suelo</h2>
-            <p>Antes de fertilizar o enmendar, realiza un análisis de suelo para conocer los niveles de nutrientes y pH.</p>
-            <ul class="agua-list">
-              <li><span class="agua-stat">pH</span> Óptimo: 6.5-8.5</li>
-              <li><span class="agua-stat">N</span> Nitrógeno: 20-40 ppm</li>
-              <li><span class="agua-stat">P</span> Fósforo: 10-25 ppm</li>
-              <li><span class="agua-stat">K</span> Potasio: 150-300 ppm</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-conservacion">
-          <div class="agua-card">
-            <h2>🛡️ Prácticas de Conservación</h2>
-            <p>Técnicas recomendadas para mejorar la infiltración y retención de agua en el suelo:</p>
-            <ul class="agua-list">
-              <li><strong>🌿 Cubiertas vegetales</strong> — Entre filas, reducen escorrentía 50%</li>
-              <li><strong>⬛ Biochar</strong> — Aumenta retención de agua 3x</li>
-              <li><strong>🪵 Mulching</strong> — Mantillo de paja o restos de poda</li>
-              <li><strong>🪨 Laboreo mínimo</strong> — Conservar estructura del suelo</li>
-              <li><strong>📐 Contour farming</strong> — Cultivo siguiendo curvas de nivel</li>
-              <li><strong>💧 Zanjas de infiltración</strong> — Captura agua de escorrentía</li>
-            </ul>
-          </div>
-          <div class="agua-card">
-            <h2>🌡️ Adaptación al Cambio Climático</h2>
-            <p>Estrategias para gestionar el estrés hídrico:</p>
-            <ul class="agua-list">
-              <li>📅 Riego deficitario controlado</li>
-              <li>🌳 Poda para reducir área foliar</li>
-              <li>🛡️ Protectores solares para frutos</li>
-              <li>📊 Monitorización con sensores</li>
-            </ul>
-          </div>
-        </div>
+  <!-- ÁREA AGUA -->
+  <section class="area-section agua">
+    <div class="area-container">
+      <div class="area-header">
+        <h2 class="area-title agua">💧 Agua</h2>
+        <p class="area-subtitle">Gestión eficiente del agua de riego para tu olivar</p>
       </div>
+      
+      <div class="carousel-wrapper" id="carousel-agua">
+        <button class="carousel-nav prev" onclick="moveCarousel('agua', -1)">❮</button>
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>💧 Gestión del Agua</h2>
+              <p>El olivo es tolerante a la sequía, pero el cambio climático está alterando los patrones de precipitación. Una gestión eficiente del agua es crucial.</p>
+              <div class="agua-tip">
+                <div class="agua-tip-title">📊 Necesidades hídricas</div>
+                <p>Un olivo adulto necesita 1.000-1.500 mm/año. El riego deficitario puede reducir el consumo hasta 40% sin pérdidas significativas de rendimiento.</p>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🛠️ Riego por Goteo</h2>
+              <p>El sistema de riego por goteo es el más eficiente para olivares. Permite un control preciso del agua y la fertilización.</p>
+              <ul class="agua-list">
+                <li>💧 Caudal recomendado: 4 L/h/árbol</li>
+                <li>⏱️ Frecuencia: 2-3 veces/semana</li>
+                <li>📏 Laterales: 1 por hilera</li>
+                <li>🔧 Goteros: 2-4 por árbol</li>
+              </ul>
+              <div class="agua-tip">
+                <div class="agua-tip-title">⚡ Ahorro</div>
+                <p>El goteo consume 30-40% menos agua que el riego por gravedad.</p>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🧪 Calidad del Agua</h2>
+              <p>La calidad del agua de riego afecta directamente la salud del olivo y la calidad del aceite.</p>
+              <ul class="agua-list">
+                <li><span class="agua-stat">CE</span> Conductividad: &lt;4 dS/m</li>
+                <li><span class="agua-stat">SAR</span> Sodio: &lt;10 meq/L</li>
+                <li><span class="agua-stat">CL</span> Cloruros: &lt;400 mg/L</li>
+                <li><span class="agua-stat">pH</span> Agua: 6.5-8.0</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-nav next" onclick="moveCarousel('agua', 1)">❯</button>
+      </div>
+      <div class="carousel-dots" id="dots-agua"></div>
+    </div>
+  </section>
+
+  <!-- ÁREA SUELO -->
+  <section class="area-section suelo">
+    <div class="area-container">
+      <div class="area-header">
+        <h2 class="area-title suelo">🪨 Suelo</h2>
+        <p class="area-subtitle">Cuida la tierra que sustenta tus olivos</p>
+      </div>
+      
+      <div class="carousel-wrapper" id="carousel-suelo">
+        <button class="carousel-nav prev" onclick="moveCarousel('suelo', -1)">❮</button>
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🪨 Tipos de Suelo</h2>
+              <p>El olivo se adapta a diversos suelos, pero prospera en profundo, bien drenado y con buena capacidad de retención de agua.</p>
+              <ul class="agua-list">
+                <li><span class="agua-stat">ÓPTIMO</span> Franco-arcilloso con buen drenaje</li>
+                <li><span class="agua-stat">BUENO</span> Suelos calcáreos (hasta 40% caliza)</li>
+                <li><span class="agua-stat">LIMITADO</span> Suelos muy arcillosos (&gt;50%)</li>
+                <li><span class="agua-stat">PROBLEMA</span> Suelos encharcadizos</li>
+              </ul>
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🌱 Materia Orgánica</h2>
+              <p>La materia orgánica mejora la estructura del suelo, la capacidad de retención de agua y la disponibilidad de nutrientes.</p>
+              <ul class="agua-list">
+                <li>✅ Objetivo: &gt;2% materia orgánica</li>
+                <li>📈 Medios actuales: 0.5-1.5%</li>
+                <li>🧪 Enmienda: Compost, estiércol, biochar</li>
+                <li>🌿 Cubiertas vegetales incrementan 0.5%/año</li>
+              </ul>
+              <div class="agua-tip">
+                <div class="agua-tip-title">💡 Dato clave</div>
+                <p>Cada 1% de materia orgánica aumenta la capacidad de retención de agua en 20.000 litros/ha.</p>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🔬 Análisis de Suelo</h2>
+              <p>Antes de fertilizar o enmendar, realiza un análisis de suelo para conocer los niveles de nutrientes y pH.</p>
+              <ul class="agua-list">
+                <li><span class="agua-stat">pH</span> Óptimo: 6.5-8.5</li>
+                <li><span class="agua-stat">N</span> Nitrógeno: 20-40 ppm</li>
+                <li><span class="agua-stat">P</span> Fósforo: 10-25 ppm</li>
+                <li><span class="agua-stat">K</span> Potasio: 150-300 ppm</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-nav next" onclick="moveCarousel('suelo', 1)">❯</button>
+      </div>
+      <div class="carousel-dots" id="dots-suelo"></div>
+    </div>
+  </section>
+
+  <!-- ÁREA CONSERVACIÓN -->
+  <section class="area-section conservacion">
+    <div class="area-container">
+      <div class="area-header">
+        <h2 class="area-title conservacion">🛡️ Conservación</h2>
+        <p class="area-subtitle">Prácticas sostenibles para proteger tu olivar</p>
+      </div>
+      
+      <div class="carousel-wrapper" id="carousel-conservacion">
+        <button class="carousel-nav prev" onclick="moveCarousel('conservacion', -1)">❮</button>
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🛡️ Prácticas de Conservación</h2>
+              <p>Técnicas recomendadas para mejorar la infiltración y retención de agua en el suelo:</p>
+              <ul class="agua-list">
+                <li><strong>🌿 Cubiertas vegetales</strong> — Entre filas, reducen escorrentía 50%</li>
+                <li><strong>⬛ Biochar</strong> — Aumenta retención de agua 3x</li>
+                <li><strong>🪵 Mulching</strong> — Mantillo de paja o restos de poda</li>
+                <li><strong>🪨 Laboreo mínimo</strong> — Conservar estructura del suelo</li>
+                <li><strong>📐 Contour farming</strong> — Cultivo siguiendo curvas de nivel</li>
+                <li><strong>💧 Zanjas de infiltración</strong> — Captura agua de escorrentía</li>
+              </ul>
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="agua-card">
+              <h2>🌡️ Adaptación al Cambio Climático</h2>
+              <p>Estrategias para gestionar el estrés hídrico:</p>
+              <ul class="agua-list">
+                <li>📅 Riego deficitario controlado</li>
+                <li>🌳 Poda para reducir área foliar</li>
+                <li>🛡️ Protectores solares para frutos</li>
+                <li>📊 Monitorización con sensores</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-nav next" onclick="moveCarousel('conservacion', 1)">❯</button>
+      </div>
+      <div class="carousel-dots" id="dots-conservacion"></div>
     </div>
   </section>
 
@@ -518,6 +656,47 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     return { class: '', text: '' };
   }
 
+  function smoothSetText(el, text) {
+    if (!el) return;
+    const next = String(text ?? '');
+    if (el.textContent === next) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      el.textContent = next;
+      return;
+    }
+    el.classList.add('updating');
+    setTimeout(() => {
+      el.textContent = next;
+      el.classList.remove('updating');
+      const card = el.closest('.suelo-dato');
+      if (card) {
+        card.classList.remove('updated');
+        requestAnimationFrame(() => card.classList.add('updated'));
+        setTimeout(() => card.classList.remove('updated'), 300);
+      }
+    }, 120);
+  }
+
+  function smoothSetStatus(el, status) {
+    if (!el || !status) return;
+    const nextClass = `status ${status.class}`;
+    const nextText = status.text || '';
+    if (el.className === nextClass && el.textContent === nextText) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      el.className = nextClass;
+      el.textContent = nextText;
+      return;
+    }
+    el.classList.add('updating');
+    setTimeout(() => {
+      el.className = nextClass;
+      el.textContent = nextText;
+      el.classList.remove('updating');
+    }, 120);
+  }
+
   async function loadDashboardData() {
     const prov = OlivaxiEcosistema.provincia;
     if (!prov) return null;
@@ -552,21 +731,17 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     const lluviaStatus = getStatusClass(lluvia, 'lluvia');
 
     if (sueloDatos) {
-      sueloTemp.textContent = `${temp}°C`;
-      sueloTempStatus.className = `status ${tempStatus.class}`;
-      sueloTempStatus.textContent = tempStatus.text;
+      smoothSetText(sueloTemp, `${temp}°C`);
+      smoothSetStatus(sueloTempStatus, tempStatus);
       
-      sueloHumedad.textContent = `${humedadDisplay}%`;
-      sueloHumedadStatus.className = `status ${humedadStatus.class}`;
-      sueloHumedadStatus.textContent = humedadStatus.text;
+      smoothSetText(sueloHumedad, `${humedadDisplay}%`);
+      smoothSetStatus(sueloHumedadStatus, humedadStatus);
       
-      sueloEto.textContent = eto.toFixed(1);
-      sueloEtoStatus.className = `status ${etoStatus.class}`;
-      sueloEtoStatus.textContent = etoStatus.text;
+      smoothSetText(sueloEto, eto.toFixed(1));
+      smoothSetStatus(sueloEtoStatus, etoStatus);
       
-      sueloLluvia.textContent = `${lluvia.toFixed(1)}mm`;
-      sueloLluviaStatus.className = `status ${lluviaStatus.class}`;
-      sueloLluviaStatus.textContent = lluviaStatus.text;
+      smoothSetText(sueloLluvia, `${lluvia.toFixed(1)}mm`);
+      smoothSetStatus(sueloLluviaStatus, lluviaStatus);
       
       const shouldAnimate = sueloDatos.classList.contains('loading') || sueloDatos.classList.contains('hidden');
       sueloDatos.classList.remove('hidden', 'loading');
@@ -604,14 +779,73 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     }
   }
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  const carouselState = {
+    agua: { current: 0, total: 3 },
+    suelo: { current: 0, total: 3 },
+    conservacion: { current: 0, total: 2 }
+  };
+
+  let selectedArea = null;
+
+  document.querySelectorAll('.area-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.closest('.area-section');
+      const area = section?.classList.contains('agua') ? 'agua' : 
+                   section?.classList.contains('suelo') ? 'suelo' : 
+                   section?.classList.contains('conservacion') ? 'conservacion' : null;
+      
+      if (!area) return;
+      
+      if (selectedArea === area) {
+        section.classList.remove('selected');
+        selectedArea = null;
+      } else {
+        document.querySelectorAll('.area-section').forEach(s => s.classList.remove('selected'));
+        section.classList.add('selected');
+        selectedArea = area;
+      }
     });
   });
+
+  window.moveCarousel = function(area, direction) {
+    const state = carouselState[area];
+    if (!state) return;
+    
+    state.current += direction;
+    if (state.current < 0) state.current = state.total - 1;
+    if (state.current >= state.total) state.current = 0;
+    
+    updateCarousel(area);
+  };
+
+  function updateCarousel(area) {
+    const state = carouselState[area];
+    const wrapper = document.getElementById('carousel-' + area);
+    const track = wrapper?.querySelector('.carousel-track');
+    if (!track || !state) return;
+    
+    track.style.transform = `translateX(-${state.current * 100}%)`;
+    
+    wrapper.querySelectorAll('.carousel-nav').forEach(btn => {
+      btn.classList.remove('disabled');
+    });
+    
+    const dotsContainer = document.getElementById('dots-' + area);
+    if (dotsContainer) {
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < state.total; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === state.current ? ' active' : '');
+        dot.onclick = () => {
+          state.current = i;
+          updateCarousel(area);
+        };
+        dotsContainer.appendChild(dot);
+      }
+    }
+  }
+
+  ['agua', 'suelo', 'conservacion'].forEach(area => updateCarousel(area));
 
   function syncWithEcosistema() {
     let prov = OlivaxiEcosistema.provincia;

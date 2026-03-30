@@ -51,7 +51,27 @@ const getPlaceholderColor = (id) => {
       <div class="provincia-selector">
         <ProvinciaSelect id="select-provincia" placeholder="Selecciona tu provincia..." />
       </div>
-      <div class="provincia-info-bar" id="provincia-info-bar" style="display:none"></div>
+      <div class="provincia-live" id="provincia-live">
+        <div class="live-placeholder" id="live-placeholder">
+          <span class="live-dot"></span>
+          <span>Selecciona tu provincia para ver datos en vivo</span>
+        </div>
+        <div class="live-loading" id="live-loading" style="display:none">
+          <div class="shimmer-pill"></div>
+          <div class="shimmer-pill short"></div>
+          <div class="shimmer-pill short"></div>
+          <div class="shimmer-pill short"></div>
+        </div>
+        <div class="live-data" id="live-data" style="display:none">
+          <div class="live-item live-prov"><span class="live-icon">📍</span><span id="live-prov-text">—</span></div>
+          <div class="live-item"><span class="live-icon">🌡️</span><span id="live-temp">—</span></div>
+          <div class="live-item"><span class="live-icon">💧</span><span id="live-humedad">—</span></div>
+          <div class="live-item"><span class="live-icon">🫒</span><span id="live-variedad">—</span></div>
+          <div class="live-item live-risk" id="live-risk-wrap" style="display:none">
+            <span id="live-risk-badge"></span>
+          </div>
+        </div>
+      </div>
     </header>
 
     <div class="var-filters">
@@ -131,7 +151,7 @@ const getPlaceholderColor = (id) => {
               <div class="riesgo-section">
                 <span class="riesgo-badge" id={"riesgo-" + v.id}>{v.riesgo}</span>
               </div>
-              <a href={`/consejero?q=Tengo+${v.nombre}+en+mi+olivar.+¿Qué+cuidados+necesita+con+el+clima+actual?`} class="consejero-btn">Preguntar al conseljero sobre {v.nombre}</a>
+              <a href={`/consejero?q=Tengo+${v.nombre}+en+mi+olivar.+¿Qué+cuidados+necesita+con+el+clima+actual?`} class="consejero-btn">Preguntar al consejero sobre {v.nombre}</a>
             </div>
           </div>
         </div>
@@ -214,15 +234,103 @@ const getPlaceholderColor = (id) => {
     cursor: pointer;
   }
 
-  .provincia-info-bar {
-    margin-top: 1rem;
-    padding: 8px 16px;
-    background: white;
-    border-radius: 8px;
+  .provincia-live {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .live-placeholder,
+  .live-loading,
+  .live-data {
     display: inline-flex;
-    gap: 12px;
-    font-size: 12px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #888;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: #ccc;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .live-data {
     color: var(--color-aceituna, #1C1C1C);
+    gap: 14px;
+    animation: liveFadeIn 0.4s ease;
+  }
+
+  .live-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .live-prov {
+    font-weight: 700;
+  }
+
+  .live-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .live-risk {
+    padding-left: 10px;
+    border-left: 1px solid #eee;
+  }
+
+  #live-risk-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .shimmer-pill {
+    width: 70px;
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .shimmer-pill.short {
+    width: 50px;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes liveFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .live-data {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+    .live-risk {
+      padding-left: 0;
+      border-left: none;
+    }
   }
 
   .var-filters {
@@ -490,27 +598,43 @@ const getPlaceholderColor = (id) => {
   import OlivaxiEcosistema from '../lib/ecosistema';
   import { getRiesgoClass, getRiesgoIcono } from '../lib/ecosistema';
 
-  const grid = document.getElementById('var-grid');
-  const provinciaInfoBar = document.getElementById('provincia-info-bar');
+  const el = {
+    placeholder: document.getElementById('live-placeholder'),
+    loading: document.getElementById('live-loading'),
+    data: document.getElementById('live-data'),
+    provText: document.getElementById('live-prov-text'),
+    temp: document.getElementById('live-temp'),
+    humedad: document.getElementById('live-humedad'),
+    variedad: document.getElementById('live-variedad'),
+    riskWrap: document.getElementById('live-risk-wrap'),
+    riskBadge: document.getElementById('live-risk-badge'),
+  };
+
   let expandedCard = null;
+
+  function showLive(state) {
+    if (el.placeholder) el.placeholder.style.display = state === 'placeholder' ? 'inline-flex' : 'none';
+    if (el.loading) el.loading.style.display = state === 'loading' ? 'inline-flex' : 'none';
+    if (el.data) el.data.style.display = state === 'data' ? 'inline-flex' : 'none';
+  }
 
   window.toggleCard = function(cardId) {
     const allDetails = document.querySelectorAll('.detail');
     const allHints = document.querySelectorAll('.toggle-hint');
-    
+
     allDetails.forEach(d => d.style.display = 'none');
     allHints.forEach(h => {
       h.textContent = h.textContent.replace('Cerrar ↑', 'Ver detalles ↓');
     });
-    
+
     const detail = document.getElementById('detail-' + cardId);
     const hint = document.getElementById('hint-' + cardId);
-    
+
     if (expandedCard === cardId) {
       expandedCard = null;
       return;
     }
-    
+
     if (detail) {
       detail.style.display = 'block';
       if (hint) hint.textContent = 'Cerrar ↑';
@@ -535,29 +659,40 @@ const getPlaceholderColor = (id) => {
     });
   });
 
-  // Render info de provincia
   function renderProvinciaInfo() {
     const d = OlivaxiEcosistema.dashboardData;
     const prov = OlivaxiEcosistema.provincia;
 
-    if (!prov || !d || !provinciaInfoBar) {
-      if (provinciaInfoBar) provinciaInfoBar.style.display = 'none';
-      document.querySelectorAll('.riesgo-badge[id^="riesgo-"]').forEach(badge => {
-        badge.textContent = badge.id.replace('riesgo-', '').charAt(0).toUpperCase() + badge.id.replace('riesgo-', '').slice(1) + ': vulnerable a enfermedades';
-        badge.style.background = '#fcebeb';
-        badge.style.color = '#a32d2d';
-      });
+    if (!prov) {
+      showLive('placeholder');
+      resetRiesgoBadges();
       return;
     }
 
-    provinciaInfoBar.style.display = 'inline-flex';
-    provinciaInfoBar.innerHTML = `
-      <span>📍 <b>${prov}</b></span>
-      <span>🌡️ ${d.clima?.temperatura || '?'}°C</span>
-      <span>💧 ${d.clima?.humedad || '?'}%</span>
-      <span>🫒 ${d.provinciaInfo?.variedadPredominante || 'N/A'}</span>
-    `;
+    if (!d) {
+      showLive('loading');
+      return;
+    }
 
+    showLive('data');
+
+    if (el.provText) el.provText.textContent = prov;
+    if (el.temp) el.temp.textContent = (d.clima?.temperatura ?? '—') + '°C';
+    if (el.humedad) el.humedad.textContent = (d.clima?.humedad ?? '—') + '%';
+    if (el.variedad) el.variedad.textContent = d.provinciaInfo?.variedadPredominante || 'N/A';
+
+    // Riesgo global
+    const riesgo = d.clima?.riesgo || 'bajo';
+    if (el.riskWrap && el.riskBadge) {
+      const cls = getRiesgoClass(riesgo);
+      const icon = getRiesgoIcono(riesgo);
+      el.riskBadge.textContent = `${icon} ${riesgo.charAt(0).toUpperCase() + riesgo.slice(1)}`;
+      el.riskBadge.style.background = cls === 'alto' ? '#fcebeb' : cls === 'medio' ? '#fff8e1' : '#e8f5e9';
+      el.riskBadge.style.color = cls === 'alto' ? '#a32d2d' : cls === 'medio' ? '#b45309' : '#15803d';
+      el.riskWrap.style.display = 'flex';
+    }
+
+    // Actualizar badges de riesgo por variedad
     const riesgosVar = d.riesgos_variedad || {};
     Object.keys(riesgosVar).forEach(varId => {
       const rv = riesgosVar[varId];
@@ -573,13 +708,29 @@ const getPlaceholderColor = (id) => {
     });
   }
 
-  OlivaxiEcosistema.onChange(() => {
+  function resetRiesgoBadges() {
+    document.querySelectorAll('.riesgo-badge[id^="riesgo-"]').forEach(badge => {
+      const name = badge.id.replace('riesgo-', '');
+      badge.textContent = name.charAt(0).toUpperCase() + name.slice(1) + ': vulnerable a enfermedades';
+      badge.style.background = '#fcebeb';
+      badge.style.color = '#a32d2d';
+    });
+  }
+
+  OlivaxiEcosistema.onChange((state) => {
+    if (state.provincia) {
+      showLive('loading');
+    }
     renderProvinciaInfo();
   });
 
+  // Carga inicial
   if (OlivaxiEcosistema.provincia) {
-    OlivaxiEcosistema.fetchDashboard().then(() => {
-      renderProvinciaInfo();
-    });
+    showLive('loading');
+    OlivaxiEcosistema.fetchDashboard()
+      .then(() => renderProvinciaInfo())
+      .catch(() => showLive('placeholder'));
+  } else {
+    showLive('placeholder');
   }
 </script>

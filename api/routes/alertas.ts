@@ -65,7 +65,7 @@ function generateVerificationToken(): string {
   return crypto.randomUUID() + '-' + Date.now();
 }
 
-const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
+const gmailUser = process.env.GMAIL_USER || "";
 const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
 
 const transporter = nodemailer.createTransport({
@@ -488,7 +488,7 @@ function getFrontendBaseUrl(): string {
       .replace(/:3002$/, ':4321');
   }
 
-  return 'http://45.90.237.135:4321';
+  return 'http://localhost:4321';
 }
 
 function getRiesgosActivosDesdeProvinciaData(provData: any): any[] {

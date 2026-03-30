@@ -293,8 +293,19 @@ const cambioClimatico = [
       if (raifStatusBar) raifStatusBar.innerHTML = '';
       return;
     }
-    const d = await OlivaxiEcosistema.fetchDashboard();
-    if (d) renderPlagasData(d);
+    try {
+      const d = await OlivaxiEcosistema.fetchDashboard();
+      if (d) {
+        renderPlagasData(d);
+      } else if (raifStatusBar) {
+        raifStatusBar.textContent = '⚠️ No se pudieron cargar los datos de plagas para esta provincia.';
+      }
+    } catch (e) {
+      console.error('[plagas] Error cargando dashboard:', e);
+      if (raifStatusBar) {
+        raifStatusBar.textContent = '❌ Error al cargar datos. Intenta de nuevo.';
+      }
+    }
   }
 
   // --- Escuchar cambios del ecosistema ---

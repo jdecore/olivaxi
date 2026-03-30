@@ -22,16 +22,7 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-const isInternalCron = (c: any): boolean => {
-  return c.req.header('X-Internal-Cron') === 'true';
-};
-
 const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
-  if (isInternalCron(c)) {
-    await next();
-    return;
-  }
-  
   const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
   
   let record = rateLimitMap.get(ip);
@@ -51,10 +42,31 @@ const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
 
 app.use("*", rateLimitMiddleware);
 
+const defaultAllowedOrigins = [
+  "http://localhost:4321",
+  "http://127.0.0.1:4321",
+  "https://olivaxi.duckdns.org",
+];
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+const CORS_ALLOWED = new Set(allowedOrigins.length ? allowedOrigins : defaultAllowedOrigins);
+
 app.use("*", async (c, next) => {
-  c.res.headers.set('Access-Control-Allow-Origin', '*');
+  const origin = c.req.header("origin");
+  const isAllowedOrigin = !!origin && CORS_ALLOWED.has(origin);
+
+  if (origin && !isAllowedOrigin) {
+    return c.json({ error: "Origen no permitido por CORS" }, 403);
+  }
+
+  if (isAllowedOrigin) {
+    c.res.headers.set("Access-Control-Allow-Origin", origin);
+    c.res.headers.set("Vary", "Origin");
+  }
   c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Internal-Cron');
+  c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type');
   c.res.headers.set('Access-Control-Expose-Headers', 'Content-Length');
   c.res.headers.set('Access-Control-Max-Age', '86400');
   

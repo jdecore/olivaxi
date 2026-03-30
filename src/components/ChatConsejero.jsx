@@ -21,7 +21,7 @@ const SKILL_PROMPTS = {
   fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: brotación, floración, cuaje, endurecimiento del hueso, envero, recolección.',
 };
 
-const formatText = (text) => text?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') || '';
+const formatText = (text) => String(text || '');
 
 export default function ChatConsejero() {
   const [messages, setMessages] = createSignal([]);
@@ -441,7 +441,7 @@ export default function ChatConsejero() {
                         <div class="typing-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
                       </Show>
                       <Show when={!msg.isWaiting}>
-                        <span innerHTML={formatText(msg.text)}></span>
+                        <span style={{ 'white-space': 'pre-wrap' }}>{formatText(msg.text)}</span>
                       </Show>
                     </div>
                   </Show>
