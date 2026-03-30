@@ -1,6 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProvinciaSelect from '../components/ProvinciaSelect.astro';
+import { Image } from 'astro:assets';
+import cornicabraImg from '../assets/variedades/cornicabra.avif';
+import picualImg from '../assets/variedades/picual.avif';
+import arbequinaImg from '../assets/variedades/Arbequina.avif';
+import hojiblancaImg from '../assets/variedades/hojiblanca.avif';
+import manzanillaImg from '../assets/variedades/manzanilla.avif';
+import empeltreImg from '../assets/variedades/Empeltre.avif';
+
+const imageMap = {
+  cornicabra: cornicabraImg,
+  picual: picualImg,
+  arbequina: arbequinaImg,
+  hojiblanca: hojiblancaImg,
+  manzanilla: manzanillaImg,
+  empeltre: empeltreImg
+};
 
 const variedades = [
   { id: 'cornicabra', nombre: 'Cornicabra', origen: 'Castilla-La Mancha', categoria: 'Rústica', tags: 'frio sequia', frio: -10, calor: 40, scores: { frio: 95, calor: 90, sequia: 95, prod: 75 }, riesgo: 'Vulnerable a enfermedades fúngicas con humedad persistente.' },
@@ -11,12 +27,18 @@ const variedades = [
   { id: 'empeltre', nombre: 'Empeltre', origen: 'Aragón', categoria: 'Continental', tags: 'frio sequia calor', frio: -5, calor: 38, scores: { frio: 70, calor: 75, sequia: 85, prod: 65 }, riesgo: 'Media sensibilidad a hongos en ambientes húmedos.' }
 ];
 
-const getImageUrl = (id) => {
-  const availableImages = ['cornicabra', 'picual', 'hojiblanca', 'manzanilla'];
-  if (availableImages.includes(id)) {
-    return `/images/variedades/${id}.avif`;
-  }
-  return `/images/variedades/picual.avif`;
+const getOptimizedImage = (id) => imageMap[id] || null;
+
+const getPlaceholderColor = (id) => {
+  const colors = {
+    cornicabra: '#5D7B4E',
+    picual: '#3D5A3D',
+    arbequina: '#6B8E4E',
+    hojiblanca: '#8B9A5B',
+    manzanilla: '#7A8B52',
+    empeltre: '#4A6B3D'
+  };
+  return colors[id] || '#5D7B4E';
 };
 ---
 
@@ -42,16 +64,26 @@ const getImageUrl = (id) => {
 
     <div class="var-grid" id="var-grid">
       {variedades.map((v) => (
-        <div class="var-card" data-tags={v.tags} data-id={v.id} onclick={`toggleCard('${v.id}')`}>
-          <img
-            src={getImageUrl(v.id)}
-            alt={v.nombre}
-            width="400"
-            height="160"
-            loading="lazy"
-            decoding="async"
-            style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;"
-          />
+        <div class="var-card" data-tags={v.tags} data-id={v.id} onclick={"toggleCard('" + v.id + "')"}>
+          {getOptimizedImage(v.id) ? (
+            <Image
+              src={getOptimizedImage(v.id)}
+              alt={v.nombre}
+              width={400}
+              height={140}
+              format="avif"
+              quality={80}
+              loading="lazy"
+              decoding="async"
+              style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;background:#eee;"
+            />
+          ) : null}
+          <div 
+            class="img-placeholder"
+            style={`display:${getOptimizedImage(v.id) ? 'none' : 'flex'};width:100%;height:140px;background:${getPlaceholderColor(v.id)};border-radius:8px 8px 0 0;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;`}
+          >
+            {v.nombre.charAt(0)}
+          </div>
           <div class="card-body">
             <div class="card-header-row">
               <span class="var-badge-small">{v.categoria}</span>
@@ -72,8 +104,8 @@ const getImageUrl = (id) => {
                 <span class="score-val">{v.scores.prod}%</span>
               </div>
             </div>
-            <div class="toggle-hint" id="hint-{v.id}">Ver detalles ↓</div>
-            <div class="detail" id="detail-{v.id}" style="display:none;">
+            <div class="toggle-hint" id={"hint-" + v.id}>Ver detalles ↓</div>
+            <div class="detail" id={"detail-" + v.id} style="display:none;">
               <div class="bars-section">
                 <div class="bar-row">
                   <span class="bar-label" style="color:#378add">❄️ Frío</span>
@@ -97,7 +129,7 @@ const getImageUrl = (id) => {
                 </div>
               </div>
               <div class="riesgo-section">
-                <span class="riesgo-badge" id="riesgo-{v.id}">{v.riesgo}</span>
+                <span class="riesgo-badge" id={"riesgo-" + v.id}>{v.riesgo}</span>
               </div>
               <a href={`/consejero?q=Tengo+${v.nombre}+en+mi+olivar.+¿Qué+cuidados+necesita+con+el+clima+actual?`} class="consejero-btn">Preguntar al conseljero sobre {v.nombre}</a>
             </div>
@@ -244,6 +276,10 @@ const getImageUrl = (id) => {
   .var-card:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transform: translateY(-2px);
+  }
+
+  .img-placeholder {
+    font-family: 'Literata', Georgia, serif;
   }
 
   .card-body {

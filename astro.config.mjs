@@ -24,6 +24,11 @@ export default defineConfig({
     },
     define: {
       'process.env': {}
+    },
+    server: {
+      fs: {
+        allow: ['.']
+      }
     }
   },
   devToolbar: {

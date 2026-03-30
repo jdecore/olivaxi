@@ -15,21 +15,12 @@ export const VARIEDADES = [
   { id: 'empeltre', nombre: 'Empeltre' },
 ] as const;
 
-export const VARIEDADES_IDS = VARIEDADES.map(v => v.id);
-
 // Cache TTLs (in milliseconds)
 export const CACHE_TTL = {
   CLIMA: 3 * 60 * 1000,      // 3 minutes (frontend)
   DASHBOARD: 3 * 60 * 1000,  // 3 minutes (frontend)
   SUELO: 5 * 60 * 1000,      // 5 minutes (frontend)
   PLAGAS: 3 * 60 * 1000,     // 3 minutes (frontend)
-} as const;
-
-// Fetch timeouts (in milliseconds)
-export const FETCH_TIMEOUT = {
-  DEFAULT: 4000,
-  LARGE: 8000,
-  EXTENDED: 45000,
 } as const;
 
 // Crop coefficient for olive trees

@@ -249,7 +249,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 </div>
 
 <script>
-import OlivaxiEcosistema from '../lib/ecosistema';
+import OlivaxiEcosistema, { getRiesgoClass } from '../lib/ecosistema';
 
 // --- DOM refs ---
 const $ = (id) => document.getElementById(id);
@@ -268,14 +268,6 @@ const CAROUSEL_SLIDES = document.querySelectorAll('.carousel-slide');
 // --- Estado local (derivado del ecosistema) ---
 let datosClima = [];
 let dashboardData = null;
-
-// --- Helpers UI ---
-function getRiesgoClass(r) {
-  if (!r) return 'bajo';
-  if (r === 'alto' || r === 'crítico') return 'alto';
-  if (r === 'medio' || r === 'media') return 'medio';
-  return 'bajo';
-}
 
 // --- Alert Strip: Calcular riesgo máximo entre todas las provincias ---
 function getRiesgosActivos(p) {
