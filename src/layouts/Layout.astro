@@ -47,8 +47,25 @@ const { title = "olivaξ" } = Astro.props;
     <nav class="navbar">
       <div class="navbar-inner">
         <div class="nav-left">
-          <a href="/" class="logo">
-            <img src="/logo.svg" alt="olivaξ" class="logo-img" />
+          <a href="/" class="logo" aria-label="olivaξ - Inicio">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100" class="logo-svg-inline">
+              <defs>
+                <linearGradient id="olivaGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#5C6B3A"/>
+                  <stop offset="100%" stop-color="#3D4A25"/>
+                </linearGradient>
+                <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#A8D84A"/>
+                  <stop offset="100%" stop-color="#6B9A28"/>
+                </linearGradient>
+              </defs>
+              <circle cx="42" cy="50" r="35" fill="#D4E849" stroke="#1C1C1C" stroke-width="2.5"/>
+              <ellipse cx="42" cy="53" rx="12" ry="15" fill="url(#olivaGreen)"/>
+              <ellipse cx="37" cy="48" rx="4" ry="5" fill="rgba(255,255,255,0.4)"/>
+              <path d="M42 38 Q48 32 52 36" stroke="#4A5A28" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M50 34 Q58 27 64 33 Q58 38 50 34 Z" fill="url(#leafGrad)"/>
+              <text x="82" y="62" font-family="Arial Rounded MT Bold, Nunito, Arial, sans-serif" font-size="44" font-weight="800" stroke="#1C1C1C" stroke-width="4" stroke-linejoin="round" paint-order="stroke" fill="#D4E849">livaξ</text>
+            </svg>
           </a>
         </div>
         
@@ -285,12 +302,6 @@ const { title = "olivaξ" } = Astro.props;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 
-  .navbar img {
-    display: block;
-    height: 60px;
-    width: auto;
-  }
-
   .navbar-inner {
     max-width: 1200px;
     margin: 0 auto;
@@ -407,28 +418,16 @@ const { title = "olivaξ" } = Astro.props;
     white-space: nowrap;
   }
 
-  .nav-left .logo-img {
-    height: 80px;
+  .nav-left .logo-svg-inline {
+    height: 56px;
     width: auto;
-    max-width: 280px;
   }
 
   .nav-left .logo .logo-icon {
     font-size: 1.4rem;
   }
 
-  .nav-left .logo .logo-svg {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-  }
-
   @media (max-width: 480px) {
-    .nav-left .logo .logo-svg {
-      width: 26px;
-      height: 26px;
-    }
-  }
 
   .nav-right {
     display: flex;

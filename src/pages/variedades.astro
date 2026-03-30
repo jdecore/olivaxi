@@ -637,11 +637,15 @@ const varieties = [
 
     if (!prov || !d || !provinciaInfoBar) {
       if (provinciaInfoBar) provinciaInfoBar.style.display = 'none';
-      // Reset risk badges
+      // Reset risk badges and order
       document.querySelectorAll('.var-risk-badge').forEach(badge => {
         badge.textContent = '';
         badge.className = 'var-risk-badge';
+        badge.style.display = 'none';
       });
+      document.querySelectorAll('.dynamic-riesgo-detail').forEach(el => el.style.display = 'none');
+      // Reset order
+      resetCardOrder();
       return;
     }
 
@@ -654,25 +658,73 @@ const varieties = [
       <span>🪨 ${d.provinciaInfo?.tipoSuelo || 'N/A'}</span>
     `;
 
+    // Calcular scores para reordenar
+    const varScores = {};
+    const riesgosVar = d.riesgos_variedad || {};
+    document.querySelectorAll('.var-card').forEach(card => {
+      const varId = card.dataset.variedad;
+      if (!varId) return;
+      const rv = riesgosVar[varId];
+      const nivel = rv?.nivel || 'bajo';
+      const score = nivel === 'alto' || nivel === 'crítico' ? 3 : nivel === 'medio' ? 2 : 1;
+      varScores[varId] = score;
+    });
+
+    // Reordenar cards: menor riesgo primero (mejor adaptación)
+    const grid = document.querySelector('.var-grid');
+    if (grid) {
+      const cards = Array.from(grid.querySelectorAll('.var-card'));
+      cards.sort((a, b) => {
+        const scoreA = varScores[a.dataset.variedad] || 1;
+        const scoreB = varScores[b.dataset.variedad] || 1;
+        return scoreA - scoreB;
+      });
+      cards.forEach(card => grid.appendChild(card));
+    }
+
     // Update risk badges per variety
     document.querySelectorAll('.var-card').forEach(card => {
       const varId = card.dataset.variedad;
       const badge = card.querySelector('.var-risk-badge');
+      const detail = card.querySelector('.dynamic-riesgo-detail');
       if (!badge || !varId) return;
 
-      const riesgo = d.riesgos?.variedad;
-      const nivel = d.riesgos_variedad?.[varId]?.nivel || d.riesgos?.variedad?.nivel;
+      const rv = riesgosVar[varId];
+      const nivel = rv?.nivel || 'bajo';
+      const cls = getRiesgoClass(nivel);
+      const icon = getRiesgoIcono(nivel);
       
-      if (nivel) {
-        const cls = getRiesgoClass(nivel);
-        const icon = getRiesgoIcono(nivel);
-        badge.textContent = `${icon} Riesgo ${nivel}`;
-        badge.className = 'var-risk-badge risk-' + cls;
+      badge.textContent = `${icon} Riesgo ${nivel} en ${prov}`;
+      badge.className = 'var-risk-badge risk-' + cls;
+      badge.style.display = 'inline-block';
+
+      // Show detail
+      if (detail && rv?.detalle?.length) {
+        detail.innerHTML = rv.detalle.map(r => `<div>${r.icono || '•'} ${r.titulo || r.descripcion || r}</div>`).join('');
+        detail.style.display = 'block';
+      } else if (detail) {
+        detail.style.display = 'none';
+      }
+
+      // Highlight predominant variety
+      if (d.provinciaInfo?.variedadPredominante && d.provinciaInfo.variedadPredominante.toLowerCase() === varId) {
+        card.classList.add('predominante');
       } else {
-        badge.textContent = '🟢 Sin riesgo';
-        badge.className = 'var-risk-badge risk-bajo';
+        card.classList.remove('predominante');
       }
     });
+  }
+
+  function resetCardOrder() {
+    // Reset to original order by data-id
+    const grid = document.querySelector('.var-grid');
+    if (!grid) return;
+    const originalOrder = ['cornicabra', 'picual', 'arbequina', 'hojiblanca', 'manzanilla', 'empeltre'];
+    originalOrder.forEach(id => {
+      const card = grid.querySelector(`[data-variedad="${id}"]`);
+      if (card) grid.appendChild(card);
+    });
+    document.querySelectorAll('.var-card').forEach(card => card.classList.remove('predominante'));
   }
 
   // --- Filtrado por categoría ---
