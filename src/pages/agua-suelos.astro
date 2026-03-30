@@ -62,6 +62,23 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       width: 100%;
       max-width: 600px;
     }
+    .suelo-datos.hidden { display: none; }
+    .suelo-datos.loading .suelo-dato {
+      position: relative;
+      overflow: hidden;
+    }
+    .suelo-datos.loading .suelo-dato::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer {
+      100% { transform: translateX(100%); }
+    }
 
     .suelo-dato {
       background: var(--color-white-surface);
@@ -121,9 +138,46 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .tab-btn[data-tab="agua"].active { background: #7EC8E3; border-color: #5BA3C6; color: #1A4A5E; }
     .tab-btn[data-tab="suelo"].active { background: #D4B896; border-color: #B89B7A; color: #5C4A2E; }
     .tab-btn[data-tab="conservacion"].active { background: #8FBC8F; border-color: #6B8E6B; color: #2E4A2E; }
-    .tab-content { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; }
-    .tab-content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; opacity: 1; transform: translateY(0); }
-    @media (max-width: 768px) { .tab-content.active { grid-template-columns: 1fr; } }
+
+    .tab-wrapper { position: relative; overflow: hidden; border-radius: 12px; transition: background 0.4s ease; }
+    .tab-wrapper[data-tab="agua"] { background: linear-gradient(135deg, #E8F4F8 0%, #D4EEF5 100%); }
+    .tab-wrapper[data-tab="suelo"] { background: linear-gradient(135deg, #F5EDE0 0%, #E8DFD0 100%); }
+    .tab-wrapper[data-tab="conservacion"] { background: linear-gradient(135deg, #E8F0E8 0%, #D4E5D4 100%); }
+    .tab-content-carousel { display: flex; transition: transform 0.4s ease; }
+    .tab-content { 
+      flex: 0 0 100%; 
+      padding: 20px; 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 16px; 
+      box-sizing: border-box;
+    }
+    @media (max-width: 768px) { .tab-content { grid-template-columns: 1fr; } }
+
+    .carousel-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-white-surface);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .carousel-nav-btn:hover { background: var(--color-limon); }
+    .carousel-nav-btn.prev { left: 10px; }
+    .carousel-nav-btn.next { right: 10px; }
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; padding-bottom: 16px; }
+    .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; }
+    .carousel-dot.active { background: var(--color-aceituna); transform: scale(1.2); }
 
     .agua-card {
       background: var(--color-white-surface);
@@ -208,7 +262,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     <p>Gestión eficiente del agua y cuidado del suelo para olivares resilientes al cambio climático</p>
     <div class="provincia-bar-agua">
       <ProvinciaSelect id="provincia-select-agua" placeholder="Selecciona provincia para ver datos en tiempo real..." />
-      <div class="suelo-datos" id="suelo-datos" style="display:none">
+      <div class="suelo-datos hidden" id="suelo-datos">
         <div class="suelo-dato">
           <div class="icon">🌡️</div>
           <div class="value" id="suelo-temp">-</div>
@@ -398,6 +452,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
   const aguaPlan = document.getElementById('agua-plan');
   const aguaPlanText = document.getElementById('agua-plan-text');
   const aguaPlanBtn = document.getElementById('agua-plan-btn');
+  const provinciaSelectAgua = document.getElementById('provincia-select-agua');
 
   function getQuickDataFromClima() {
     const prov = OlivaxiEcosistema.provincia;
@@ -455,7 +510,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 
   function renderSueloData(d) {
     if (!d) {
-      if (sueloDatos) sueloDatos.style.display = 'none';
+      if (sueloDatos) sueloDatos.classList.add('hidden');
       if (aguaPlan) aguaPlan.style.display = 'none';
       return;
     }
@@ -491,7 +546,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       sueloLluviaStatus.className = `status ${lluviaStatus.class}`;
       sueloLluviaStatus.textContent = lluviaStatus.text;
       
-      sueloDatos.style.display = 'grid';
+      sueloDatos.classList.remove('hidden', 'loading');
     }
 
     let planTexto = '';
@@ -531,9 +586,29 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
   });
 
   function syncWithEcosistema() {
-    const prov = OlivaxiEcosistema.provincia;
+    let prov = OlivaxiEcosistema.provincia;
+
+    // Fallback robusto: si el singleton aún no restauró estado, leer localStorage.
+    if (!prov) {
+      const saved = typeof localStorage !== 'undefined' ? (localStorage.getItem('olivaxi_provincia') || '') : '';
+      if (saved) {
+        OlivaxiEcosistema.setProvincia(saved, { silent: true, fetchDashboard: false });
+        prov = saved;
+      }
+    }
     
     if (prov) {
+      if (provinciaSelectAgua && provinciaSelectAgua.value !== prov) {
+        provinciaSelectAgua.value = prov;
+      }
+
+      if (sueloDatos) {
+        sueloDatos.classList.remove('hidden');
+        if (!sueloTemp.textContent || sueloTemp.textContent === '-') {
+          sueloDatos.classList.add('loading');
+        }
+      }
+
       // Pintado rápido: usa datos de dashboard cacheado o clima compartido
       const cachedDashboard = OlivaxiEcosistema.dashboardData;
       if (cachedDashboard && cachedDashboard.provincia === prov) {
@@ -543,9 +618,18 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
         if (quick) renderSueloData(quick);
       }
 
+      // Si no hay clima aún, pedirlo para mostrar KPIs base sin esperar dashboard completo
+      if (!getQuickDataFromClima()) {
+        OlivaxiEcosistema.fetchClima().then(() => {
+          const quickAfter = getQuickDataFromClima();
+          if (quickAfter) renderSueloData(quickAfter);
+        });
+      }
+
       // Refresco definitivo con dashboard completo
       loadDashboardData().then(d => {
         if (d) renderSueloData(d);
+        else if (sueloDatos) sueloDatos.classList.remove('loading');
       });
     } else {
       renderSueloData(null);
