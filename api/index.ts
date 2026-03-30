@@ -1,6 +1,4 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { compress } from "hono/compress";
 import clima from "./routes/clima";
 import chat from "./routes/chat";
 import alertas from "./routes/alertas";
@@ -58,20 +56,19 @@ const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
 
 app.use("*", rateLimitMiddleware);
 
-app.use(
-  "*",
-  cors({
-    origin: (origin) => {
-      if (!origin) return true; // Allow requests without origin (curl, server-to-server)
-      return ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost');
-    },
-    allowHeaders: ['Content-Type', 'X-Internal-Cron'],
-    exposeHeaders: ['Content-Length'],
-    maxAge: 86400,
-  })
-);
-
-app.use("*", compress());
+app.use("*", async (c, next) => {
+  c.header('Access-Control-Allow-Origin', '*');
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.header('Access-Control-Allow-Headers', 'Content-Type, X-Internal-Cron');
+  c.header('Access-Control-Expose-Headers', 'Content-Length');
+  c.header('Access-Control-Max-Age', '86400');
+  
+  if (c.req.method === 'OPTIONS') {
+    return c.text('', 204);
+  }
+  
+  await next();
+});
 
 app.route("/api/clima", clima);
 app.route("/api/chat", chat);
@@ -84,7 +81,10 @@ app.get("/api", (c) => c.json({
   endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
 }));
 
-app.get("/", (c) => c.text("OK"));
+app.get("/test-cors", (c) => {
+  c.header('Access-Control-Allow-Origin', '*');
+  return c.json({ status: 'ok', cors: 'set' });
+});
 
 console.log("API olivaξ corriendo en :3000");
 

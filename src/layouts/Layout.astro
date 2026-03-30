@@ -91,38 +91,76 @@ const { title = "olivaξ" } = Astro.props;
 
     <script>
       (function() {
-        // Reusable function to setup nav listeners
-        function setupNavListeners() {
-          const hamburgerBtn = document.getElementById('hamburger-btn');
-          const dropdown = document.getElementById('nav-dropdown');
-          const themeBtn = document.getElementById('theme-toggle-btn');
-          const html = document.documentElement;
+        var lastScroll = 0;
+        var scrollThreshold = 80;
+        var hideThreshold = 120;
+        var navbar = null;
+        var scrollHandler = null;
+
+        function setupScrollHide() {
+          if (scrollHandler) {
+            window.removeEventListener('scroll', scrollHandler);
+          }
           
-          hamburgerBtn?.addEventListener('click', (e) => {
+          navbar = document.querySelector('.navbar');
+          if (!navbar) return;
+
+          scrollHandler = function() {
+            var currentScroll = window.pageYOffset;
+            
+            if (currentScroll < scrollThreshold) {
+              navbar.classList.remove('nav-hidden');
+              navbar.classList.remove('nav-scrolled');
+            } else if (currentScroll > lastScroll && currentScroll > hideThreshold) {
+              navbar.classList.add('nav-hidden');
+              navbar.classList.remove('nav-scrolled');
+            } else if (currentScroll < lastScroll) {
+              navbar.classList.remove('nav-hidden');
+              navbar.classList.add('nav-scrolled');
+            }
+            
+            lastScroll = currentScroll;
+          };
+
+          window.addEventListener('scroll', scrollHandler, { passive: true });
+        }
+
+        function setupNavListeners() {
+          var hamburgerBtn = document.getElementById('hamburger-btn');
+          var dropdown = document.getElementById('nav-dropdown');
+          var themeBtn = document.getElementById('theme-toggle-btn');
+          var html = document.documentElement;
+          
+          hamburgerBtn?.addEventListener('click', function(e) {
             e.stopPropagation();
             hamburgerBtn.classList.toggle('active');
             dropdown.classList.toggle('active');
           });
 
-          themeBtn?.addEventListener('click', () => {
-            const current = html.getAttribute('data-theme') === 'dark';
-            const next = !current;
+          themeBtn?.addEventListener('click', function() {
+            var current = html.getAttribute('data-theme') === 'dark';
+            var next = !current;
             html.setAttribute('data-theme', next ? 'dark' : 'light');
             localStorage.setItem('theme', next ? 'dark' : 'light');
             themeBtn.textContent = next ? '🌙' : '☀️';
             window.dispatchEvent(new CustomEvent('modoOscuroChange', { detail: { modoOscuro: next } }));
           });
 
-          document.addEventListener('click', (e) => {
-            if (!dropdown?.contains(e.target) && !hamburgerBtn?.contains(e.target)) {
-              dropdown?.classList.remove('active');
-              hamburgerBtn?.classList.remove('active');
+          document.addEventListener('click', function(e) {
+            if (dropdown && hamburgerBtn && !dropdown.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+              dropdown.classList.remove('active');
+              hamburgerBtn.classList.remove('active');
             }
           });
         }
 
         setupNavListeners();
-        document.addEventListener('astro:after-swap', setupNavListeners);
+        setupScrollHide();
+
+        document.addEventListener('astro:after-swap', function() {
+          setupNavListeners();
+          setupScrollHide();
+        });
       })();
     </script>
   </body>
@@ -193,10 +231,18 @@ const { title = "olivaξ" } = Astro.props;
     background-color: var(--color-white-surface);
     border: 2px solid var(--color-border);
     border-radius: 8px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(0);
     opacity: 1;
-    contain: layout style;
-    transform: translateZ(0);
-    will-change: contents;
+  }
+
+  .navbar.nav-hidden {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+
+  .navbar.nav-scrolled {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 
   .navbar img {
