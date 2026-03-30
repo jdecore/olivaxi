@@ -2,125 +2,108 @@
 import Layout from '../layouts/Layout.astro';
 import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 
-const varieties = [
-  { id: "cornicabra", nombre: "Cornicabra", origen: "Castilla-La Mancha", etiqueta: "RÚSTICA", categoria: ["alta-temp", "baja-temp", "baja-humedad", "baja-lluvia"], descripcion: "La más resistente al frío y sequía. Tolera hasta -10°C y 40°C. Ideal para clima continental.", riesgos: "Vulnerable a enfermedades fúngicas con humedad persistente.", rango: { frio: "-10°C", calor: "40°C", humedad: "<80%" }, resistencia: { seca: "Muy alta", calor: "Muy alta", frio: "Muy alta", humedad: "Media" }, clima: { frio: 95, calor: 90, sequia: 95, humedad: 40, productividad: 75 } },
-  { id: "picual", nombre: "Picual", origen: "Jaén, Andalucía", etiqueta: "REINA", categoria: ["alta-temp", "alta-produccion"], descripcion: "50% del olivar español. Máxima productividad y resistente a mosca. Tolera hasta 40°C.", riesgos: "Sensible a Xylella, repilo y antracnosis en ambientes húmedos.", rango: { frio: "-7°C", calor: "40°C", humedad: "<75%" }, resistencia: { seca: "Buena", calor: "Muy alta", frio: "Alta", humedad: "Baja" }, clima: { frio: 80, calor: 85, sequia: 70, humedad: 35, productividad: 95 } },
-  { id: "arbequina", nombre: "Arbequina", origen: "Lleida, Cataluña", etiqueta: "SUPERINTENSIVA", categoria: ["alta-produccion", "alta-humedad"], descripcion: "Ideal para riego y plantaciones intensivas. Resistente a Prays y hongos. Sensible al frío intenso.", riesgos: "Alta vulnerabilidad a hongos y estrés hídrico. Requiere manejo sanitario.", rango: { frio: "-5°C", calor: "35°C", humedad: "<70%" }, resistencia: { seca: "Baja", calor: "Media", frio: "Media", humedad: "Baja" }, clima: { frio: 70, calor: 50, sequia: 40, humedad: 35, productividad: 90 } },
-  { id: "hojiblanca", nombre: "Hojiblanca", origen: "Málaga, Andalucía", etiqueta: "DOBLE APTITUD", categoria: ["alta-temp"], descripcion: "Aceite y mesa. Resistente al calor del sur. Tolera hasta 38°C con buena productividad.", riesgos: "Sensibilidad media a heladas y enfermedades fúngicas.", rango: { frio: "-3°C", calor: "38°C", humedad: "<75%" }, resistencia: { seca: "Media-alta", calor: "Alta", frio: "Media", humedad: "Media" }, clima: { frio: 55, calor: 80, sequia: 65, humedad: 50, productividad: 72 } },
-  { id: "manzanilla", nombre: "Manzanilla", origen: "Sevilla, Andalucía", etiqueta: "MESA", categoria: ["alta-humedad", "baja-lluvia"], descripcion: "La variedad de mesa por excelencia. Gran calibre. Necesita agua y sensible a condiciones extremas.", riesgos: "Muy sensible a repilo, antracnosis y Xylella. Requiere clima seco.", rango: { frio: "-3°C", calor: "38°C", humedad: "<70%" }, resistencia: { seca: "Baja", calor: "Media-alta", frio: "Media", humedad: "Baja" }, clima: { frio: 45, calor: 65, sequia: 35, humedad: 25, productividad: 70 } },
-  { id: "empeltre", nombre: "Empeltre", origen: "Aragón", etiqueta: "CONTINENTAL", categoria: ["baja-temp", "baja-humedad", "baja-lluvia"], descripcion: "Tradicional del Valle del Ebro. Resistente a sequía y condiciones adversas. Tolera -5°C.", riesgos: "Media sensibilidad a hongos en ambientes húmedos persistentes.", rango: { frio: "-5°C", calor: "38°C", humedad: "<75%" }, resistencia: { seca: "Muy alta", calor: "Media-alta", frio: "Media", humedad: "Media" }, clima: { frio: 70, calor: 75, sequia: 85, humedad: 45, productividad: 65 } }
+const variedades = [
+  { id: 'cornicabra', nombre: 'Cornicabra', origen: 'Castilla-La Mancha', categoria: 'Rústica', tags: 'frio sequia', frio: -10, calor: 40, scores: { frio: 95, calor: 90, sequia: 95, prod: 75 }, riesgo: 'Vulnerable a enfermedades fúngicas con humedad persistente.' },
+  { id: 'picual', nombre: 'Picual', origen: 'Jaén, Andalucía', categoria: 'Reina', tags: 'calor prod', frio: -7, calor: 40, scores: { frio: 80, calor: 85, sequia: 70, prod: 95 }, riesgo: 'Sensible a Xylella, repilo y antracnosis en ambientes húmedos.' },
+  { id: 'arbequina', nombre: 'Arbequina', origen: 'Lleida, Cataluña', categoria: 'Superintensiva', tags: 'prod', frio: -5, calor: 35, scores: { frio: 70, calor: 50, sequia: 40, prod: 90 }, riesgo: 'Alta vulnerabilidad a hongos y estrés hídrico.' },
+  { id: 'hojiblanca', nombre: 'Hojiblanca', origen: 'Málaga, Andalucía', categoria: 'Doble aptitud', tags: 'calor', frio: -3, calor: 38, scores: { frio: 55, calor: 80, sequia: 65, prod: 72 }, riesgo: 'Sensibilidad media a heladas y enfermedades fúngicas.' },
+  { id: 'manzanilla', nombre: 'Manzanilla', origen: 'Sevilla, Andalucía', categoria: 'Mesa', tags: 'prod', frio: -3, calor: 38, scores: { frio: 45, calor: 65, sequia: 35, prod: 70 }, riesgo: 'Muy sensible a repilo, antracnosis y Xylella.' },
+  { id: 'empeltre', nombre: 'Empeltre', origen: 'Aragón', categoria: 'Continental', tags: 'frio sequia calor', frio: -5, calor: 38, scores: { frio: 70, calor: 75, sequia: 85, prod: 65 }, riesgo: 'Media sensibilidad a hongos en ambientes húmedos.' }
 ];
+
+const getImageUrl = (id) => {
+  const availableImages = ['cornicabra', 'picual', 'hojiblanca', 'manzanilla'];
+  if (availableImages.includes(id)) {
+    return `/images/variedades/${id}.avif`;
+  }
+  return `/images/variedades/picual.avif`;
+};
 ---
 
 <Layout title="Variedades de Olivo - olivaξ">
   <div class="var-container">
     <header class="var-header">
-      <div class="var-header-content">
-        <span class="var-label">🧬 LABORATORIO</span>
-        <h1 class="var-title">Variedades de Olivo</h1>
-        <p class="var-subtitle">Compara resistencia climática, plagas y enfermedades para elegir la mejor opción para tu zona</p>
-        <div class="provincia-selector">
-          <label for="select-provincia">📍 Filtrar por provincia:</label>
-          <ProvinciaSelect id="select-provincia" placeholder="Todas las provincias" />
-        </div>
-        <div class="provincia-info-bar" id="provincia-info-bar" style="display:none"></div>
+      <div class="var-badge-pill">6 variedades · Análisis climático en tiempo real</div>
+      <h1 class="var-title">Encuentra la variedad ideal para tu zona</h1>
+      <p class="var-subtitle">Compara resistencia al frío, calor y sequía según el clima actual de tu provincia</p>
+      <div class="provincia-selector">
+        <ProvinciaSelect id="select-provincia" placeholder="Selecciona tu provincia..." />
       </div>
+      <div class="provincia-info-bar" id="provincia-info-bar" style="display:none"></div>
     </header>
 
     <div class="var-filters">
-      <button data-filter="all" class="filter-btn active">TODAS</button>
-      <button data-filter="alta-temp" class="filter-btn">🔥 CALOR ALTO</button>
-      <button data-filter="baja-temp" class="filter-btn">❄️ FRÍO</button>
-      <button data-filter="alta-humedad" class="filter-btn">💧 HUMEDAD ALTA</button>
-      <button data-filter="baja-humedad" class="filter-btn">🏜️ HUMEDAD BAJA</button>
-      <button data-filter="baja-lluvia" class="filter-btn">🌧️ POCA LLUVIA</button>
-      <button data-filter="alta-produccion" class="filter-btn">📈 PRODUCCIÓN</button>
+      <button data-filter="all" class="filter-btn active">Todas</button>
+      <button data-filter="frio" class="filter-btn">❄️ Resistente al frío</button>
+      <button data-filter="calor" class="filter-btn">🔥 Resistente al calor</button>
+      <button data-filter="sequia" class="filter-btn">🏜️ Tolerante sequía</button>
+      <button data-filter="prod" class="filter-btn">📈 Alta producción</button>
     </div>
 
-    <div class="var-grid">
-      {varieties.map((v) => (
-        <div class="var-card" data-categoria={v.categoria.join(",")} data-id={v.id} data-variedad={v.id}>
-          <div class="var-card-header">
-            <span class="var-badge">{v.etiqueta}</span>
-          </div>
-          
-          <h2 class="var-name">🫒 {v.nombre}</h2>
-          <p class="var-origen">📍 {v.origen}</p>
-          <p class="var-desc">{v.descripcion}</p>
-          
-          <div class="var-rangos">
-            <div class="rango-item">
-              <span class="rango-icon">❄️</span>
-              <span class="rango-label">Frío</span>
-              <span class="rango-value">{v.rango.frio}</span>
+    <div class="var-grid" id="var-grid">
+      {variedades.map((v) => (
+        <div class="var-card" data-tags={v.tags} data-id={v.id} onclick={`toggleCard('${v.id}')`}>
+          <img
+            src={getImageUrl(v.id)}
+            alt={v.nombre}
+            width="400"
+            height="160"
+            loading="lazy"
+            decoding="async"
+            style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;"
+          />
+          <div class="card-body">
+            <div class="card-header-row">
+              <span class="var-badge-small">{v.categoria}</span>
             </div>
-            <div class="rango-item">
-              <span class="rango-icon">🔥</span>
-              <span class="rango-label">Calor</span>
-              <span class="rango-value">{v.rango.calor}</span>
+            <div class="var-name">{v.nombre}</div>
+            <div class="var-origen">{v.origen}</div>
+            <div class="scores-mini">
+              <div class="score-mini" style="background:#E8F0E8">
+                <span class="score-icon">❄️</span>
+                <span class="score-val">{v.frio}°C</span>
+              </div>
+              <div class="score-mini" style="background:#FEF3E2">
+                <span class="score-icon">🔥</span>
+                <span class="score-val">{v.calor}°C</span>
+              </div>
+              <div class="score-mini" style="background:#E8F5E9">
+                <span class="score-icon">📈</span>
+                <span class="score-val">{v.scores.prod}%</span>
+              </div>
             </div>
-            <div class="rango-item">
-              <span class="rango-icon">💧</span>
-              <span class="rango-label">Humedad</span>
-              <span class="rango-value">{v.rango.humedad}</span>
-            </div>
-          </div>
-
-          <div class="var-bars">
-            <div class="var-bar-row">
-              <span class="var-bar-label">❄️ FRÍO</span>
-              <div class="var-bar-bg"><div class="var-bar-fill" style={`width: ${v.clima.frio}%`}></div></div>
-              <span class="var-bar-pct">{v.clima.frio}%</span>
-            </div>
-            <div class="var-bar-row">
-              <span class="var-bar-label">🔥 CALOR</span>
-              <div class="var-bar-bg"><div class="var-bar-fill calor" style={`width: ${v.clima.calor}%`}></div></div>
-              <span class="var-bar-pct">{v.clima.calor}%</span>
-            </div>
-            <div class="var-bar-row">
-              <span class="var-bar-label">🏜️ SEQUÍA</span>
-              <div class="var-bar-bg"><div class="var-bar-fill sequia" style={`width: ${v.clima.sequia}%`}></div></div>
-              <span class="var-bar-pct">{v.clima.sequia}%</span>
-            </div>
-            <div class="var-bar-row">
-              <span class="var-bar-label">💧 HUMEDAD</span>
-              <div class="var-bar-bg"><div class="var-bar-fill humedad" style={`width: ${v.clima.humedad}%`}></div></div>
-              <span class="var-bar-pct">{v.clima.humedad}%</span>
-            </div>
-            <div class="var-bar-row">
-              <span class="var-bar-label">📊 PROD.</span>
-              <div class="var-bar-bg"><div class="var-bar-fill prod" style={`width: ${v.clima.productividad}%`}></div></div>
-              <span class="var-bar-pct">{v.clima.productividad}%</span>
-            </div>
-          </div>
-
-          <div class="var-resist">
-            <h4>RESISTENCIAS</h4>
-            <div class="res-grid">
-              <span class="res-tag">{v.resistencia.frio} ❄️</span>
-              <span class="res-tag">{v.resistencia.calor} 🔥</span>
-              <span class="res-tag">{v.resistencia.seca} 🏜️</span>
-              <span class="res-tag">{v.resistencia.humedad} 💧</span>
+            <div class="toggle-hint" id="hint-{v.id}">Ver detalles ↓</div>
+            <div class="detail" id="detail-{v.id}" style="display:none;">
+              <div class="bars-section">
+                <div class="bar-row">
+                  <span class="bar-label" style="color:#378add">❄️ Frío</span>
+                  <div class="bar-bg"><div class="bar-fill" style={`width:${v.scores.frio}%;background:#378add`}></div></div>
+                  <span class="bar-pct">{v.scores.frio}%</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label" style="color:#ef9f27">🔥 Calor</span>
+                  <div class="bar-bg"><div class="bar-fill" style={`width:${v.scores.calor}%;background:#ef9f27`}></div></div>
+                  <span class="bar-pct">{v.scores.calor}%</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label" style="color:#97c459">🏜️ Sequía</span>
+                  <div class="bar-bg"><div class="bar-fill" style={`width:${v.scores.sequia}%;background:#97c459`}></div></div>
+                  <span class="bar-pct">{v.scores.sequia}%</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label" style="color:#7f77dd">📊 Prod.</span>
+                  <div class="bar-bg"><div class="bar-fill" style={`width:${v.scores.prod}%;background:#7f77dd`}></div></div>
+                  <span class="bar-pct">{v.scores.prod}%</span>
+                </div>
+              </div>
+              <div class="riesgo-section">
+                <span class="riesgo-badge" id="riesgo-{v.id}">{v.riesgo}</span>
+              </div>
+              <a href={`/consejero?q=Tengo+${v.nombre}+en+mi+olivar.+¿Qué+cuidados+necesita+con+el+clima+actual?`} class="consejero-btn">Preguntar al conseljero sobre {v.nombre}</a>
             </div>
           </div>
-
-          <div class="var-riesgos">
-            <h4>⚠️ RIESGOS</h4>
-            <p>{v.riesgos}</p>
-          </div>
-
-          <div class="dynamic-riesgo" style="margin-bottom: 8px;">
-            <span class="var-risk-badge" data-variedad={v.id} style="display:none">-</span>
-            <div class="dynamic-riesgo-detail" style="display:none;margin-top:4px;font-size:9px;color:var(--color-muted)"></div>
-          </div>
-
-          <button class="var-btn" data-nombre={v.nombre}>COMPARAR</button>
         </div>
       ))}
-    </div>
-
-    <div class="sticky-bar" id="sticky-bar" style="display: none;">
-      Selecciona otra variedad para comparar
     </div>
 
     <div class="compare-panel" id="compare-panel" style="display: none;">
@@ -144,102 +127,70 @@ const varieties = [
   :global(body) { overflow-x: hidden; }
 
   .var-container {
-    background: var(--color-sal);
+    background: var(--color-bg, #f5f0e8);
     min-height: 100vh;
-    padding-top: 10px;
+    padding-top: 80px;
   }
 
   .var-header {
-    background: var(--color-aceituna);
-    padding: 2rem 1.5rem 2rem;
-    border-bottom: 4px solid var(--color-limon);
-    position: relative;
-    overflow: hidden;
-    margin-top: 30px;
+    background: var(--color-bg, #f5f0e8);
+    padding: 2rem 1rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
   }
 
-  .var-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 200px;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(212, 232, 73, 0.1));
-    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
-  }
-
-  .var-header-content {
-    max-width: 800px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-
-  .var-label {
+  .var-badge-pill {
     display: inline-block;
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 2px;
-    letter-spacing: 1px;
+    background: #eaf3de;
+    color: #3b6d11;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
     margin-bottom: 1rem;
   }
 
   .var-title {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 800;
-    color: var(--color-sal);
-    margin: 0;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 2rem;
+    color: var(--color-aceituna, #1C1C1C);
+    margin: 0 0 0.5rem;
+    font-weight: 700;
   }
 
   .var-subtitle {
-    color: rgba(247, 244, 238, 0.7);
-    font-size: 14px;
-    margin: 1rem 0 0;
+    color: var(--color-muted, #666);
+    font-size: 1rem;
+    margin: 0 0 1.5rem;
     max-width: 500px;
-    line-height: 1.5;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .provincia-selector {
-    margin-top: 1rem;
     display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .provincia-selector label {
-    color: rgba(247, 244, 238, 0.8);
-    font-size: 13px;
-    font-weight: 600;
+    justify-content: center;
   }
 
   .provincia-selector select {
-    background: rgba(255,255,255,0.9);
-    border: 2px solid var(--color-limon);
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--color-aceituna);
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: var(--color-aceituna, #1C1C1C);
     cursor: pointer;
   }
 
   .provincia-info-bar {
-    margin-top: 0.75rem;
-    padding: 8px 12px;
-    background: rgba(212,232,73,0.2);
-    border-radius: 6px;
-    font-size: 12px;
-    color: var(--color-sal);
-    display: flex;
+    margin-top: 1rem;
+    padding: 8px 16px;
+    background: white;
+    border-radius: 8px;
+    display: inline-flex;
     gap: 12px;
-    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--color-aceituna, #1C1C1C);
   }
 
   .var-filters {
@@ -247,338 +198,224 @@ const varieties = [
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    padding: 1.5rem 1rem;
-    background: var(--color-aceituna);
-    border-bottom: 2px solid var(--color-limon);
+    padding: 1rem;
+    background: white;
+    border-bottom: 1.5px solid #3b6d11;
   }
 
   .filter-btn {
     padding: 8px 16px;
-    border: 2px solid var(--color-limon);
-    border-radius: 0;
-    font-size: 11px;
-    font-weight: 700;
+    border: 0.5px solid #999;
+    border-radius: 20px;
+    background: white;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
-    background: transparent;
-    color: var(--color-sal);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.15s;
+    transition: all 0.2s;
   }
 
-  .filter-btn:hover { background: rgba(212, 232, 73, 0.2); }
+  .filter-btn:hover { background: #f5f5f5; }
 
   .filter-btn.active {
-    background: var(--color-limon);
-    color: var(--color-aceituna);
+    background: #3b6d11;
+    color: #eaf3de;
+    border-color: #3b6d11;
   }
 
   .var-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
     padding: 24px 16px;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
   .var-card {
-    background: var(--color-white-surface);
-    border: 3px solid var(--color-border);
-    border-radius: 0;
-    padding: 20px;
-    box-shadow: 6px 6px 0 var(--color-border);
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: white;
+    border: 0.5px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
   }
 
   .var-card:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 8px 8px 0 var(--color-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
   }
 
-  .var-card-header { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .card-body {
+    padding: 1rem;
+  }
 
-  .var-badge {
-    background: var(--color-aceituna);
-    color: var(--color-limon);
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .var-badge-small {
+    background: #3b6d11;
+    color: #eaf3de;
+    padding: 3px 10px;
+    border-radius: 4px;
     font-size: 10px;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 0;
-    letter-spacing: 0.5px;
+    font-weight: 700;
   }
 
   .var-name {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--color-aceituna);
-    margin: 8px 0 4px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-aceituna, #1C1C1C);
+    margin-bottom: 2px;
   }
 
   .var-origen {
     font-size: 12px;
-    color: var(--color-muted);
-    margin: 0 0 12px;
+    color: var(--color-muted, #666);
+    margin-bottom: 10px;
+  }
+
+  .scores-mini {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .score-mini {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
   }
 
-  .var-desc {
-    font-size: 13px;
-    color: var(--color-aceituna);
-    line-height: 1.5;
-    margin: 0 0 16px;
-  }
+  .score-icon { font-size: 12px; }
+  .score-val { color: var(--color-aceituna, #1C1C1C); }
 
-  .var-rangos {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--color-sal);
-    border: 2px solid var(--color-border);
-  }
-
-  .rango-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .rango-icon { font-size: 16px; }
-
-  .rango-label {
-    font-size: 9px;
-    color: var(--color-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .rango-value {
+  .toggle-hint {
     font-size: 11px;
-    color: var(--color-aceituna);
-    font-weight: 800;
+    color: #3b6d11;
+    text-align: center;
+    padding: 6px;
+    background: #eaf3de;
+    border-radius: 4px;
+    font-weight: 500;
   }
 
-  .var-bars {
+  .detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+
+  .bars-section {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
-  .var-bar-row {
+  .bar-row {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .var-bar-label {
-    font-size: 10px;
-    color: var(--color-muted);
-    font-weight: 700;
+  .bar-label {
+    font-size: 11px;
+    font-weight: 600;
     width: 70px;
     flex-shrink: 0;
   }
 
-  .var-bar-bg {
+  .bar-bg {
     flex: 1;
     height: 8px;
-    background: var(--color-sal);
-    border: 1px solid var(--color-border);
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
   }
 
-  .var-bar-fill {
+  .bar-fill {
     height: 100%;
-    background: #06B6D4;
+    border-radius: 4px;
     transition: width 0.3s;
   }
 
-  .var-bar-fill.calor { background: #F59E0B; }
-  .var-bar-fill.sequia { background: var(--color-limon); }
-  .var-bar-fill.humedad { background: #8B5CF6; }
-  .var-bar-fill.prod { background: #3B82F6; }
-
-  .var-bar-pct {
+  .bar-pct {
     font-size: 11px;
-    font-weight: 800;
-    color: var(--color-aceituna);
+    font-weight: 600;
     width: 35px;
     text-align: right;
+    color: var(--color-aceituna, #1C1C1C);
   }
 
-  .var-resist { margin-bottom: 12px; }
-
-  .var-resist h4 {
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--color-muted);
-    margin: 0 0 8px;
-    letter-spacing: 0.5px;
+  .riesgo-section {
+    margin-bottom: 12px;
   }
 
-  .res-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-
-  .res-tag {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 4px 8px;
-    background: var(--color-sal);
-    border: 1px solid var(--color-border);
-    color: var(--color-aceituna);
-  }
-
-  .var-riesgos {
-    margin-bottom: 16px;
-    padding: 10px;
-    background: rgba(239, 68, 68, 0.08);
-    border-left: 3px solid #EF4444;
-  }
-
-  .var-riesgos h4 {
-    font-size: 10px;
-    font-weight: 800;
-    color: #EF4444;
-    margin: 0 0 4px;
-  }
-
-  .var-riesgos p {
+  .riesgo-badge {
+    display: block;
+    background: #fcebeb;
+    color: #a32d2d;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-size: 11px;
-    color: var(--color-aceituna);
-    margin: 0;
+    font-weight: 500;
     line-height: 1.4;
   }
 
-  .var-btn {
-    width: 100%;
-    padding: 12px;
-    background: var(--color-aceituna);
-    color: var(--color-white);
-    font-size: 12px;
-    font-weight: 800;
-    border: none;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.15s;
-  }
-
-  .var-btn:hover {
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-  }
-
-  .var-btn.selected {
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-  }
-
-  .dynamic-riesgo-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-  }
-
-  .var-risk-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .var-risk-badge.risk-bajo { background: #22C55E; color: white; }
-  .var-risk-badge.risk-medio { background: #F59E0B; color: white; }
-  .var-risk-badge.risk-alto { background: #EF4444; color: white; }
-
-  .var-card.predominante {
-    border-color: var(--color-limon) !important;
-    border-width: 3px !important;
-    box-shadow: 0 0 0 3px rgba(212,232,73,0.3);
-  }
-
-  .var-card.predominante::before {
-    content: '⭐ Variedad predominante';
+  .consejero-btn {
     display: block;
-    background: var(--color-limon);
-    color: var(--color-aceituna);
+    width: 100%;
+    padding: 10px;
+    background: #eaf3de;
+    color: #3b6d11;
     text-align: center;
-    padding: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    margin: -1.25rem -1.25rem 1rem -1.25rem;
-  }
-
-  .detail-tag {
-    display: inline-block;
-    padding: 4px 8px;
-    margin: 2px;
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-    font-size: 9px;
-    font-weight: 600;
     text-decoration: none;
-    border-radius: 4px;
-    transition: all 0.15s;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
   }
 
-  .detail-tag:hover {
-    background: var(--color-aceituna);
-    color: var(--color-limon);
-  }
-
-  .sticky-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--color-aceituna);
-    color: var(--color-limon);
-    padding: 14px 20px;
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
-    z-index: 1000;
-    border-top: 2px solid var(--color-limon);
+  .consejero-btn:hover {
+    background: #d4e8c4;
   }
 
   .compare-panel {
-    border: 3px solid var(--color-border);
-    border-radius: 0;
-    background: var(--color-white-surface);
-    padding: 24px;
-    margin: 32px auto;
-    max-width: 900px;
-    box-shadow: 8px 8px 0 var(--color-border);
-    overflow-x: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px auto;
+    max-width: 800px;
   }
 
   .clear-btn {
-    background: #EF4444;
-    color: var(--color-white);
+    background: #ef4444;
+    color: white;
     border: none;
-    font-size: 11px;
-    font-weight: 800;
     padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
     float: right;
-    text-transform: uppercase;
   }
 
-  .clear-btn:hover { background: #DC2626; }
-
   .compare-title {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--color-aceituna);
-    margin: 0 0 20px;
-    padding-right: 100px;
+    font-size: 1.1rem;
+    color: var(--color-aceituna, #1C1C1C);
+    margin: 0 0 16px;
+    padding-right: 80px;
   }
 
   .compare-table {
@@ -586,64 +423,30 @@ const varieties = [
     border-collapse: collapse;
   }
 
-  .compare-table th {
-    text-align: left;
-    padding: 12px 8px;
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--color-border);
-  }
-
-  .compare-table th:nth-child(2),
-  .compare-table th:nth-child(3) {
-    text-align: center;
-    color: var(--color-aceituna);
-    font-size: 13px;
-  }
-
+  .compare-table th,
   .compare-table td {
-    padding: 12px 8px;
-    font-size: 12px;
-    color: var(--color-muted);
-    border-bottom: 1px solid var(--color-sal);
+    padding: 10px;
     text-align: center;
+    border-bottom: 1px solid #eee;
+  }
+
+  .compare-table th {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
   }
 
   .compare-table td:first-child {
     text-align: left;
-    font-weight: 700;
-    color: var(--color-aceituna);
+    font-weight: 600;
+    color: var(--color-aceituna, #1C1C1C);
   }
 
-  .compare-table td.winner { background: var(--color-limon); }
-
-  .compare-table .tag-resalta { 
-    background: var(--color-limon); 
-    color: var(--color-aceituna);
-    padding: 4px 8px;
-    font-weight: 700;
-    font-size: 10px;
-  }
-
-  @media (max-width: 768px) {
-    .var-grid { grid-template-columns: 1fr; padding: 16px 12px; gap: 12px; }
-    .var-card { padding: 14px; box-shadow: 4px 4px 0 var(--color-border); }
-    .var-card .riesgo-badge { margin: -14px -14px 1rem -14px; }
-    .var-header { padding: 1.5rem 1rem; margin-top: 50px; }
+  @media (max-width: 600px) {
+    .var-grid { grid-template-columns: 1fr; padding: 16px; }
     .var-title { font-size: 1.5rem; }
-    .var-subtitle { font-size: 0.85rem; }
-    .var-filters { padding: 1rem 0.5rem; gap: 6px; }
-    .filter-btn { padding: 6px 10px; font-size: 10px; }
-    .compare-panel { padding: 1rem; margin: 1rem; }
-    .compare-table { font-size: 11px; }
-    .compare-title { font-size: 1rem; padding-right: 0; }
-    .clear-btn { position: static; margin-bottom: 1rem; }
-    .var-container { padding-top: 72px; }
-    .rango-label { font-size: 11px; }
-    .detail-tag { font-size: 10px; padding: 5px 8px; }
+    .var-filters { gap: 6px; }
+    .filter-btn { font-size: 11px; padding: 6px 12px; }
   }
 </style>
 
@@ -651,106 +454,35 @@ const varieties = [
   import OlivaxiEcosistema from '../lib/ecosistema';
   import { getRiesgoClass, getRiesgoIcono } from '../lib/ecosistema';
 
+  const grid = document.getElementById('var-grid');
   const provinciaInfoBar = document.getElementById('provincia-info-bar');
+  let expandedCard = null;
 
-  // --- Render: Provincia info bar ---
-  function renderProvinciaInfo() {
-    const d = OlivaxiEcosistema.dashboardData;
-    const prov = OlivaxiEcosistema.provincia;
-
-    if (!prov || !d || !provinciaInfoBar) {
-      if (provinciaInfoBar) provinciaInfoBar.style.display = 'none';
-      // Reset risk badges and order
-      document.querySelectorAll('.var-risk-badge').forEach(badge => {
-        badge.textContent = '';
-        badge.className = 'var-risk-badge';
-        badge.style.display = 'none';
-      });
-      document.querySelectorAll('.dynamic-riesgo-detail').forEach(el => el.style.display = 'none');
-      // Reset order
-      resetCardOrder();
+  window.toggleCard = function(cardId) {
+    const allDetails = document.querySelectorAll('.detail');
+    const allHints = document.querySelectorAll('.toggle-hint');
+    
+    allDetails.forEach(d => d.style.display = 'none');
+    allHints.forEach(h => {
+      h.textContent = h.textContent.replace('Cerrar ↑', 'Ver detalles ↓');
+    });
+    
+    const detail = document.getElementById('detail-' + cardId);
+    const hint = document.getElementById('hint-' + cardId);
+    
+    if (expandedCard === cardId) {
+      expandedCard = null;
       return;
     }
-
-    provinciaInfoBar.style.display = 'flex';
-    provinciaInfoBar.innerHTML = `
-      <span>📍 <b>${prov}</b></span>
-      <span>🌡️ ${d.clima?.temperatura || '?'}°C</span>
-      <span>💧 ${d.clima?.humedad || '?'}%</span>
-      <span>🫒 ${d.provinciaInfo?.variedadPredominante || 'N/A'}</span>
-      <span>🪨 ${d.provinciaInfo?.tipoSuelo || 'N/A'}</span>
-    `;
-
-    // Calcular scores para reordenar
-    const varScores = {};
-    const riesgosVar = d.riesgos_variedad || {};
-    document.querySelectorAll('.var-card').forEach(card => {
-      const varId = card.dataset.variedad;
-      if (!varId) return;
-      const rv = riesgosVar[varId];
-      const nivel = rv?.nivel || 'bajo';
-      const score = nivel === 'alto' || nivel === 'crítico' ? 3 : nivel === 'medio' ? 2 : 1;
-      varScores[varId] = score;
-    });
-
-    // Reordenar cards: menor riesgo primero (mejor adaptación)
-    const grid = document.querySelector('.var-grid');
-    if (grid) {
-      const cards = Array.from(grid.querySelectorAll('.var-card'));
-      cards.sort((a, b) => {
-        const scoreA = varScores[a.dataset.variedad] || 1;
-        const scoreB = varScores[b.dataset.variedad] || 1;
-        return scoreA - scoreB;
-      });
-      cards.forEach(card => grid.appendChild(card));
+    
+    if (detail) {
+      detail.style.display = 'block';
+      if (hint) hint.textContent = 'Cerrar ↑';
     }
+    expandedCard = cardId;
+  };
 
-    // Update risk badges per variety
-    document.querySelectorAll('.var-card').forEach(card => {
-      const varId = card.dataset.variedad;
-      const badge = card.querySelector('.var-risk-badge');
-      const detail = card.querySelector('.dynamic-riesgo-detail');
-      if (!badge || !varId) return;
-
-      const rv = riesgosVar[varId];
-      const nivel = rv?.nivel || 'bajo';
-      const cls = getRiesgoClass(nivel);
-      const icon = getRiesgoIcono(nivel);
-      
-      badge.textContent = `${icon} Riesgo ${nivel} en ${prov}`;
-      badge.className = 'var-risk-badge risk-' + cls;
-      badge.style.display = 'inline-block';
-
-      // Show detail
-      if (detail && rv?.detalle?.length) {
-        detail.innerHTML = rv.detalle.map(r => `<div>${r.icono || '•'} ${r.titulo || r.descripcion || r}</div>`).join('');
-        detail.style.display = 'block';
-      } else if (detail) {
-        detail.style.display = 'none';
-      }
-
-      // Highlight predominant variety
-      if (d.provinciaInfo?.variedadPredominante && d.provinciaInfo.variedadPredominante.toLowerCase() === varId) {
-        card.classList.add('predominante');
-      } else {
-        card.classList.remove('predominante');
-      }
-    });
-  }
-
-  function resetCardOrder() {
-    // Reset to original order by data-id
-    const grid = document.querySelector('.var-grid');
-    if (!grid) return;
-    const originalOrder = ['cornicabra', 'picual', 'arbequina', 'hojiblanca', 'manzanilla', 'empeltre'];
-    originalOrder.forEach(id => {
-      const card = grid.querySelector(`[data-variedad="${id}"]`);
-      if (card) grid.appendChild(card);
-    });
-    document.querySelectorAll('.var-card').forEach(card => card.classList.remove('predominante'));
-  }
-
-  // --- Filtrado por categoría ---
+  // Filtros
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -760,36 +492,56 @@ const varieties = [
         if (filter === 'all') {
           card.style.display = '';
         } else {
-          const cats = card.dataset.categorias || '';
-          card.style.display = cats.includes(filter) ? '' : 'none';
+          const tags = card.dataset.tags || '';
+          card.style.display = tags.includes(filter) ? '' : 'none';
         }
       });
     });
   });
 
-  // --- Comparador ---
-  const compararBtn = document.getElementById('comparar-btn');
-  const comparadorSection = document.getElementById('comparador-section');
+  // Render info de provincia
+  function renderProvinciaInfo() {
+    const d = OlivaxiEcosistema.dashboardData;
+    const prov = OlivaxiEcosistema.provincia;
 
-  compararBtn?.addEventListener('click', () => {
-    const selected = document.querySelectorAll('.compare-checkbox:checked');
-    if (selected.length !== 2) {
-      alert('Selecciona exactamente 2 variedades para comparar');
+    if (!prov || !d || !provinciaInfoBar) {
+      if (provinciaInfoBar) provinciaInfoBar.style.display = 'none';
+      document.querySelectorAll('.riesgo-badge[id^="riesgo-"]').forEach(badge => {
+        badge.textContent = badge.id.replace('riesgo-', '').charAt(0).toUpperCase() + badge.id.replace('riesgo-', '').slice(1) + ': vulnerable a enfermedades';
+        badge.style.background = '#fcebeb';
+        badge.style.color = '#a32d2d';
+      });
       return;
     }
-    const ids = Array.from(selected).map(cb => cb.dataset.variedad);
-    // Show comparison (keep existing logic)
-    if (comparadorSection) comparadorSection.style.display = 'block';
-  });
 
-  // --- Escuchar cambios del ecosistema ---
-  OlivaxiEcosistema.onChange((state) => {
+    provinciaInfoBar.style.display = 'inline-flex';
+    provinciaInfoBar.innerHTML = `
+      <span>📍 <b>${prov}</b></span>
+      <span>🌡️ ${d.clima?.temperatura || '?'}°C</span>
+      <span>💧 ${d.clima?.humedad || '?'}%</span>
+      <span>🫒 ${d.provinciaInfo?.variedadPredominante || 'N/A'}</span>
+    `;
+
+    const riesgosVar = d.riesgos_variedad || {};
+    Object.keys(riesgosVar).forEach(varId => {
+      const rv = riesgosVar[varId];
+      const badge = document.getElementById('riesgo-' + varId);
+      if (badge && rv) {
+        const nivel = rv.nivel || 'bajo';
+        const cls = getRiesgoClass(nivel);
+        const icon = getRiesgoIcono(nivel);
+        badge.textContent = `${icon} Riesgo ${nivel}: ${rv.detalle?.[0] || rv.detalles || 'Sin riesgos destacados'}`;
+        badge.style.background = cls === 'alto' ? '#fcebeb' : cls === 'medio' ? '#fff8e1' : '#e8f5e9';
+        badge.style.color = cls === 'alto' ? '#a32d2d' : cls === 'medio' ? '#b45309' : '#15803d';
+      }
+    });
+  }
+
+  OlivaxiEcosistema.onChange(() => {
     renderProvinciaInfo();
   });
 
-  // --- Carga inicial ---
   if (OlivaxiEcosistema.provincia) {
-    // Fetch dashboard data if not already cached
     OlivaxiEcosistema.fetchDashboard().then(() => {
       renderProvinciaInfo();
     });

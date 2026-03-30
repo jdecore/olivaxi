@@ -86,6 +86,23 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       padding: 12px 10px;
       border-radius: 8px;
       text-align: center;
+      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+    }
+    .suelo-datos.animated .suelo-dato {
+      animation: kpiIn .45s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .02s; }
+    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .08s; }
+    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .14s; }
+    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .20s; }
+    @keyframes kpiIn {
+      from { opacity: 0; transform: translateY(8px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .suelo-dato:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,.08);
+      border-color: rgba(212,232,73,.9);
     }
 
     .suelo-dato .icon { font-size: 1.3rem; margin-bottom: 4px; }
@@ -98,6 +115,11 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .suelo-dato .status.ok { color: #15803d; }
     .suelo-dato .status.warning { color: #d97706; }
     .suelo-dato .status.danger { color: #dc2626; }
+    @media (prefers-reduced-motion: reduce) {
+      .suelo-datos.loading .suelo-dato::after,
+      .suelo-datos.animated .suelo-dato { animation: none !important; }
+      .suelo-dato { transition: none !important; }
+    }
 
     @media(max-width: 600px) {
       .suelo-datos { grid-template-columns: repeat(2, 1fr); }
@@ -546,7 +568,13 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       sueloLluviaStatus.className = `status ${lluviaStatus.class}`;
       sueloLluviaStatus.textContent = lluviaStatus.text;
       
+      const shouldAnimate = sueloDatos.classList.contains('loading') || sueloDatos.classList.contains('hidden');
       sueloDatos.classList.remove('hidden', 'loading');
+      if (shouldAnimate) {
+        sueloDatos.classList.remove('animated');
+        requestAnimationFrame(() => sueloDatos.classList.add('animated'));
+        setTimeout(() => sueloDatos.classList.remove('animated'), 700);
+      }
     }
 
     let planTexto = '';
