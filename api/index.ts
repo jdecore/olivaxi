@@ -7,11 +7,6 @@ import { ejecutarCheckAlertas } from "./services/cronAlertas";
 
 const app = new Hono();
 
-// Allowed origins for CORS (production + dev)
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
-  : ['http://45.90.237.135', 'http://45.90.237.135:4321', 'http://localhost:4321', 'http://localhost:3000'];
-
 // Rate limiting simple en memoria con cleanup periódico
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 100;
@@ -57,11 +52,11 @@ const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
 app.use("*", rateLimitMiddleware);
 
 app.use("*", async (c, next) => {
-  c.header('Access-Control-Allow-Origin', '*');
-  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  c.header('Access-Control-Allow-Headers', 'Content-Type, X-Internal-Cron');
-  c.header('Access-Control-Expose-Headers', 'Content-Length');
-  c.header('Access-Control-Max-Age', '86400');
+  c.res.headers.set('Access-Control-Allow-Origin', '*');
+  c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Internal-Cron');
+  c.res.headers.set('Access-Control-Expose-Headers', 'Content-Length');
+  c.res.headers.set('Access-Control-Max-Age', '86400');
   
   if (c.req.method === 'OPTIONS') {
     return c.text('', 204);
@@ -81,10 +76,7 @@ app.get("/api", (c) => c.json({
   endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
 }));
 
-app.get("/test-cors", (c) => {
-  c.header('Access-Control-Allow-Origin', '*');
-  return c.json({ status: 'ok', cors: 'set' });
-});
+app.get("/", (c) => c.text("OK"));
 
 console.log("API olivaξ corriendo en :3000");
 

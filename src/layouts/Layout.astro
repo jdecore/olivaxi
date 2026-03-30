@@ -96,6 +96,18 @@ const { title = "olivaξ" } = Astro.props;
         var hideThreshold = 120;
         var navbar = null;
         var scrollHandler = null;
+        var transitionTimeout = null;
+
+        function addTransition() {
+          if (navbar) navbar.classList.add('nav-transitioning');
+        }
+
+        function removeTransition() {
+          if (transitionTimeout) clearTimeout(transitionTimeout);
+          transitionTimeout = setTimeout(function() {
+            if (navbar) navbar.classList.remove('nav-transitioning');
+          }, 350);
+        }
 
         function setupScrollHide() {
           if (scrollHandler) {
@@ -109,14 +121,20 @@ const { title = "olivaξ" } = Astro.props;
             var currentScroll = window.pageYOffset;
             
             if (currentScroll < scrollThreshold) {
+              addTransition();
               navbar.classList.remove('nav-hidden');
               navbar.classList.remove('nav-scrolled');
+              removeTransition();
             } else if (currentScroll > lastScroll && currentScroll > hideThreshold) {
+              addTransition();
               navbar.classList.add('nav-hidden');
               navbar.classList.remove('nav-scrolled');
+              removeTransition();
             } else if (currentScroll < lastScroll) {
+              addTransition();
               navbar.classList.remove('nav-hidden');
               navbar.classList.add('nav-scrolled');
+              removeTransition();
             }
             
             lastScroll = currentScroll;
@@ -231,9 +249,10 @@ const { title = "olivaξ" } = Astro.props;
     background-color: var(--color-white-surface);
     border: 2px solid var(--color-border);
     border-radius: 8px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform: translateY(0);
-    opacity: 1;
+  }
+
+  .navbar.nav-transitioning {
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
   }
 
   .navbar.nav-hidden {
