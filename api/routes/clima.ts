@@ -290,10 +290,10 @@ export async function getClimaData() {
     const temp = item.temp;
     const humedad = item.humedad;
     const lluvia = item.lluvia;
-    const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
+    const riesgos_olivar = calcularRiesgosOlivar({ temp, humedad, lluvia });
     const riesgo = calcularRiesgo(riesgos_olivar);
     const estado = getEstado(temp);
-    const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
+    const riesgos_plaga = calcularRiesgosPlaga({ temp, humedad, lluvia });
 
     // Calcular riesgo para cada variedad
     const riesgos_variedad: Record<string, any> = {};
@@ -403,7 +403,53 @@ const CONSEJOS: Record<string, string[]> = {
   condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
 };
 
-function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any): string[] {
+function normalizarHumedadSuelo(humedadSuelo: number | undefined): number {
+  const valor = Number(humedadSuelo ?? 0);
+  if (!Number.isFinite(valor)) return 0;
+  return valor <= 1 ? valor * 100 : valor;
+}
+
+function getRiesgosSueloYHongos(provData: any): any[] {
+  const sueloTemp = Number(provData?.suelo_temp ?? 0);
+  const sueloHumedad = normalizarHumedadSuelo(provData?.suelo_humedad);
+  const eto = Number(provData?.evapotranspiracion ?? 0);
+  const lluvia = Number(provData?.lluvia ?? 0);
+  const temp = Number(provData?.temperatura ?? 0);
+  const humedad = Number(provData?.humedad ?? 0);
+  const pluviometriaAnual = Number(provData?.pluviometriaAnual ?? 0);
+  const kc = 0.7;
+  const necesidadRiego = eto * kc;
+  const deficitRiego = Math.max(0, necesidadRiego - lluvia);
+  const lluviaMediaDiaria = pluviometriaAnual > 0 ? pluviometriaAnual / 365 : 0;
+  const riesgos: any[] = [];
+
+  if (sueloHumedad < 20) riesgos.push({ tipo: 'suelo_seco', categoria: 'suelo', nivel: 'alto', titulo: 'Suelo seco', icono: '🏜️' });
+  else if (sueloHumedad < 35) riesgos.push({ tipo: 'suelo_seco', categoria: 'suelo', nivel: 'medio', titulo: 'Humedad de suelo baja', icono: '💧' });
+
+  if (sueloHumedad > 80) riesgos.push({ tipo: 'suelo_encharcado', categoria: 'suelo', nivel: 'alto', titulo: 'Suelo encharcado', icono: '🌊' });
+  else if (sueloHumedad > 65) riesgos.push({ tipo: 'suelo_encharcado', categoria: 'suelo', nivel: 'medio', titulo: 'Humedad de suelo alta', icono: '🪨' });
+
+  if (sueloTemp < 6) riesgos.push({ tipo: 'suelo_frio', categoria: 'suelo', nivel: 'alto', titulo: 'Suelo muy frío', icono: '🧊' });
+  else if (sueloTemp < 10) riesgos.push({ tipo: 'suelo_frio', categoria: 'suelo', nivel: 'medio', titulo: 'Suelo frío', icono: '❄️' });
+
+  if (sueloTemp > 32) riesgos.push({ tipo: 'suelo_caliente', categoria: 'suelo', nivel: 'alto', titulo: 'Suelo caliente', icono: '🔥' });
+  else if (sueloTemp > 28) riesgos.push({ tipo: 'suelo_caliente', categoria: 'suelo', nivel: 'medio', titulo: 'Suelo templado-alto', icono: '🌡️' });
+
+  if (eto > 6.5 || deficitRiego > 4) riesgos.push({ tipo: 'eto_alta', categoria: 'suelo', nivel: 'alto', titulo: 'ETo muy alta', icono: '☀️' });
+  else if (eto > 4.5 || deficitRiego > 2) riesgos.push({ tipo: 'eto_alta', categoria: 'suelo', nivel: 'medio', titulo: 'ETo alta', icono: '📈' });
+
+  if (lluviaMediaDiaria > 0 && lluvia < lluviaMediaDiaria * 0.25 && eto > 4) riesgos.push({ tipo: 'deficit_pluviometrico', categoria: 'suelo', nivel: 'alto', titulo: 'Déficit hídrico', icono: '📉' });
+  else if (lluviaMediaDiaria > 0 && lluvia < lluviaMediaDiaria * 0.5 && eto > 3) riesgos.push({ tipo: 'deficit_pluviometrico', categoria: 'suelo', nivel: 'medio', titulo: 'Lluvia bajo media', icono: '🌧️' });
+
+  if (humedad > 75 && lluvia > 2 && temp >= 10 && temp <= 20) riesgos.push({ tipo: 'repilo_hongo', categoria: 'hongos', nivel: lluvia > 6 ? 'alto' : 'medio', titulo: 'Repilo fúngico', icono: '🍂' });
+  if (sueloHumedad > 75 && sueloTemp >= 18 && sueloTemp <= 26 && temp >= 15 && temp <= 30) riesgos.push({ tipo: 'verticilosis', categoria: 'hongos', nivel: sueloHumedad > 85 ? 'alto' : 'medio', titulo: 'Verticilosis', icono: '🍄' });
+  if (humedad > 80 && temp >= 15 && temp <= 22 && lluvia > 3) riesgos.push({ tipo: 'antracnosis', categoria: 'hongos', nivel: lluvia > 8 ? 'alto' : 'medio', titulo: 'Antracnosis', icono: '🦠' });
+  if (lluvia > 8 && temp < 16 && humedad > 75) riesgos.push({ tipo: 'tuberculosis', categoria: 'hongos', nivel: lluvia > 15 ? 'alto' : 'medio', titulo: 'Tuberculosis olivo', icono: '🧫' });
+
+  return riesgos;
+}
+
+function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any, riesgosActivos: any[] = []): string[] {
   const consejos: string[] = [];
   
   if (riesgos_olivar?.calor?.nivel === 'alto') {
@@ -439,6 +485,22 @@ function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any): string[]
   if (riesgos_plaga?.repilo?.nivel === 'alto') {
     consejos.push(...CONSEJOS.repilo.slice(0, 2));
   }
+
+  const tiposActivos = new Set((riesgosActivos || []).map((r: any) => r.tipo));
+  if (tiposActivos.has('suelo_seco') || tiposActivos.has('eto_alta')) {
+    consejos.push('🚿 Ajusta riego diario según ETo y lluvia');
+    consejos.push('🌅 Prioriza riego al amanecer para reducir pérdidas');
+  }
+  if (tiposActivos.has('suelo_encharcado')) {
+    consejos.push('🕳️ Mejora drenaje y evita compactación del suelo');
+  }
+  if (tiposActivos.has('deficit_pluviometrico')) {
+    consejos.push('📉 Mantén estrategia de riego deficitario controlado');
+  }
+  if (tiposActivos.has('verticilosis') || tiposActivos.has('antracnosis') || tiposActivos.has('tuberculosis')) {
+    consejos.push('🍄 Refuerza vigilancia fúngica y evita heridas en poda');
+    consejos.push('✂️ Desinfecta herramientas y mejora ventilación del olivar');
+  }
   
   if (consejos.length === 0) {
     return CONSEJOS.condiciones_optimas;
@@ -447,35 +509,41 @@ function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any): string[]
   return [...new Set(consejos)];
 }
 
-function getRiesgosActivos(riesgos_olivar: any, riesgos_plaga: any): any[] {
+function getRiesgosActivos(provData: any): any[] {
   const activos: any[] = [];
+  const riesgos_olivar = provData?.riesgos_olivar || {};
+  const riesgos_plaga = provData?.riesgos_plaga || {};
   
-  if (riesgos_olivar?.calor?.nivel === 'alto') activos.push({ tipo: 'calor', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
-  else if (riesgos_olivar?.calor?.nivel === 'medio') activos.push({ tipo: 'calor', nivel: 'medio', titulo: 'Calor', icono: '🌡️' });
+  if (riesgos_olivar?.calor?.nivel === 'alto') activos.push({ tipo: 'calor', categoria: 'clima', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
+  else if (riesgos_olivar?.calor?.nivel === 'medio') activos.push({ tipo: 'calor', categoria: 'clima', nivel: 'medio', titulo: 'Calor', icono: '🌡️' });
   
-  if (riesgos_olivar?.frio?.nivel === 'alto') activos.push({ tipo: 'frio', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
-  else if (riesgos_olivar?.frio?.nivel === 'medio') activos.push({ tipo: 'frio', nivel: 'medio', titulo: 'Frío', icono: '🌡️' });
+  if (riesgos_olivar?.frio?.nivel === 'alto') activos.push({ tipo: 'frio', categoria: 'clima', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
+  else if (riesgos_olivar?.frio?.nivel === 'medio') activos.push({ tipo: 'frio', categoria: 'clima', nivel: 'medio', titulo: 'Frío', icono: '🌡️' });
   
-  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
-  else if (riesgos_olivar?.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', nivel: 'medio', titulo: 'Baja humedad', icono: '💧' });
+  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', categoria: 'clima', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
+  else if (riesgos_olivar?.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', categoria: 'clima', nivel: 'medio', titulo: 'Baja humedad', icono: '💧' });
   
-  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'hongos', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
+  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'hongos', categoria: 'hongos', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
+  else if (riesgos_olivar?.alta_humedad?.nivel === 'medio') activos.push({ tipo: 'hongos', categoria: 'hongos', nivel: 'medio', titulo: 'Humedad elevada', icono: '🍄' });
   
-  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
+  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', categoria: 'clima', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
+  else if (riesgos_olivar?.alta_lluvia?.nivel === 'medio') activos.push({ tipo: 'lluvia', categoria: 'clima', nivel: 'medio', titulo: 'Lluvia moderada', icono: '🌧️' });
   
-  if (riesgos_plaga?.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', nivel: 'alto', titulo: 'Mosca', icono: '🪰' });
-  else if (riesgos_plaga?.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', nivel: 'medio', titulo: 'Mosca', icono: '🪰' });
+  if (riesgos_plaga?.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', categoria: 'plagas', nivel: 'alto', titulo: 'Mosca', icono: '🪰' });
+  else if (riesgos_plaga?.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', categoria: 'plagas', nivel: 'medio', titulo: 'Mosca', icono: '🪰' });
   
-  if (riesgos_plaga?.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', nivel: 'alto', titulo: 'Polilla', icono: '🦋' });
-  else if (riesgos_plaga?.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', nivel: 'medio', titulo: 'Polilla', icono: '🦋' });
+  if (riesgos_plaga?.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', categoria: 'plagas', nivel: 'alto', titulo: 'Polilla', icono: '🦋' });
+  else if (riesgos_plaga?.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', categoria: 'plagas', nivel: 'medio', titulo: 'Polilla', icono: '🦋' });
   
-  if (riesgos_plaga?.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', nivel: 'alto', titulo: 'Repilo', icono: '🍂' });
-  else if (riesgos_plaga?.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', nivel: 'medio', titulo: 'Repilo', icono: '🍂' });
+  if (riesgos_plaga?.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', categoria: 'hongos', nivel: 'alto', titulo: 'Repilo', icono: '🍂' });
+  else if (riesgos_plaga?.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', categoria: 'hongos', nivel: 'medio', titulo: 'Repilo', icono: '🍂' });
   
-  if (riesgos_plaga?.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', nivel: 'alto', titulo: 'Xylella', icono: '🚨' });
-  else if (riesgos_plaga?.xylella?.nivel === 'medio') activos.push({ tipo: 'xylella', nivel: 'medio', titulo: 'Xylella', icono: '🚨' });
+  if (riesgos_plaga?.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', categoria: 'plagas', nivel: 'alto', titulo: 'Xylella', icono: '🚨' });
+  else if (riesgos_plaga?.xylella?.nivel === 'medio') activos.push({ tipo: 'xylella', categoria: 'plagas', nivel: 'medio', titulo: 'Xylella', icono: '🚨' });
   
-  return activos;
+  activos.push(...getRiesgosSueloYHongos(provData));
+  const prioridad: Record<string, number> = { alto: 3, medio: 2, bajo: 1 };
+  return activos.sort((a, b) => (prioridad[b.nivel] || 1) - (prioridad[a.nivel] || 1));
 }
 
 // Endpoint unificado para el dashboard
@@ -489,8 +557,13 @@ clima.get("/dashboard", async (c) => {
     if (provincia) {
       const provData = data.find((p: any) => p.provincia === provincia);
       if (provData) {
-        const riesgosActivos = getRiesgosActivos(provData.riesgos_olivar, provData.riesgos_plaga);
-        const consejos = getConsejosByRiesgos(provData.riesgos_olivar, provData.riesgos_plaga);
+        const riesgosActivos = getRiesgosActivos(provData);
+        const consejos = getConsejosByRiesgos(provData.riesgos_olivar, provData.riesgos_plaga, riesgosActivos);
+        const sueloHumedadPct = normalizarHumedadSuelo(provData.suelo_humedad);
+        const kc = 0.7;
+        const necesidadRiego = Math.round((Number(provData.evapotranspiracion || 0) * kc) * 10) / 10;
+        const deficitRiego = Math.round(Math.max(0, necesidadRiego - Number(provData.lluvia || 0)) * 10) / 10;
+        const lluviaMediaDiaria = Math.round(((Number(provData.pluviometriaAnual || 0) / 365) || 0) * 10) / 10;
         
         // Calcular comparacion histórica simulada
         const tempActual = provData.temperatura;
@@ -527,8 +600,15 @@ clima.get("/dashboard", async (c) => {
           },
           suelo: {
             temperatura: provData.suelo_temp,
-            humedad: provData.suelo_humedad,
+            humedad: sueloHumedadPct,
             evapotranspiracion: provData.evapotranspiracion
+          },
+          sueloAnalitica: {
+            humedadPorcentaje: sueloHumedadPct,
+            kc,
+            necesidadRiego,
+            deficitRiego,
+            lluviaMediaDiaria
           },
           provinciaInfo: {
             altitud: provData.altitud,

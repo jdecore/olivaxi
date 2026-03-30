@@ -40,6 +40,9 @@ import MapaCalor from '../components/MapaCalor.astro';
 .variedades-link{display:block;text-align:center;padding:8px;margin-top:8px;background:var(--color-white-surface);border:1.5px dashed var(--color-border);border-radius:4px;color:var(--color-aceituna);font-size:11px;font-weight:600;text-decoration:none}
 .variedades-link:hover{background:var(--color-aceituna);color:var(--color-sal);border-style:solid}
 .alertas-list{flex:1;overflow-y:auto}
+.riesgos-categorias{display:flex;flex-direction:column;gap:8px}
+.riesgo-categoria{padding:8px;background:rgba(255,255,255,.55);border:1px solid var(--color-border);border-radius:6px}
+.riesgo-categoria-titulo{font-size:10px;font-weight:700;color:var(--color-aceituna);margin-bottom:6px}
 .alerta-item{padding:8px;margin-bottom:6px;border-radius:4px;border-left:3px solid;font-size:11px;background:var(--color-white-surface)}
 .alerta-item.alto{border-color:#ef4444}.alerta-item.medio{border-color:#f59e0b}.alerta-item.bajo{border-color:#22c55e}
 .alerta-actions{display:flex;gap:8px;flex-shrink:0}
@@ -135,11 +138,11 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="carousel-nav">
 <button class="carousel-tab active" data-slide="provincias">📍 Provincias</button>
 <button class="carousel-tab" data-slide="variedades">🫒 Variedades</button>
-<button class="carousel-tab" data-slide="alertas">🚨 Alertas</button>
+<button class="carousel-tab" data-slide="alertas">⚠️ Riesgos</button>
 </div>
 <div class="carousel-slide active" id="slide-provincias"><div class="provincias-grid" id="provincias-grid"></div></div>
 <div class="carousel-slide" id="slide-variedades"><div class="variedades-grid" id="variedades-grid"></div><a href="/variedades" class="variedades-link">No sé mi variedad →</a></div>
-<div class="carousel-slide" id="slide-alertas"><div class="alertas-list" id="alertas-list"><div class="no-province-msg">Selecciona una provincia para ver alertas.</div></div><div class="alerta-actions"><a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a><a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a></div></div>
+<div class="carousel-slide" id="slide-alertas"><div class="alertas-list" id="alertas-list"><div class="no-province-msg">Selecciona una provincia para ver riesgos.</div></div><div class="alerta-actions"><a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a><a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a></div></div>
 </div>
 </div>
 
@@ -290,30 +293,65 @@ function renderAlertasPanel(d) {
   const var_ = OlivaxiEcosistema.variedad;
 
   if (!prov) {
-    ALERTAS_LIST.innerHTML = '<div class="no-province-msg">Selecciona una provincia para ver alertas.</div>';
+    ALERTAS_LIST.innerHTML = '<div class="no-province-msg">Selecciona una provincia para ver riesgos.</div>';
     return;
   }
-  const riesgos = [];
+
+  const riesgos = d?.riesgosActivos?.length ? d.riesgosActivos.map(r => ({
+    icon: r.icono,
+    text: r.titulo,
+    level: r.nivel,
+    categoria: r.categoria || (
+      ['mosca', 'polilla', 'xylella'].includes(r.tipo) ? 'plagas' :
+      ['repilo', 'repilo_hongo', 'verticilosis', 'antracnosis', 'tuberculosis', 'hongos'].includes(r.tipo) ? 'hongos' :
+      ['suelo_seco', 'suelo_encharcado', 'suelo_frio', 'suelo_caliente', 'eto_alta', 'deficit_pluviometrico'].includes(r.tipo) ? 'suelo' :
+      'clima'
+    )
+  })) : [];
+
+  if (!riesgos.length) {
+    const ro = d?.riesgos_olivar || {};
+    const rp = d?.riesgos_plaga || {};
+    if (ro.calor?.nivel === 'alto') riesgos.push({ icon: '🔥', text: 'Calor extremo', level: 'alto', categoria: 'clima' });
+    else if (ro.calor?.nivel === 'medio') riesgos.push({ icon: '🌡️', text: 'Calor', level: 'medio', categoria: 'clima' });
+    if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ icon: '🏜️', text: 'Sequía', level: 'alto', categoria: 'clima' });
+    else if (ro.baja_humedad?.nivel === 'medio') riesgos.push({ icon: '💧', text: 'Baja humedad', level: 'medio', categoria: 'clima' });
+    if (ro.frio?.nivel === 'alto') riesgos.push({ icon: '❄️', text: 'Helada', level: 'alto', categoria: 'clima' });
+    if (rp.mosca?.nivel === 'alto' || rp.mosca?.nivel === 'medio') riesgos.push({ icon: '🪰', text: 'Mosca', level: rp.mosca?.nivel || 'medio', categoria: 'plagas' });
+    if (rp.polilla?.nivel === 'alto' || rp.polilla?.nivel === 'medio') riesgos.push({ icon: '🦋', text: 'Polilla', level: rp.polilla?.nivel || 'medio', categoria: 'plagas' });
+    if (rp.repilo?.nivel === 'alto' || rp.repilo?.nivel === 'medio') riesgos.push({ icon: '🍂', text: 'Repilo', level: rp.repilo?.nivel || 'medio', categoria: 'hongos' });
+  }
+
   const rv = d?.riesgos_variedad?.[var_];
   if (rv) {
     const n = rv.nivel || 'bajo';
-    riesgos.push({ icon: n === 'crítico' || n === 'alto' ? '🔴' : n === 'medio' ? '🟡' : '🟢', text: 'Riesgo ' + n + ' para ' + var_, level: n === 'crítico' ? 'alto' : n });
+    riesgos.push({
+      icon: n === 'crítico' || n === 'alto' ? '🔴' : n === 'medio' ? '🟡' : '🟢',
+      text: `Variedad ${var_}: riesgo ${n}`,
+      level: n === 'crítico' ? 'alto' : n,
+      categoria: 'clima'
+    });
   }
-  const ro = d?.riesgos_olivar || {};
-  if (ro.calor?.nivel === 'alto') riesgos.push({ icon: '🔥', text: ro.calor.descripcion, level: 'alto' });
-  if (ro.calor?.nivel === 'medio') riesgos.push({ icon: '🌡️', text: ro.calor.descripcion, level: 'medio' });
-  if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ icon: '🏜️', text: ro.baja_humedad.descripcion, level: 'alto' });
-  if (ro.frio?.nivel === 'alto') riesgos.push({ icon: '❄️', text: ro.frio.descripcion, level: 'alto' });
-  const rp = d?.riesgos_plaga || {};
-  if (rp.mosca?.nivel === 'alto') riesgos.push({ icon: '🪰', text: rp.mosca.descripcion, level: 'alto' });
-  if (rp.mosca?.nivel === 'medio') riesgos.push({ icon: '🪰', text: rp.mosca.descripcion, level: 'medio' });
-  if (rp.polilla?.nivel === 'alto') riesgos.push({ icon: '🦋', text: rp.polilla.descripcion, level: 'alto' });
-  if (rp.polilla?.nivel === 'medio') riesgos.push({ icon: '🦋', text: rp.polilla.descripcion, level: 'medio' });
-  if (rp.repilo?.nivel === 'alto') riesgos.push({ icon: '🍂', text: rp.repilo.descripcion, level: 'alto' });
 
   const info = d ? `<div class="provincia-info"><div><strong>🫒</strong> ${d.variedadPredominante || 'N/A'} &nbsp; <strong>🪨</strong> ${d.tipoSuelo || 'N/A'}</div><div><strong>⛰️</strong> ${d.altitud || '?'}m &nbsp; <strong>🌧️</strong> ${d.pluviometriaAnual || '?'}mm/año</div></div>` : '';
-  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">💧</div><div class="value">${d.humedad}%</div><div class="label">Humedad</div></div><div class="quick-stat"><div class="icon">${getRiesgoClass(d.riesgo) === 'alto' ? '🔴' : getRiesgoClass(d.riesgo) === 'medio' ? '🟡' : '🟢'}</div><div class="value">${d.riesgo || 'bajo'}</div><div class="label">Riesgo</div></div></div>` : '';
-  const riesgosHtml = riesgos.length > 0 ? riesgos.map(r => `<div class="alerta-item ${r.level}">${r.icon} ${r.text}</div>`).join('') : '<div class="alerta-item bajo">✅ Sin riesgos activos</div>';
+  const rawSueloHum = d?.sueloAnalitica?.humedadPorcentaje ?? d?.suelo?.humedad ?? d?.suelo_humedad ?? 0;
+  const sueloHum = rawSueloHum <= 1 ? rawSueloHum * 100 : rawSueloHum;
+  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat"><div class="icon">${getRiesgoClass(d.riesgo) === 'alto' ? '🔴' : getRiesgoClass(d.riesgo) === 'medio' ? '🟡' : '🟢'}</div><div class="value">${d.riesgo || 'bajo'}</div><div class="label">Global</div></div></div>` : '';
+
+  const catTitle = { clima: '🌡️ Clima', suelo: '🪨 Suelo', plagas: '🦟 Plagas', hongos: '🍄 Hongos' };
+  const grouped = riesgos.reduce((acc, r) => {
+    const key = r.categoria || 'clima';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(r);
+    return acc;
+  }, {});
+  const ordered = ['clima', 'suelo', 'plagas', 'hongos'];
+  const riesgosHtml = riesgos.length > 0
+    ? `<div class="riesgos-categorias">${ordered
+        .filter(k => grouped[k]?.length)
+        .map(k => `<div class="riesgo-categoria"><div class="riesgo-categoria-titulo">${catTitle[k]}</div>${grouped[k].map(r => `<div class="alerta-item ${r.level}">${r.icon} ${r.text}</div>`).join('')}</div>`)
+        .join('')}</div>`
+    : '<div class="alerta-item bajo">✅ Sin riesgos activos</div>';
   const consejosHtml = d?.consejos?.length ? `<div class="consejos-panel"><div class="titulo">💡 Consejos</div>${d.consejos.slice(0, 2).map(c => `<div class="consejo">${c.replace(/^\S+\s/, '')}</div>`).join('')}</div>` : '';
 
   ALERTAS_LIST.innerHTML = info + quickStats + riesgosHtml + consejosHtml;

@@ -88,13 +88,13 @@ const OlivaxiEcosistema = {
       }
     }
 
-    if (!opts.silent) {
-      this._notify();
-    }
-
-    // Fetch dashboard si cambió la provincia
+    // Fetch dashboard si cambió la provincia, luego notificar (así listeners tienen datos)
     if (opts.fetchDashboard && value && value !== prev) {
-      this.fetchDashboard();
+      this.fetchDashboard().then(() => {
+        if (!opts.silent) this._notify();
+      });
+    } else if (!opts.silent) {
+      this._notify();
     }
   },
 
@@ -111,23 +111,25 @@ const OlivaxiEcosistema = {
       }
     }
 
-    if (!opts.silent) {
-      this._notify();
-    }
-
-    // Refetch dashboard si cambió la variedad y hay provincia
+    // Refetch dashboard si cambió la variedad y hay provincia, luego notificar
     if (opts.fetchDashboard && this._provincia && value !== prev) {
-      this.fetchDashboard();
+      this.fetchDashboard().then(() => {
+        if (!opts.silent) this._notify();
+      });
+    } else if (!opts.silent) {
+      this._notify();
     }
   },
 
   // ═══════════════════════════════
   // LISTENERS
   // ═══════════════════════════════
-  onChange(listener: EcosistemaListener): () => void {
+  // Listener. Opción { immediate: true } llama al callback al registrarse
+  onChange(listener: EcosistemaListener, options?: { immediate?: boolean }): () => void {
     this._listeners.add(listener);
-    // Llamar inmediatamente con el estado actual
-    listener(this.getState());
+    if (options?.immediate) {
+      try { listener(this.getState()); } catch (e) { console.error('[Ecosistema] Listener error:', e); }
+    }
     return () => { this._listeners.delete(listener); };
   },
 
@@ -172,7 +174,6 @@ const OlivaxiEcosistema = {
     const cached = olivaxiCache.get<any>(API_ENDPOINTS.DASHBOARD, params, CACHE_TTL.DASHBOARD);
     if (cached) {
       this._dashboardData = cached;
-      this._notify();
       return cached;
     }
 
@@ -189,7 +190,6 @@ const OlivaxiEcosistema = {
       if (data.ok) {
         olivaxiCache.set(API_ENDPOINTS.DASHBOARD, data, params);
         this._dashboardData = data;
-        this._notify();
         return data;
       }
     } catch (e) {
@@ -218,10 +218,12 @@ const OlivaxiEcosistema = {
       }
     }
 
-    this._notify();
-
     if (provChanged || varChanged) {
-      this.fetchDashboard();
+      this.fetchDashboard().then(() => {
+        this._notify();
+      });
+    } else {
+      this._notify();
     }
   },
 

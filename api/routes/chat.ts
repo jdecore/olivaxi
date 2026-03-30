@@ -101,7 +101,8 @@ chat.post("/", async (c) => {
   const llov = provinciaInfo?.lluvia ?? '';
   const estado = provinciaInfo?.estado ?? '';
   const sueloTemp = provinciaInfo?.suelo_temp ?? '';
-  const sueloHum = provinciaInfo?.suelo_humedad ?? '';
+  const sueloHumRaw = provinciaInfo?.suelo_humedad ?? '';
+  const sueloHum = Number(sueloHumRaw) <= 1 ? Math.round(Number(sueloHumRaw) * 100) : sueloHumRaw;
   const eto = provinciaInfo?.evapotranspiracion ?? '';
   const tipoSuelo = provinciaInfo?.tipoSuelo ?? '';
   const variedadLocal = provinciaInfo?.variedadPredominante ?? '';
