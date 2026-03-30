@@ -1,0 +1,50 @@
+---
+// Dropdown de variedades sincronizado con el ecosistema
+// Props: id, class, includeEmpty
+interface Props {
+  id?: string;
+  class?: string;
+  placeholder?: string;
+  includeEmpty?: boolean;
+}
+
+const {
+  id = 'select-variedad',
+  class: className = '',
+  placeholder = 'Selecciona tu variedad...',
+  includeEmpty = true,
+} = Astro.props;
+---
+
+<select id={id} class:list={['variedad-select', className]}>
+  {includeEmpty && <option value="">{placeholder}</option>}
+  <option value="cornicabra">Cornicabra</option>
+  <option value="picual">Picual</option>
+  <option value="arbequina">Arbequina</option>
+  <option value="hojiblanca">Hojiblanca</option>
+  <option value="manzanilla">Manzanilla</option>
+  <option value="empeltre">Empeltre</option>
+</select>
+
+<script define:vars={{ selectId: id }}>
+  import OlivaxiEcosistema from '../lib/ecosistema';
+
+  const select = document.getElementById(selectId);
+  if (select) {
+    // Restaurar valor desde ecosistema
+    const current = OlivaxiEcosistema.variedad;
+    if (current) select.value = current;
+
+    // Escuchar cambios del ecosistema
+    OlivaxiEcosistema.onChange((state) => {
+      if (state.variedad !== select.value) {
+        select.value = state.variedad;
+      }
+    });
+
+    // Notificar al ecosistema cuando el usuario cambia el select
+    select.addEventListener('change', () => {
+      OlivaxiEcosistema.setVariedad(select.value);
+    });
+  }
+</script>

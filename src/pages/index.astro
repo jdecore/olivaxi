@@ -179,33 +179,275 @@ import MapaCalor from '../components/MapaCalor.astro';
 </div>
 
 <script>
-import { setClimaData } from '../lib/climaState';
+import OlivaxiEcosistema from '../lib/ecosistema';
 
-const CAROUSEL_TABS=document.querySelectorAll('.carousel-tab'),CAROUSEL_SLIDES=document.querySelectorAll('.carousel-slide'),PROVINCIAS_GRID=document.getElementById('provincias-grid'),VARIEDADES_GRID=document.getElementById('variedades-grid'),ALERTAS_LIST=document.getElementById('alertas-list'),PROVIDER_API=(import.meta.env.PUBLIC_API_URL||'http://localhost:3000').replace(/\/$/,''),HERO_CONTEXTUAL=document.getElementById('hero-contextual'),CARD_SUELO_TEXT=document.getElementById('card-suelo-text'),CARD_VARIEDAD_TEXT=document.getElementById('card-variedad-text'),CARD_CONSEJO_TEXT=document.getElementById('card-consejo-text'),MI_OLIVAR_PANEL=document.getElementById('mi-olivar-panel'),MI_OLIVAR_CONTENT=document.getElementById('mi-olivar-content'),MI_OLIVAR_ALERTS=document.getElementById('mi-olivar-alerts'),NARRATIVE_SECTION=document.getElementById('narrative-section'),NARRATIVE_CONTENT=document.getElementById('narrative-content'),MI_OLIVAR_CLOSE=document.getElementById('mi-olivar-close'),MAPA_CARD=document.getElementById('mapa-card-wrapper'),RIESGO_BADGE=document.getElementById('riesgo-badge'),CARD_CHAT_BTN=document.getElementById('card-chat-btn');
-let datosClima=[],provinciaSeleccionada=localStorage.getItem('olivaxi_provincia')||'',variedadSeleccionada=localStorage.getItem('olivaxi_variedad')||'',dashboardData=null;
-const DASHBOARD_CACHE_TTL=3*60*1000;
-let dashboardCache={};
-function getCachedDashboard(prov){const c=dashboardCache[prov];return c&&Date.now()-c.ts<DASHBOARD_CACHE_TTL?c.data:null}
-function setCachedDashboard(prov,d){dashboardCache[prov]={data:d,ts:Date.now()}}
-function initCarousel(){CAROUSEL_TABS.forEach(t=>t.addEventListener('click',()=>{const s=t.dataset.slide;CAROUSEL_TABS.forEach(x=>x.classList.remove('active'));CAROUSEL_SLIDES.forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('slide-'+s)?.classList.add('active')}))}
-function guardarSeleccion(t,v){localStorage.setItem('olivaxi_'+t,v);window.dispatchEvent(new CustomEvent('olivaxi-state-change',{detail:{provincia:provinciaSeleccionada,variedad:variedadSeleccionada}}))}
-function getRiesgoClass(r){if(!r)return'bajo';if(r==='alto'||r==='crítico')return'alto';if(r==='medio'||r==='media')return'medio';return'bajo'}
-function getRiesgoGlobal(d){const activos=d?.riesgosActivos||[];if(activos.length===0)return'bajo';const priority={'crítico':4,'alto':3,'medio':2,'bajo':1};return activos.reduce((prev,curr)=>(priority[curr.nivel]||1)>(priority[prev?.nivel]||1)?curr:prev,{nivel:'bajo'}).nivel}
-function updateRiesgoBadge(d){if(!RIESGO_BADGE||!MAPA_CARD)return;const nivel=getRiesgoGlobal(d);const labels={'alto':'🔴 Riesgo alto','medio':'🟡 Riesgo medio','bajo':'✅ Riesgo bajo'};RIESGO_BADGE.className='riesgo-badge '+nivel;RIESGO_BADGE.textContent=labels[nivel]||labels.bajo;RIESGO_BADGE.onclick=()=>{CAROUSEL_TABS.forEach(x=>x.classList.remove('active'));CAROUSEL_SLIDES.forEach(x=>x.classList.remove('active'));document.querySelector('[data-slide="alertas"]')?.classList.add('active');document.getElementById('slide-alertas')?.classList.add('active')};MAPA_CARD.className='mapa-card riesgo-'+nivel}
-function renderMiOlivarPanel(d){if(!MI_OLIVAR_PANEL||!d)return;MI_OLIVAR_PANEL.classList.add('visible');const eti=d.suelo.evapotranspiracion||0;const kc=0.7;const riegoDiario=Math.round(eti*kc*100)/100;MI_OLIVAR_CONTENT.innerHTML=`<div class="mi-olivar-stat"><div class="icon">🌡️</div><div class="value">${d.clima.temperatura}°C</div><div class="label">Temp. aire</div></div><div class="mi-olivar-stat"><div class="icon">🪨</div><div class="value">${d.suelo.temperatura}°C</div><div class="label">Temp. suelo</div></div><div class="mi-olivar-stat"><div class="icon">💧</div><div class="value">${d.suelo.humedad}%</div><div class="label">Humedad</div></div><div class="mi-olivar-stat"><div class="icon">🚿</div><div class="value">${riegoDiario} L/ha</div><div class="label">Riego diario</div></div>`;const alertsHtml=(d.riesgosActivos||[]).slice(0,4).map(r=>`<span class="mi-olivar-alert ${r.nivel}">${r.icono} ${r.titulo}</span>`).join('');MI_OLIVAR_ALERTS.innerHTML=alertsHtml||'<span class="mi-olivar-alert bajo">✅ Sin riesgos activos</span>'}
-function renderNarrativeSection(d){if(!NARRATIVE_SECTION||!d||!d.comparacionHistorica)return;NARRATIVE_SECTION.classList.add('visible');const comp=d.comparacionHistorica;const tempClass=comp.variacion>0?'positivo':comp.variacion<0?'negativo':'';NARRATIVE_CONTENT.innerHTML=`<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor?'positivo':''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor?'🔥 Alto':'✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor?'Protege del estrés térmico':'Condiciones normales'}</div></div><div class="narrative-item ${comp.deficitLluvia?'positivo':''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${comp.precipitacionActual}mm</div><div class="narrative-sub">${comp.deficitLluvia?'⚠️ Déficit':'Normal'}</div></div>`}
-function renderProvinciasGrid(d){if(!PROVINCIAS_GRID)return;PROVINCIAS_GRID.innerHTML=d.map(p=>`<button class="provincia-btn ${provinciaSeleccionada===p.provincia?'selected':''}" data-provincia="${p.provincia}" data-lat="${p.lat}" data-lon="${p.lon}"><span class="riesgo-dot ${getRiesgoClass(p.riesgo)}"></span>${p.provincia}<div class="temp">${p.temperatura}°C</div></button>`).join('');PROVINCIAS_GRID.querySelectorAll('.provincia-btn').forEach(b=>b.addEventListener('click',()=>{provinciaSeleccionada=b.dataset.provincia;guardarSeleccion('provincia',provinciaSeleccionada);document.querySelectorAll('.provincia-btn').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');window.dispatchEvent(new CustomEvent('flyToProvincia',{detail:{provincia:provinciaSeleccionada}}));window.dispatchEvent(new CustomEvent('provincia-seleccionada',{detail:{provincia:provinciaSeleccionada}}));renderVariedadesGrid();updateDashboard();CAROUSEL_TABS.forEach(x=>x.classList.remove('active'));CAROUSEL_SLIDES.forEach(x=>x.classList.remove('active'));document.querySelector('[data-slide="alertas"]').classList.add('active');document.getElementById('slide-alertas')?.classList.add('active')}))}
-function renderVariedadesGrid(){if(!VARIEDADES_GRID)return;const V={cornicabra:{nombre:'Cornicabra'},picual:{nombre:'Picual'},arbequina:{nombre:'Arbequina'},hojiblanca:{nombre:'Hojiblanca'},manzanilla:{nombre:'Manzanilla'},empeltre:{nombre:'Empeltre'}};const provData=provinciaSeleccionada?datosClima.find(x=>x.provincia===provinciaSeleccionada):null;VARIEDADES_GRID.innerHTML=Object.entries(V).map(([id,v])=>{const riesgo=provData?.riesgos_variedad?.[id]?.nivel||'bajo';return`<button class="variedad-btn ${variedadSeleccionada===id?'selected':''}" data-variedad="${id}"><div class="nombre">${v.nombre}</div><span class="riesgo-label ${riesgo}">${riesgo.toUpperCase()}</span></button>`}).join('');VARIEDADES_GRID.querySelectorAll('.variedad-btn').forEach(b=>b.addEventListener('click',()=>{variedadSeleccionada=b.dataset.variedad;guardarSeleccion('variedad',variedadSeleccionada);document.querySelectorAll('.variedad-btn').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');window.dispatchEvent(new CustomEvent('olivaxi-state-change',{detail:{provincia:provinciaSeleccionada,variedad:variedadSeleccionada}}));if(provinciaSeleccionada&&datosClima.length){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p);updateDashboard()}}))}
-function renderAlertasPanel(d){if(!ALERTAS_LIST)return;if(!provinciaSeleccionada){ALERTAS_LIST.innerHTML='<div class="no-province-msg">Selecciona una provincia para ver alertas.</div>';return}const riesgos=[];const rv=d?.riesgos_variedad?.[variedadSeleccionada];if(rv){const n=rv.nivel||'bajo';riesgos.push({icon:n==='crítico'||n==='alto'?'🔴':n==='medio'?'🟡':'🟢',text:'Riesgo '+n+' para '+variedadSeleccionada,level:n==='crítico'?'alto':n})}const ro=d?.riesgos_olivar||{};if(ro.calor?.nivel==='alto')riesgos.push({icon:'🔥',text:ro.calor.descripcion,level:'alto'});if(ro.calor?.nivel==='medio')riesgos.push({icon:'🌡️',text:ro.calor.descripcion,level:'medio'});if(ro.baja_humedad?.nivel==='alto')riesgos.push({icon:'🏜️',text:ro.baja_humedad.descripcion,level:'alto'});if(ro.frio?.nivel==='alto')riesgos.push({icon:'❄️',text:ro.frio.descripcion,level:'alto'});const rp=d?.riesgos_plaga||{};if(rp.mosca?.nivel==='alto')riesgos.push({icon:'🪰',text:rp.mosca.descripcion,level:'alto'});if(rp.mosca?.nivel==='medio')riesgos.push({icon:'🪰',text:rp.mosca.descripcion,level:'medio'});if(rp.polilla?.nivel==='alto')riesgos.push({icon:'🦋',text:rp.polilla.descripcion,level:'alto'});if(rp.polilla?.nivel==='medio')riesgos.push({icon:'🦋',text:rp.polilla.descripcion,level:'medio'});if(rp.repilo?.nivel==='alto')riesgos.push({icon:'🍂',text:rp.repilo.descripcion,level:'alto'});const info=d?`<div class="provincia-info"><div><strong>🫒</strong> ${d.variedadPredominante||'N/A'} &nbsp; <strong>🪨</strong> ${d.tipoSuelo||'N/A'}</div><div><strong>⛰️</strong> ${d.altitud||'?'}m &nbsp; <strong>🌧️</strong> ${d.pluviometriaAnual||'?'}mm/año</div></div>`:'';const quickStats=d?`<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">💧</div><div class="value">${d.humedad}%</div><div class="label">Humedad</div></div><div class="quick-stat"><div class="icon">${getRiesgoClass(d.riesgo)==='alto'?'🔴':getRiesgoClass(d.riesgo)==='medio'?'🟡':'🟢'}</div><div class="value">${d.riesgo||'bajo'}</div><div class="label">Riesgo</div></div></div>`:'';const consejosHtml=riesgos.length?riscos.slice(0,3).map(r=>`<div class="consejo">${r.icon} ${r.text}</div>`).join(''):'<div class="consejo">✅ Sin riesgos activos</div>';ALERTAS_LIST.innerHTML=info+quickStats+`<div class="consejos-panel"><div class="titulo">⚠️ Riesgos Activos</div>${consejosHtml}</div>`}
-async function updateDashboard(){if(!provinciaSeleccionada)return;const cached=getCachedDashboard(provinciaSeleccionada);if(cached){renderDashboard(cached);return}try{const controller=new AbortController();const t=setTimeout(()=>controller.abort(),4000);const r=await fetch(PROVIDER_API+'/api/clima/dashboard?provincia='+encodeURIComponent(provinciaSeleccionada)+(variedadSeleccionada?'&variedad='+encodeURIComponent(variedadSeleccionada):''),{signal:controller.signal});clearTimeout(t);if(!r.ok)return;const d=await r.json();if(d.ok){setCachedDashboard(provinciaSeleccionada,d);renderDashboard(d)}}catch(e){console.error('Dashboard error:',e)}}
-function renderDashboard(d){dashboardData=d;const plaga=d.plagas;const plagaIcons=(l)=>l==='alto'?'🔴':l==='medio'?'🟡':'🟢';HERO_CONTEXTUAL.textContent=`${d.clima.temperatura}°C • 💧 ${d.clima.humedad}% • ${plaga.polilla?`Polilla ${plagaIcons(plaga.polilla.nivel)}`:''}`;CARD_SUELO_TEXT.textContent=`${Math.round(d.suelo.temperatura||0)}°C • 💧 ${Math.round((d.suelo.humedad||0)*100)}% • 📈 ${(d.suelo.evapotranspiracion||0).toFixed(1)}mm`;CARD_VARIEDAD_TEXT.textContent=d.provinciaInfo.variedadPredominante||'N/A';CARD_CONSEJO_TEXT.textContent=d.consejos?.[0]?.replace(/^\S+\s/,'')||'Sin consejo';if(CARD_CHAT_BTN)CARD_CHAT_BTN.onclick=(e)=>{e.preventDefault();window.location.href='/consejero?provincia='+encodeURIComponent(provinciaSeleccionada)+(variedadSeleccionada?'&variedad='+encodeURIComponent(variedadSeleccionada):'')};renderMiOlivarPanel(d);renderNarrativeSection(d);updateRiesgoBadge(d)}
-// Cache de datos clima (3 min)
-let climaCache={ts:0,data:[]};
-let retryCount=0;
-const MAX_RETRIES=2;
-async function loadData(){try{const now=Date.now();if(climaCache.data.length&&now-climaCache.ts<3*60*1000){datosClima=climaCache.data;renderProvinciasGrid(datosClima);renderVariedadesGrid();if(provinciaSeleccionada){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}updateDashboard();return}const fetchUrl=PROVIDER_API+'/api/clima';const controller=new AbortController();const t=setTimeout(()=>controller.abort(),8000);const r=await fetch(fetchUrl,{signal:controller.signal});clearTimeout(t);if(!r.ok){console.error('[loadData] HTTP error:',r.status,r.statusText,'URL:',fetchUrl);throw new Error('API error '+r.status)}datosClima=await r.json();climaCache={data:datosClima,ts:now};setClimaData(datosClima);retryCount=0;if(datosClima.length){renderProvinciasGrid(datosClima);renderVariedadesGrid();if(provinciaSeleccionada){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}updateDashboard()}}catch(e){console.error('[loadData] Error:',e?.name||'',e?.message||e,'URL:',PROVIDER_API+'/api/clima','Origin:',location.origin);if(retryCount<MAX_RETRIES){retryCount++;setTimeout(loadData,1000*retryCount)}else{if(PROVINCIAS_GRID)PROVINCIAS_GRID.innerHTML='<div class="no-province-msg">Error al cargar. <button onclick="location.reload()">Reintentar</button></div>'}}}
-window.addEventListener('provincia-seleccionada',e=>{provinciaSeleccionada=e.detail?.provincia||'';if(provinciaSeleccionada&&datosClima.length){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}updateDashboard()});
-if(MI_OLIVAR_CLOSE){MI_OLIVAR_CLOSE.addEventListener('click',()=>{MI_OLIVAR_PANEL.classList.remove('visible')})}
-initCarousel();loadData();
+// --- DOM refs ---
+const $ = (id) => document.getElementById(id);
+const PROVINCIAS_GRID = $('provincias-grid');
+const VARIEDADES_GRID = $('variedades-grid');
+const ALERTAS_LIST = $('alertas-list');
+const HERO_CONTEXTUAL = $('hero-contextual');
+const CARD_SUELO_TEXT = $('card-suelo-text');
+const CARD_VARIEDAD_TEXT = $('card-variedad-text');
+const CARD_CONSEJO_TEXT = $('card-consejo-text');
+const MI_OLIVAR_PANEL = $('mi-olivar-panel');
+const MI_OLIVAR_CONTENT = $('mi-olivar-content');
+const MI_OLIVAR_ALERTS = $('mi-olivar-alerts');
+const MI_OLIVAR_CLOSE = $('mi-olivar-close');
+const NARRATIVE_SECTION = $('narrative-section');
+const NARRATIVE_CONTENT = $('narrative-content');
+const MAPA_CARD = $('mapa-card-wrapper');
+const RIESGO_BADGE = $('riesgo-badge');
+const CARD_CHAT_BTN = $('card-chat-btn');
+const CAROUSEL_TABS = document.querySelectorAll('.carousel-tab');
+const CAROUSEL_SLIDES = document.querySelectorAll('.carousel-slide');
+
+// --- Estado local (derivado del ecosistema) ---
+let datosClima = [];
+let dashboardData = null;
+
+// --- Helpers UI ---
+function getRiesgoClass(r) {
+  if (!r) return 'bajo';
+  if (r === 'alto' || r === 'crítico') return 'alto';
+  if (r === 'medio' || r === 'media') return 'medio';
+  return 'bajo';
+}
+
+function getRiesgoGlobal(d) {
+  const activos = d?.riesgosActivos || [];
+  if (activos.length === 0) return 'bajo';
+  const priority = { 'crítico': 4, 'alto': 3, 'medio': 2, 'bajo': 1 };
+  return activos.reduce((prev, curr) =>
+    (priority[curr.nivel] || 1) > (priority[prev?.nivel] || 1) ? curr : prev,
+    { nivel: 'bajo' }
+  ).nivel;
+}
+
+// --- Carousel ---
+function initCarousel() {
+  CAROUSEL_TABS.forEach(t => t.addEventListener('click', () => {
+    const s = t.dataset.slide;
+    CAROUSEL_TABS.forEach(x => x.classList.remove('active'));
+    CAROUSEL_SLIDES.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('slide-' + s)?.classList.add('active');
+  }));
+}
+
+function switchToAlertasTab() {
+  CAROUSEL_TABS.forEach(x => x.classList.remove('active'));
+  CAROUSEL_SLIDES.forEach(x => x.classList.remove('active'));
+  document.querySelector('[data-slide="alertas"]')?.classList.add('active');
+  document.getElementById('slide-alertas')?.classList.add('active');
+}
+
+// --- Render: Provincias Grid ---
+function renderProvinciasGrid() {
+  if (!PROVINCIAS_GRID || !datosClima.length) return;
+  const prov = OlivaxiEcosistema.provincia;
+  const var_ = OlivaxiEcosistema.variedad;
+
+  PROVINCIAS_GRID.innerHTML = datosClima.map(p =>
+    `<button class="provincia-btn ${prov === p.provincia ? 'selected':''}" data-provincia="${p.provincia}">
+      <span class="riesgo-dot ${getRiesgoClass(p.riesgo)}"></span>${p.provincia}
+      <div class="temp">${p.temperatura}°C</div>
+    </button>`
+  ).join('');
+
+  PROVINCIAS_GRID.querySelectorAll('.provincia-btn').forEach(b => b.addEventListener('click', () => {
+    OlivaxiEcosistema.setProvincia(b.dataset.provincia);
+    window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia: b.dataset.provincia } }));
+    switchToAlertasTab();
+  }));
+}
+
+// --- Render: Variedades Grid ---
+function renderVariedadesGrid() {
+  if (!VARIEDADES_GRID) return;
+  const prov = OlivaxiEcosistema.provincia;
+  const var_ = OlivaxiEcosistema.variedad;
+  const V = { cornicabra: 'Cornicabra', picual: 'Picual', arbequina: 'Arbequina', hojiblanca: 'Hojiblanca', manzanilla: 'Manzanilla', empeltre: 'Empeltre' };
+  const provData = prov ? datosClima.find(x => x.provincia === prov) : null;
+
+  VARIEDADES_GRID.innerHTML = Object.entries(V).map(([id, nombre]) => {
+    const riesgo = provData?.riesgos_variedad?.[id]?.nivel || 'bajo';
+    return `<button class="variedad-btn ${var_ === id ? 'selected' : ''}" data-variedad="${id}">
+      <div class="nombre">${nombre}</div>
+      <span class="riesgo-label ${riesgo}">${riesgo.toUpperCase()}</span>
+    </button>`;
+  }).join('');
+
+  VARIEDADES_GRID.querySelectorAll('.variedad-btn').forEach(b => b.addEventListener('click', () => {
+    OlivaxiEcosistema.setVariedad(b.dataset.variedad);
+  }));
+}
+
+// --- Render: Alertas Panel (sidebar) ---
+function renderAlertasPanel(d) {
+  if (!ALERTAS_LIST) return;
+  const prov = OlivaxiEcosistema.provincia;
+  const var_ = OlivaxiEcosistema.variedad;
+
+  if (!prov) {
+    ALERTAS_LIST.innerHTML = '<div class="no-province-msg">Selecciona una provincia para ver alertas.</div>';
+    return;
+  }
+  const riesgos = [];
+  const rv = d?.riesgos_variedad?.[var_];
+  if (rv) {
+    const n = rv.nivel || 'bajo';
+    riesgos.push({ icon: n === 'crítico' || n === 'alto' ? '🔴' : n === 'medio' ? '🟡' : '🟢', text: 'Riesgo ' + n + ' para ' + var_, level: n === 'crítico' ? 'alto' : n });
+  }
+  const ro = d?.riesgos_olivar || {};
+  if (ro.calor?.nivel === 'alto') riesgos.push({ icon: '🔥', text: ro.calor.descripcion, level: 'alto' });
+  if (ro.calor?.nivel === 'medio') riesgos.push({ icon: '🌡️', text: ro.calor.descripcion, level: 'medio' });
+  if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ icon: '🏜️', text: ro.baja_humedad.descripcion, level: 'alto' });
+  if (ro.frio?.nivel === 'alto') riesgos.push({ icon: '❄️', text: ro.frio.descripcion, level: 'alto' });
+  const rp = d?.riesgos_plaga || {};
+  if (rp.mosca?.nivel === 'alto') riesgos.push({ icon: '🪰', text: rp.mosca.descripcion, level: 'alto' });
+  if (rp.mosca?.nivel === 'medio') riesgos.push({ icon: '🪰', text: rp.mosca.descripcion, level: 'medio' });
+  if (rp.polilla?.nivel === 'alto') riesgos.push({ icon: '🦋', text: rp.polilla.descripcion, level: 'alto' });
+  if (rp.polilla?.nivel === 'medio') riesgos.push({ icon: '🦋', text: rp.polilla.descripcion, level: 'medio' });
+  if (rp.repilo?.nivel === 'alto') riesgos.push({ icon: '🍂', text: rp.repilo.descripcion, level: 'alto' });
+
+  const info = d ? `<div class="provincia-info"><div><strong>🫒</strong> ${d.variedadPredominante || 'N/A'} &nbsp; <strong>🪨</strong> ${d.tipoSuelo || 'N/A'}</div><div><strong>⛰️</strong> ${d.altitud || '?'}m &nbsp; <strong>🌧️</strong> ${d.pluviometriaAnual || '?'}mm/año</div></div>` : '';
+  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">💧</div><div class="value">${d.humedad}%</div><div class="label">Humedad</div></div><div class="quick-stat"><div class="icon">${getRiesgoClass(d.riesgo) === 'alto' ? '🔴' : getRiesgoClass(d.riesgo) === 'medio' ? '🟡' : '🟢'}</div><div class="value">${d.riesgo || 'bajo'}</div><div class="label">Riesgo</div></div></div>` : '';
+  const riesgosHtml = riesgos.length > 0 ? riesgos.map(r => `<div class="alerta-item ${r.level}">${r.icon} ${r.text}</div>`).join('') : '<div class="alerta-item bajo">✅ Sin riesgos activos</div>';
+  const consejosHtml = d?.consejos?.length ? `<div class="consejos-panel"><div class="titulo">💡 Consejos</div>${d.consejos.slice(0, 2).map(c => `<div class="consejo">${c.replace(/^\S+\s/, '')}</div>`).join('')}</div>` : '';
+
+  ALERTAS_LIST.innerHTML = info + quickStats + riesgosHtml + consejosHtml;
+}
+
+// --- Render: Riesgo Badge + Mapa border ---
+function updateRiesgoBadge(d) {
+  if (!RIESGO_BADGE || !MAPA_CARD) return;
+  const nivel = getRiesgoGlobal(d);
+  const labels = { 'alto': '🔴 Riesgo alto', 'medio': '🟡 Riesgo medio', 'bajo': '✅ Riesgo bajo' };
+  RIESGO_BADGE.className = 'riesgo-badge ' + nivel;
+  RIESGO_BADGE.textContent = labels[nivel] || labels.bajo;
+  RIESGO_BADGE.onclick = () => switchToAlertasTab();
+  MAPA_CARD.className = 'mapa-card riesgo-' + nivel;
+}
+
+// --- Render: Mi Olivar panel ---
+function renderMiOlivarPanel(d) {
+  if (!MI_OLIVAR_PANEL || !d) return;
+  MI_OLIVAR_PANEL.classList.add('visible');
+  const eti = d.suelo?.evapotranspiracion || 0;
+  const kc = 0.7;
+  const riegoDiario = Math.round(eti * kc * 100) / 100;
+  MI_OLIVAR_CONTENT.innerHTML = `<div class="mi-olivar-stat"><div class="icon">🌡️</div><div class="value">${d.clima.temperatura}°C</div><div class="label">Temp. aire</div></div><div class="mi-olivar-stat"><div class="icon">🪨</div><div class="value">${d.suelo.temperatura}°C</div><div class="label">Temp. suelo</div></div><div class="mi-olivar-stat"><div class="icon">💧</div><div class="value">${d.suelo.humedad}%</div><div class="label">Humedad</div></div><div class="mi-olivar-stat"><div class="icon">🚿</div><div class="value">${riegoDiario} L/ha</div><div class="label">Riego diario</div></div>`;
+  const alertsHtml = (d.riesgosActivos || []).slice(0, 4).map(r => `<span class="mi-olivar-alert ${r.nivel}">${r.icono} ${r.titulo}</span>`).join('');
+  MI_OLIVAR_ALERTS.innerHTML = alertsHtml || '<span class="mi-olivar-alert bajo">✅ Sin riesgos activos</span>';
+}
+
+// --- Render: Narrative section ---
+function renderNarrativeSection(d) {
+  if (!NARRATIVE_SECTION || !d || !d.comparacionHistorica) return;
+  NARRATIVE_SECTION.classList.add('visible');
+  const comp = d.comparacionHistorica;
+  const tempClass = comp.variacion > 0 ? 'positivo' : comp.variacion < 0 ? 'negativo' : '';
+  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${comp.deficitLluvia ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${comp.precipitacionActual}mm</div><div class="narrative-sub">${comp.deficitLluvia ? '⚠️ Déficit' : 'Normal'}</div></div>`;
+}
+
+// --- Render: Dashboard completo ---
+function renderDashboard(d) {
+  dashboardData = d;
+  const plaga = d.plagas;
+  const plagaIcons = (l) => l === 'alto' ? '🔴' : l === 'medio' ? '🟡' : '🟢';
+  HERO_CONTEXTUAL.textContent = `${d.clima.temperatura}°C • 💧 ${d.clima.humedad}% • ${plaga.polilla ? `Polilla ${plagaIcons(plaga.polilla.nivel)}` : ''}`;
+  CARD_SUELO_TEXT.textContent = `${Math.round(d.suelo?.temperatura || 0)}°C • 💧 ${Math.round((d.suelo?.humedad || 0) * 100)}% • 📈 ${(d.suelo?.evapotranspiracion || 0).toFixed(1)}mm`;
+  CARD_VARIEDAD_TEXT.textContent = d.provinciaInfo?.variedadPredominante || 'N/A';
+  CARD_CONSEJO_TEXT.textContent = d.consejos?.[0]?.replace(/^\S+\s/, '') || 'Sin consejo';
+  if (CARD_CHAT_BTN) {
+    const prov = OlivaxiEcosistema.provincia;
+    const var_ = OlivaxiEcosistema.variedad;
+    CARD_CHAT_BTN.onclick = (e) => {
+      e.preventDefault();
+      window.location.href = '/consejero?provincia=' + encodeURIComponent(prov) + (var_ ? '&variedad=' + encodeURIComponent(var_) : '');
+    };
+  }
+  renderMiOlivarPanel(d);
+  renderNarrativeSection(d);
+  updateRiesgoBadge(d);
+}
+
+// --- Render maestro: se llama cuando cambia el estado del ecosistema ---
+function renderAll() {
+  const prov = OlivaxiEcosistema.provincia;
+  const var_ = OlivaxiEcosistema.variedad;
+
+  renderProvinciasGrid();
+  renderVariedadesGrid();
+
+  if (prov && datosClima.length) {
+    const p = datosClima.find(x => x.provincia === prov);
+    if (p) renderAlertasPanel(p);
+  } else {
+    renderAlertasPanel(null);
+  }
+
+  // Usar dashboard del ecosistema si existe
+  const dash = OlivaxiEcosistema.dashboardData;
+  if (dash && dash.provincia === prov) {
+    renderDashboard(dash);
+  }
+}
+
+// --- Carga inicial ---
+let retryCount = 0;
+async function loadData() {
+  try {
+    datosClima = await OlivaxiEcosistema.fetchClima();
+    retryCount = 0;
+    if (datosClima.length) {
+      renderAll();
+      // Si hay provincia guardada, fetch dashboard
+      if (OlivaxiEcosistema.provincia) {
+        const d = await OlivaxiEcosistema.fetchDashboard();
+        if (d) renderDashboard(d);
+      }
+    }
+  } catch (e) {
+    console.error('[loadData] Error:', e);
+    if (retryCount < 2) {
+      retryCount++;
+      setTimeout(loadData, 1000 * retryCount);
+    } else if (PROVINCIAS_GRID) {
+      PROVINCIAS_GRID.innerHTML = '<div class="no-province-msg">Error al cargar. <button onclick="location.reload()">Reintentar</button></div>';
+    }
+  }
+}
+
+// --- Escuchar cambios del ecosistema ---
+OlivaxiEcosistema.onChange((state) => {
+  renderProvinciasGrid();
+  renderVariedadesGrid();
+
+  // Si hay datos de clima, renderizar alertas
+  if (datosClima.length && state.provincia) {
+    const p = datosClima.find(x => x.provincia === state.provincia);
+    if (p) renderAlertasPanel(p);
+  } else {
+    renderAlertasPanel(null);
+  }
+
+  // Si hay dashboard data del ecosistema, renderizar
+  if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
+    renderDashboard(state.dashboardData);
+  }
+});
+
+// --- Cerrar Mi Olivar ---
+if (MI_OLIVAR_CLOSE) {
+  MI_OLIVAR_CLOSE.addEventListener('click', () => {
+    MI_OLIVAR_PANEL.classList.remove('visible');
+  });
+}
+
+// --- Init ---
+initCarousel();
+loadData();
 </script>
 </Layout>

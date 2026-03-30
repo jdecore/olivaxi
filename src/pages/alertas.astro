@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ProvinciaSelect from '../components/ProvinciaSelect.astro';
+import VariedadSelect from '../components/VariedadSelect.astro';
 import { ICONOS_ALERTAS } from '../lib/variedades';
 ---
 
@@ -29,32 +31,12 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
       <div class="form-field">
         <label for="provincia">Provincia</label>
-        <select id="provincia">
-          <option value="">Selecciona tu provincia...</option>
-          <option value="Jaén">Jaén</option>
-          <option value="Córdoba">Córdoba</option>
-          <option value="Sevilla">Sevilla</option>
-          <option value="Granada">Granada</option>
-          <option value="Málaga">Málaga</option>
-          <option value="Badajoz">Badajoz</option>
-          <option value="Toledo">Toledo</option>
-          <option value="Ciudad Real">Ciudad Real</option>
-          <option value="Almería">Almería</option>
-          <option value="Huelva">Huelva</option>
-        </select>
+        <ProvinciaSelect id="provincia" />
       </div>
 
       <div class="form-field">
         <label for="variedad">Variedad de olivo</label>
-        <select id="variedad">
-          <option value="">Selecciona tu variedad...</option>
-          <option value="cornicabra">Cornicabra</option>
-          <option value="picual">Picual</option>
-          <option value="arbequina">Arbequina</option>
-          <option value="hojiblanca">Hojiblanca</option>
-          <option value="manzanilla">Manzanilla</option>
-          <option value="empeltre">Empeltre</option>
-        </select>
+        <VariedadSelect id="variedad" />
       </div>
 
       <div class="form-field">
@@ -402,163 +384,119 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 </style>
 
 <script>
+  import OlivaxiEcosistema from '../lib/ecosistema';
   import { ICONOS_ALERTAS } from '../lib/variedades';
-  
+  import { apiUrl } from '../lib/api';
+
   const btn = document.getElementById("btn-submit");
   const msg = document.getElementById("mensaje");
   const form = document.getElementById("form-alerta");
-  const selectProvincia = document.getElementById("provincia");
-  const selectVariedad = document.getElementById("variedad");
+  const provinciaInfoPanel = document.getElementById("provincia-info");
   const selectTipo = document.getElementById("tipo");
 
-  async function calcularTipoAlerta(provincia, variedad) {
-    try {
-      const apiBase = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, "");
-      const res = await fetch(`${apiBase}/api/alertas/tipos?provincia=${encodeURIComponent(provincia)}&variedad=${encodeURIComponent(variedad)}`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.tipos || [];
-    } catch (e) {
-      console.error("Error calculating alert:", e);
-      return [];
-    }
+  // --- Cargar datos de provincia via ecosistema ---
+  async function cargarDatosProvincia() {
+    const provincia = OlivaxiEcosistema.provincia;
+    if (!provincia || !provinciaInfoPanel) return;
+
+    const d = await OlivaxiEcosistema.fetchDashboard();
+    if (!d) return;
+
+    const getIcono = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
+    
+    const riesgosHTML = d.riesgosActivos?.length 
+      ? d.riesgosActivos.map(r => `<div class="riesgo-item ${r.nivel}"><span>${r.icono}</span> ${r.titulo} - ${r.nivel.toUpperCase()}</div>`).join('')
+      : '<div class="riesgo-item bajo">✅ Sin riesgos activos</div>';
+    
+    const consejosHTML = d.consejos?.length
+      ? d.consejos.slice(0, 2).map(c => `<li>💡 ${c.replace(/^\S+\s/, '')}</li>`).join('')
+      : '';
+    
+    provinciaInfoPanel.innerHTML = `
+      <h4>📍 ${provincia} - Datos en tiempo real</h4>
+      <div class="info-section">
+        <div class="info-title">🌡️ CLIMA</div>
+        <div class="info-grid">
+          <div class="info-item">🌡️ <b>${d.clima.temperatura}°C</b></div>
+          <div class="info-item">💧 <b>${d.clima.humedad}%</b></div>
+          <div class="info-item">🌧️ <b>${d.clima.lluvia}mm</b></div>
+          <div class="info-item">📊 <b>${d.clima.estado}</b></div>
+        </div>
+      </div>
+      <div class="info-section">
+        <div class="info-title">🪨 SUELO</div>
+        <div class="info-grid">
+          <div class="info-item">🫒 <b>${d.provinciaInfo?.variedadPredominante || 'N/A'}</b></div>
+          <div class="info-item">🪨 <b>${d.provinciaInfo?.tipoSuelo || 'N/A'}</b></div>
+          <div class="info-item">⛰️ <b>${d.provinciaInfo?.altitud || '?'}m</b></div>
+          <div class="info-item">🌧️ <b>${d.provinciaInfo?.pluviometriaAnual || '?'}mm</b></div>
+        </div>
+      </div>
+      <div class="info-section">
+        <div class="info-title">🦟 PLAGAS (RAIF)</div>
+        <div class="info-grid">
+          <div class="info-item">🪰 ${getIcono(d.plagas?.mosca?.nivel)} <b>${d.plagas?.mosca?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🦋 ${getIcono(d.plagas?.polilla?.nivel)} <b>${d.plagas?.polilla?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🍂 ${getIcono(d.plagas?.repilo?.nivel)} <b>${d.plagas?.repilo?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🚨 ${getIcono(d.plagas?.xylella?.nivel)} <b>${d.plagas?.xylella?.nivel || 'bajo'}</b></div>
+        </div>
+      </div>
+      <div class="info-section">
+        <div class="info-title">⚠️ RIESGOS ACTIVOS</div>
+        ${riesgosHTML}
+      </div>
+      ${consejosHTML ? `<div class="info-section"><div class="info-title">💡 CONSEJOS</div><ul class="consejos">${consejosHTML}</ul></div>` : ''}
+    `;
+    provinciaInfoPanel.classList.add('show');
   }
 
+  // --- Calcular tipos de alerta ---
   async function actualizarTipoAlerta() {
-    const provincia = selectProvincia.value;
-    const variedad = selectVariedad.value;
-
+    const provincia = OlivaxiEcosistema.provincia;
+    const variedad = OlivaxiEcosistema.variedad;
+    
     selectTipo.innerHTML = '<option value="">Selecciona...</option>';
-
     if (!provincia) return;
 
-    const alertas = await calcularTipoAlerta(provincia, variedad);
-
-    if (alertas.length === 0) {
-      const opt = document.createElement("option");
-      opt.value = "condiciones_optimas";
-      opt.textContent = ICONOS_ALERTAS.condiciones_optimas.label;
-      selectTipo.appendChild(opt);
-    } else {
-      alertas.forEach((alerta) => {
-        const opt = document.createElement("option");
-        opt.value = alerta;
-        opt.textContent = ICONOS_ALERTAS[alerta]?.label || alerta;
-        selectTipo.appendChild(opt);
-      });
-    }
-  }
-
-  const provinciaInfoPanel = document.getElementById("provincia-info");
-  const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
-  
-  async function cargarDatosProvincia(provinciaNombre) {
-    if (!provinciaNombre || !provinciaInfoPanel) return;
-    
     try {
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(`${apiBase}/api/clima/dashboard?provincia=${encodeURIComponent(provinciaNombre)}`, { signal: controller.signal });
-      clearTimeout(t);
-      if (!res.ok) throw new Error('API error');
-      const d = await res.json();
-      
-      if (d.ok) {
-        const getIcono = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
-        
-        const riesgosHTML = d.riesgosActivos?.length 
-          ? d.riesgosActivos.map(r => `<div class="riesgo-item ${r.nivel}"><span>${r.icono}</span> ${r.titulo} - ${r.nivel.toUpperCase()}</div>`).join('')
-          : '<div class="riesgo-item bajo">✅ Sin riesgos activos</div>';
-        
-        const consejosHTML = d.consejos?.length
-          ? d.consejos.slice(0, 2).map(c => `<li>💡 ${c.replace(/^\S+\s/, '')}</li>`).join('')
-          : '';
-        
-        provinciaInfoPanel.innerHTML = `
-          <h4>📍 ${provinciaNombre} - Datos en tiempo real</h4>
-          
-          <div class="info-section">
-            <div class="info-title">🌡️ CLIMA</div>
-            <div class="info-grid">
-              <div class="info-item">🌡️ <b>${d.clima.temperatura}°C</b></div>
-              <div class="info-item">💧 <b>${d.clima.humedad}%</b></div>
-              <div class="info-item">🌧️ <b>${d.clima.lluvia}mm</b></div>
-              <div class="info-item">📊 <b>${d.clima.estado}</b></div>
-            </div>
-          </div>
-          
-          <div class="info-section">
-            <div class="info-title">🪨 SUELO</div>
-            <div class="info-grid">
-              <div class="info-item">🫒 <b>${d.provinciaInfo.variedadPredominante}</b></div>
-              <div class="info-item">🪨 <b>${d.provinciaInfo.tipoSuelo}</b></div>
-              <div class="info-item">⛰️ <b>${d.provinciaInfo.altitud}m</b></div>
-              <div class="info-item">🌧️ <b>${d.provinciaInfo.pluviometriaAnual}mm</b></div>
-            </div>
-          </div>
-          
-          <div class="info-section">
-            <div class="info-title">🦟 PLAGAS (RAIF)</div>
-            <div class="info-grid">
-              <div class="info-item">🪰 ${getIcono(d.plagas?.mosca?.nivel)} <b>${d.plagas?.mosca?.nivel}</b></div>
-              <div class="info-item">🦋 ${getIcono(d.plagas?.polilla?.nivel)} <b>${d.plagas?.polilla?.nivel}</b></div>
-              <div class="info-item">🍂 ${getIcono(d.plagas?.repilo?.nivel)} <b>${d.plagas?.repilo?.nivel}</b></div>
-              <div class="info-item">🚨 ${getIcono(d.plagas?.xylella?.nivel)} <b>${d.plagas?.xylella?.nivel||'bajo'}</b></div>
-            </div>
-          </div>
-          
-          <div class="info-section">
-            <div class="info-title">⚠️ RIESGOS ACTIVOS</div>
-            ${riesgosHTML}
-          </div>
-          
-          ${consejosHTML ? `
-          <div class="info-section">
-            <div class="info-title">💡 CONSEJOS</div>
-            <ul class="consejos">${consejosHTML}</ul>
-          </div>
-          ` : ''}
-        `;
-        provinciaInfoPanel.classList.add('show');
+      const res = await fetch(apiUrl(`/api/alertas/tipos?provincia=${encodeURIComponent(provincia)}&variedad=${encodeURIComponent(variedad)}`));
+      if (!res.ok) return;
+      const data = await res.json();
+      const alertas = data.tipos || [];
+
+      if (alertas.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "condiciones_optimas";
+        opt.textContent = ICONOS_ALERTAS.condiciones_optimas.label;
+        selectTipo.appendChild(opt);
+      } else {
+        alertas.forEach((alerta) => {
+          const opt = document.createElement("option");
+          opt.value = alerta;
+          opt.textContent = ICONOS_ALERTAS[alerta]?.label || alerta;
+          selectTipo.appendChild(opt);
+        });
       }
     } catch (e) {
-      console.error('Error cargando datos provinciales:', e);
+      console.error("Error calculating alert types:", e);
     }
   }
 
-  selectProvincia?.addEventListener("change", async () => {
-    await cargarDatosProvincia(selectProvincia.value);
-    if (selectProvincia.value && selectVariedad.value) {
-      await actualizarTipoAlerta();
-    }
-  });
-
-  selectVariedad?.addEventListener("change", async () => {
-    if (selectProvincia.value && selectVariedad.value) {
-      await actualizarTipoAlerta();
+  // --- Escuchar cambios del ecosistema ---
+  OlivaxiEcosistema.onChange((state) => {
+    if (state.provincia) {
+      cargarDatosProvincia();
+      actualizarTipoAlerta();
     }
   });
 
-  const provGuardada = localStorage.getItem("olivaxi_provincia");
-  const varGuardada = localStorage.getItem("olivaxi_variedad");
-
-  if (provGuardada && selectProvincia) {
-    selectProvincia.value = provGuardada;
-  }
-  if (varGuardada && selectVariedad) {
-    selectVariedad.value = varGuardada;
-  }
-
-  if (provGuardada && varGuardada) {
-    setTimeout(actualizarTipoAlerta, 100);
-  }
-
+  // --- Submit del formulario ---
   btn?.addEventListener("click", async () => {
     const nombre = document.getElementById("nombre").value.trim();
     const email = document.getElementById("email").value.trim();
-    const provincia = document.getElementById("provincia").value;
-    const variedad = document.getElementById("variedad").value;
-    const tipo = document.getElementById("tipo").value;
+    const provincia = OlivaxiEcosistema.provincia;
+    const variedad = OlivaxiEcosistema.variedad;
+    const tipo = selectTipo.value;
     const fenologia = document.getElementById("fenologia").value;
 
     if (!nombre || !email || !provincia) {
@@ -572,18 +510,15 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     btn.disabled = true;
 
     try {
-      const apiBase = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, "");
-      const res = await fetch(`${apiBase}/api/alertas`, {
+      const res = await fetch(apiUrl('/api/alertas'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, provincia, variedad, tipo, fenologia }),
       });
 
       if (res.ok) {
-        msg.textContent = `✅ ¡Alerta activada! Se te avisará cuando cualquier riesgo aparezca en tu zona para tu cultivo de olivo.`;
+        msg.textContent = "✅ ¡Alerta activada! Se te avisará cuando cualquier riesgo aparezca en tu zona.";
         msg.className = "success show";
-        localStorage.setItem("olivaxi_provincia", provincia);
-        if (variedad) localStorage.setItem("olivaxi_variedad", variedad);
       } else {
         throw new Error("Respuesta no OK");
       }
@@ -597,15 +532,9 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     }
   });
 
-  // Escuchar cambios de estado desde otras páginas (index, chat)
-  window.addEventListener('olivaxi-state-change', (e) => {
-    const { provincia, variedad } = e.detail;
-    if (provincia && provincia !== selectProvincia.value) {
-      selectProvincia.value = provincia;
-      actualizarTipoAlerta();
-    }
-    if (variedad && variedad !== selectVariedad.value) {
-      selectVariedad.value = variedad;
-    }
-  });
+  // --- Carga inicial si ya hay provincia ---
+  if (OlivaxiEcosistema.provincia) {
+    cargarDatosProvincia();
+    actualizarTipoAlerta();
+  }
 </script>

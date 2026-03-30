@@ -1,0 +1,54 @@
+---
+// Dropdown de provincias sincronizado con el ecosistema
+// Props: id, class, placeholder, includeEmpty (default true)
+interface Props {
+  id?: string;
+  class?: string;
+  placeholder?: string;
+  includeEmpty?: boolean;
+}
+
+const {
+  id = 'select-provincia',
+  class: className = '',
+  placeholder = 'Selecciona tu provincia...',
+  includeEmpty = true,
+} = Astro.props;
+---
+
+<select id={id} class:list={['provincia-select', className]}>
+  {includeEmpty && <option value="">{placeholder}</option>}
+  <option value="Jaén">Jaén</option>
+  <option value="Córdoba">Córdoba</option>
+  <option value="Sevilla">Sevilla</option>
+  <option value="Granada">Granada</option>
+  <option value="Málaga">Málaga</option>
+  <option value="Badajoz">Badajoz</option>
+  <option value="Toledo">Toledo</option>
+  <option value="Ciudad Real">Ciudad Real</option>
+  <option value="Almería">Almería</option>
+  <option value="Huelva">Huelva</option>
+</select>
+
+<script define:vars={{ selectId: id }}>
+  import OlivaxiEcosistema from '../lib/ecosistema';
+
+  const select = document.getElementById(selectId);
+  if (select) {
+    // Restaurar valor desde ecosistema
+    const current = OlivaxiEcosistema.provincia;
+    if (current) select.value = current;
+
+    // Escuchar cambios del ecosistema (mapa, chat, otras páginas)
+    OlivaxiEcosistema.onChange((state) => {
+      if (state.provincia !== select.value) {
+        select.value = state.provincia;
+      }
+    });
+
+    // Notificar al ecosistema cuando el usuario cambia el select
+    select.addEventListener('change', () => {
+      OlivaxiEcosistema.setProvincia(select.value);
+    });
+  }
+</script>

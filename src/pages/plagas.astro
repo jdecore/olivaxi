@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 
 const plagas = [
   {
@@ -80,19 +81,7 @@ const cambioClimatico = [
     <h1>🦠 Plagas del Olivar</h1>
     <p class="subtitle">Identifica las condiciones que favorecen cada plaga y aprende a tratarla</p>
     <div class="provincia-bar">
-      <select id="provincia-select-plagas">
-        <option value="">Selecciona provincia...</option>
-        <option value="Jaén">Jaén</option>
-        <option value="Córdoba">Córdoba</option>
-        <option value="Sevilla">Sevilla</option>
-        <option value="Granada">Granada</option>
-        <option value="Málaga">Málaga</option>
-        <option value="Badajoz">Badajoz</option>
-        <option value="Toledo">Toledo</option>
-        <option value="Ciudad Real">Ciudad Real</option>
-        <option value="Almería">Almería</option>
-        <option value="Huelva">Huelva</option>
-      </select>
+      <ProvinciaSelect id="provincia-select-plagas" placeholder="Selecciona provincia..." />
       <div id="raif-status-bar" class="raif-status"></div>
     </div>
   </div>
@@ -164,8 +153,8 @@ const cambioClimatico = [
 </Layout>
 
 <script>
-  const API_BASE = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-  const provinciaSelect = document.getElementById('provincia-select-plagas');
+  import OlivaxiEcosistema from '../lib/ecosistema';
+
   const raifStatusBar = document.getElementById('raif-status-bar');
 
   const condicionesMap = {
@@ -185,54 +174,20 @@ const cambioClimatico = [
     mosca: (d) => d.clima.temperatura > 20 && d.clima.humedad < 70 ? '🔥 IDEALES' : d.clima.temperatura > 25 ? '🌡️ FAVORABLES' : '❄️ DESFAVORABLES',
     polilla: (d) => d.clima.temperatura > 15 && d.clima.temperatura < 30 ? '🔥 IDEALES' : '❄️ DESFAVORABLES',
     repilo: (d) => d.clima.humedad > 70 ? '💧 IDEALES (alta humedad)' : d.clima.humedad > 50 ? '💧 FAVORABLES' : '✅ DESFAVORABLES',
-    xylella: (d) => '🚨 Siempre riesgo (transmitida por vectors)'
+    xylella: (d) => '🚨 Siempre riesgo (transmitida por vectores)'
   };
 
-  // Cache local de 3 minutos
-  let cacheProv = {};
-  const CACHE_TTL = 3 * 60 * 1000;
-
-  async function cargarDatosProvincia(provincia) {
-    if (!provincia) {
-      if (raifStatusBar) raifStatusBar.innerHTML = '';
-      return;
-    }
-    
-    // Verificar cache
-    const cached = cacheProv[provincia];
-    if (cached && Date.now() - cached.ts < CACHE_TTL) {
-      renderPlagasData(cached.data);
-      return;
-    }
-    
-    try {
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`, { signal: controller.signal });
-      clearTimeout(t);
-      if (!res.ok) return;
-      const d = await res.json();
-      
-      if (d.ok) {
-        cacheProv[provincia] = { data: d, ts: Date.now() };
-        renderPlagasData(d);
-      }
-    } catch (e) {
-      console.error('Error loading RAIF data:', e);
-    }
-  }
-  
-  // renderPlagasData moved to after cargarDatosProvincia
+  // --- Render datos de plagas ---
   function renderPlagasData(d) {
     const getIcon = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
     
     if (raifStatusBar) {
       const endemicas = d.provinciaInfo?.plagasEndemicas?.length ? `<span>🏠 Endémicas: ${d.provinciaInfo.plagasEndemicas.join(', ')}</span>` : '';
       raifStatusBar.innerHTML = `
-        <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel}</span>
-        <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel}</span>
-        <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel}</span>
-        <span>🌡️ ${d.clima.temperatura}°C • 💧 ${d.clima.humedad}%</span>
+        <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel || 'bajo'}</span>
+        <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel || 'bajo'}</span>
+        <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel || 'bajo'}</span>
+        <span>🌡️ ${d.clima?.temperatura || '?'}°C • 💧 ${d.clima?.humedad || '?'}%</span>
         ${endemicas}
       `;
     }
@@ -264,18 +219,27 @@ const cambioClimatico = [
     });
   }
 
-  const savedProvincia = localStorage.getItem('olivaxi_provincia');
-  if (savedProvincia && provinciaSelect) {
-    provinciaSelect.value = savedProvincia;
-    cargarDatosProvincia(savedProvincia);
+  // --- Cargar datos via ecosistema ---
+  async function cargarDatosProvincia() {
+    const provincia = OlivaxiEcosistema.provincia;
+    if (!provincia) {
+      if (raifStatusBar) raifStatusBar.innerHTML = '';
+      return;
+    }
+    const d = await OlivaxiEcosistema.fetchDashboard();
+    if (d) renderPlagasData(d);
   }
 
-  provinciaSelect?.addEventListener('change', () => {
-    const prov = provinciaSelect.value;
-    localStorage.setItem('olivaxi_provincia', prov);
-    cargarDatosProvincia(prov);
+  // --- Escuchar cambios del ecosistema ---
+  OlivaxiEcosistema.onChange((state) => {
+    if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
+      renderPlagasData(state.dashboardData);
+    } else if (state.provincia) {
+      cargarDatosProvincia();
+    }
   });
 
+  // --- Tabs de filtrado ---
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -293,7 +257,6 @@ const cambioClimatico = [
         climaSection.style.display = 'none';
         
         const filtro = condicionesMap[tabName] || [];
-        
         document.querySelectorAll('.plaga-card').forEach(card => {
           const condiciones = card.dataset.condiciones.split(',');
           const matches = filtro.length === 0 || filtro.some(f => condiciones.includes(f));
@@ -303,6 +266,7 @@ const cambioClimatico = [
     });
   });
 
+  // --- Flip cards ---
   document.querySelectorAll('.plaga-card').forEach(card => {
     card.addEventListener('click', () => {
       card.classList.toggle('flipped');

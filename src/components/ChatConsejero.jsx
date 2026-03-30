@@ -1,9 +1,6 @@
 import { createSignal, onMount, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
-import OlivaxiState from '../lib/state';
-import { olivaxiCache } from '../lib/cache';
-
-const PROVINCIAS = ['Jaén', 'Córdoba', 'Sevilla', 'Granada', 'Málaga', 'Badajoz', 'Toledo', 'Ciudad Real', 'Almería', 'Huelva'];
+import OlivaxiEcosistema, { PROVINCIAS } from '../lib/ecosistema';
 
 const SKILLS = [
   { id: 'libre', label: '💬 Libre', condition: 'conversación general', color: '#f5efe8' },
@@ -28,8 +25,8 @@ const formatText = (text) => text?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong
 
 export default function ChatConsejero() {
   const [messages, setMessages] = createSignal([]);
-  const [provincia, setProvincia] = createSignal(OlivaxiState.getProvincia() || (OlivaxiState.getVariedad() ? 'Jaén' : ''));
-  const [variedad, setVariedad] = createSignal(OlivaxiState.getVariedad() || '');
+  const [provincia, setProvincia] = createSignal(OlivaxiEcosistema.provincia || (OlivaxiEcosistema.variedad ? 'Jaén' : ''));
+  const [variedad, setVariedad] = createSignal(OlivaxiEcosistema.variedad || '');
   const [input, setInput] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
@@ -46,12 +43,12 @@ export default function ChatConsejero() {
 
   const initChat = async () => {
     setTimeout(() => setShowLoading(false), 1500);
-    const savedProv = OlivaxiState.getProvincia();
-    const savedVar = OlivaxiState.getVariedad();
+    const savedProv = OlivaxiEcosistema.provincia;
+    const savedVar = OlivaxiEcosistema.variedad;
     if (savedProv) {
       setProvincia(savedProv);
       try {
-        const data = await getClimaData(true);
+        const data = await OlivaxiEcosistema.fetchClima();
         const provData = data.find((p) => p.provincia === savedProv);
         if (provData) setClimaActual(provData);
       } catch {}
@@ -61,9 +58,9 @@ export default function ChatConsejero() {
 
   const seleccionarProvincia = async (prov) => {
     setProvincia(prov);
-    OlivaxiState.setProvincia(prov);
+    OlivaxiEcosistema.setProvincia(prov, { fetchDashboard: false });
     try {
-      const data = await getClimaData();
+      const data = await OlivaxiEcosistema.fetchClima();
       const provData = data.find((p) => p.provincia === prov);
       if (provData) setClimaActual(provData);
     } catch {}
@@ -82,7 +79,7 @@ export default function ChatConsejero() {
       if (!e.target.closest('.clean-btn-wrapper')) setShowCleanMenu(false);
     });
     // Escuchar cambios de estado (provincia y variedad) desde cualquier página
-    OlivaxiState.onChange((state) => {
+    OlivaxiEcosistema.onChange((state) => {
       if (state.provincia && state.provincia !== provincia()) seleccionarProvincia(state.provincia);
       if (state.variedad && state.variedad !== variedad()) setVariedad(state.variedad);
     });
@@ -113,17 +110,9 @@ export default function ChatConsejero() {
     try { localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs)); } catch {}
   };
 
-  const getClimaData = async (forceRefresh = false) => {
-    if (!forceRefresh) {
-      const cached = olivaxiCache.get('/api/clima');
-      if (cached) return cached;
-    }
-    try {
-      const res = await fetch(apiUrl('/api/clima'));
-      const data = await res.json();
-      olivaxiCache.set('/api/clima', data);
-      return data;
-    } catch { return []; }
+  // getClimaData now uses the ecosistema shared cache
+  const getClimaData = async () => {
+    return await OlivaxiEcosistema.fetchClima();
   };
 
   const enviarPregunta = async () => {
