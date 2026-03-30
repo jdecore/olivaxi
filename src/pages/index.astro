@@ -686,11 +686,9 @@ function updateRiesgoBadgeFromClima(p) {
 }
 
 // --- Carga inicial ---
-let retryCount = 0;
 async function loadData() {
   try {
     datosClima = await OlivaxiEcosistema.fetchClima();
-    retryCount = 0;
     if (datosClima.length) {
       renderAll();
       renderAlertStrip();
@@ -702,33 +700,41 @@ async function loadData() {
     }
   } catch (e) {
     console.error('[loadData] Error:', e);
-    if (retryCount < 2) {
-      retryCount++;
-      setTimeout(loadData, 1000 * retryCount);
-    } else if (PROVINCIAS_GRID) {
+    if (PROVINCIAS_GRID) {
       PROVINCIAS_GRID.innerHTML = '<div class="no-province-msg">Error al cargar. <button onclick="location.reload()">Reintentar</button></div>';
     }
   }
 }
 
 // --- Escuchar cambios del ecosistema ---
+let lastProvincia = OlivaxiEcosistema.provincia;
+let lastVariedad = OlivaxiEcosistema.variedad;
+let lastDashboardRef = OlivaxiEcosistema.dashboardData;
+
 OlivaxiEcosistema.onChange((state) => {
-  renderProvinciasGrid();
-  renderVariedadesGrid();
-  renderAlertStrip();
+  const provinciaChanged = state.provincia !== lastProvincia;
+  const variedadChanged = state.variedad !== lastVariedad;
+  const dashboardChanged = state.dashboardData !== lastDashboardRef;
+
+  if (provinciaChanged) renderProvinciasGrid();
+  if (provinciaChanged || variedadChanged) renderVariedadesGrid();
 
   // Si hay datos de clima, renderizar alertas
-  if (datosClima.length && state.provincia) {
+  if ((provinciaChanged || dashboardChanged) && datosClima.length && state.provincia) {
     const p = datosClima.find(x => x.provincia === state.provincia);
     if (p) renderAlertasPanel(p);
-  } else {
+  } else if (provinciaChanged && !state.provincia) {
     renderAlertasPanel(null);
   }
 
   // Si hay dashboard data del ecosistema, renderizar
-  if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
+  if ((provinciaChanged || dashboardChanged) && state.dashboardData && state.dashboardData.provincia === state.provincia) {
     renderDashboard(state.dashboardData);
   }
+
+  lastProvincia = state.provincia;
+  lastVariedad = state.variedad;
+  lastDashboardRef = state.dashboardData;
 });
 
 // --- Init ---

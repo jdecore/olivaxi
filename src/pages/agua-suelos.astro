@@ -647,7 +647,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       }
 
       // Si no hay clima aún, pedirlo para mostrar KPIs base sin esperar dashboard completo
-      if (!getQuickDataFromClima()) {
+      if (!getQuickDataFromClima() && !Array.isArray(OlivaxiEcosistema.climaData)) {
         OlivaxiEcosistema.fetchClima().then(() => {
           const quickAfter = getQuickDataFromClima();
           if (quickAfter) renderSueloData(quickAfter);
