@@ -87,17 +87,40 @@ chat.post("/", async (c) => {
   const provinciaInfo = climaHoy.find((p: any) => p.provincia === provincia) || climaHoy[0];
   const provinciaNombre = provinciaInfo?.provincia || provincia || 'Andalucía';
 
-  // Construir el systemPrompt base - OPTIMIZADO con historial ligero
+  // Construir el systemPrompt base - OPTIMIZADO con datos completos
   const temp = provinciaInfo?.temperatura ?? '';
   const hum = provinciaInfo?.humedad ?? '';
   const llov = provinciaInfo?.lluvia ?? '';
   const estado = provinciaInfo?.estado ?? '';
+  const sueloTemp = provinciaInfo?.suelo_temp ?? '';
+  const sueloHum = provinciaInfo?.suelo_humedad ?? '';
+  const eto = provinciaInfo?.evapotranspiracion ?? '';
+  const tipoSuelo = provinciaInfo?.tipoSuelo ?? '';
+  const variedadLocal = provinciaInfo?.variedadPredominante ?? '';
+  
+  // Riesgos activos
+  const riesgosOlivar = provinciaInfo?.riesgos_olivar || {};
+  const riesgosPlaga = provinciaInfo?.riesgos_plaga || {};
+  let riesgosTexto = '✅ Sin riesgos activos';
+  const riesgosActivos: string[] = [];
+  if (riesgosOlivar?.calor?.nivel === 'alto') riesgosActivos.push('🔥 CALOR ALTO');
+  if (riesgosOlivar?.calor?.nivel === 'medio') riesgosActivos.push('🌡️ Calor medio');
+  if (riesgosOlivar?.frio?.nivel === 'alto') riesgosActivos.push('❄️ HELADA');
+  if (riesgosOlivar?.baja_humedad?.nivel === 'alto') riesgosActivos.push('🏜️ SEQUÍA');
+  if (riesgosOlivar?.alta_humedad?.nivel === 'alto') riesgosActivos.push('🍄 Humedad alta');
+  if (riesgosPlaga?.mosca?.nivel === 'alto') riesgosActivos.push('🪰 MOSCA ALTA');
+  if (riesgosPlaga?.polilla?.nivel === 'alto') riesgosActivos.push('🦋 POLILLA ALTA');
+  if (riesgosPlaga?.repilo?.nivel === 'alto') riesgosActivos.push('🍂 REPILO ALTO');
+  if (riesgosActivos.length > 0) riesgosTexto = riesgosActivos.join(' | ');
+  
   const contextoAnterior = historial ? `Historial previo: ${historial}` : '';
-  const contextoVariedad = variedad ? `Variedad de olivo: ${variedad}` : '';
+  const contextoVariedad = variedad ? `Variedad del usuario: ${variedad}` : '';
   
   let basePrompt = `Eres Olivo, conselheiro experto en olivicultura española.
-Provincia: ${provinciaNombre}
+Provincia: ${provinciaNombre} (variedad: ${variedadLocal}, suelo: ${tipoSuelo})
 Clima: ${temp}°C, ${hum}% humedad, ${llov}mm lluvia - ${estado}
+Suelo: temp ${sueloTemp}°C, humedad ${sueloHum}%, ETo ${eto}mm
+⚠️ RIESGOS: ${riesgosTexto}
 ${contextoVariedad}
 ${contextoAnterior}
 Reglas: Español cercano, práctico, máximo 3 párrafos`;
@@ -107,7 +130,9 @@ Reglas: Español cercano, práctico, máximo 3 párrafos`;
     basePrompt = `Eres Olivo, conseillers de olivicultura.
 ${skill}
 Provincia: ${provinciaNombre}
-Clima: ${temp}°C, ${hum}% humedad
+Clima: ${temp}°C, ${hum}% humedad, ${llov}mm lluvia
+Suelo: ${sueloTemp}°C, humedad ${sueloHum}%
+⚠️ Riesgos: ${riesgosTexto}
 ${contextoVariedad}
 ${contextoAnterior}
 Responde en español, máximo 2 párrafos, sé práctico.`;
@@ -115,7 +140,7 @@ Responde en español, máximo 2 párrafos, sé práctico.`;
 
   // Añadir systemPrompt personalizado del frontend (para casos específicos)
   if (systemPromptRaw) {
-    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${temp}°C, ${hum}% humedad\n${contextoVariedad}`;
+    basePrompt = `${systemPromptRaw}\n\nProvincia: ${provinciaNombre}\nClima: ${temp}°C, ${hum}% humedad\nSuelo: ${sueloTemp}°C, ${sueloHum}%\n⚠️ ${riesgosTexto}\n${contextoVariedad}`;
   }
 
   const systemPrompt = basePrompt;

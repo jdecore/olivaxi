@@ -337,6 +337,29 @@ import Layout from '../layouts/Layout.astro';
       const d = await res.json();
       
       if (d.ok) {
+        // Cálculo de recomendación de riego
+        const eto = d.suelo.evapotranspiracion || 0;
+        const kc = 0.7; // Coeficiente de cultivo para olivo
+        const necesidadRiego = Math.round(eto * kc * 10) / 10; // L/ha/día
+        const lluvia = d.clima.lluvia || 0;
+        const deficit = Math.max(0, necesidadRiego - lluvia);
+        
+        let recomendacionRiego = '';
+        if (necesidadRiego < 2) {
+          recomendacionRiego = '✅ Riego mínimo o innecesario';
+        } else if (deficit > 3) {
+          recomendacionRiego = `⚠️ RIEGO URGENTE: ~${deficit.toFixed(1)}L/ha/día`;
+        } else if (deficit > 0) {
+          recomendacionRiego = `💧 Riega: ~${deficit.toFixed(1)}L/ha/día`;
+        } else {
+          recomendacionRiego = '✅ Lluvia cubre necesidades';
+        }
+        
+        // Comparar lluvia actual vs media anual
+        const pluvioAnual = d.provinciaInfo.pluviometriaAnual || 600;
+        const lluviaHoy = d.clima.lluvia || 0;
+        const estadoLluvia = lluviaHoy > 0 ? `🌧️ Lluvia hoy: ${lluviaHoy}mm` : '☀️ Sin lluvia hoy';
+        
         if (sueloDatos) {
           sueloTemp.textContent = `${d.suelo.temperatura}°C`;
           sueloHumedad.textContent = `${d.suelo.humedad}%`;
@@ -350,8 +373,13 @@ import Layout from '../layouts/Layout.astro';
           sueloInfo.innerHTML = `
             <div style="background:rgba(212,232,73,0.15);padding:12px;border-radius:8px;margin-top:10px">
               <strong>🪨 Tipo de suelo:</strong> ${d.provinciaInfo.tipoSuelo}<br/>
-              <strong>🌧️ Pluviometría:</strong> ${d.provinciaInfo.pluviometriaAnual}mm/año<br/>
+              <strong>🌧️ Pluviometría:</strong> ${pluvioAnual}mm/año<br/>
               <strong>🫒 Variedad predominante:</strong> ${d.provinciaInfo.variedadPredominante}<br/>
+              <strong>⚡ Riego:</strong> ETo ${eto}mm → Kc 0.7 → <strong>${necesidadRiego}L/ha/día</strong>
+              <div style="margin-top:6px;padding:6px;background:rgba(255,255,255,0.5);border-radius:4px;font-size:11px">
+                ${estadoLluvia}<br/>
+                ${recomendacionRiego}
+              </div>
               ${consejosSuelo ? `<ul style="margin-top:8px;margin-bottom:0">${consejosSuelo}</ul>` : ''}
             </div>
           `;

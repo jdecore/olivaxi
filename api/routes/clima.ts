@@ -626,6 +626,7 @@ clima.get("/dashboard", async (c) => {
             tipoSuelo: provData.tipoSuelo,
             variedadPredominante: provData.variedadPredominante,
             epocaCritica: provData.epocaCritica,
+            plagasEndemicas: provData.plagasEndemicas || [],
             consejosSuelo: provData.consejosSuelo || []
           },
           plagas: {

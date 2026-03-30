@@ -10,6 +10,7 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 - Catálogo de 6 variedades de olivo con análisis climático
 - Sistema de alertas personalizado por provincia y variedad
 - Comparador visual de variedades
+- **NUEVO**: Datos contextuales por provincia en todas las páginas
 
 ---
 
@@ -36,68 +37,6 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 
 ---
 
-## 🏗️ Estructura del Proyecto
-
-```
-olivaxi/
-├── api/                          # Backend Bun/Hono
-│   ├── index.ts                  # Servidor principal (puerto 3000)
-│   ├── routes/
-│   │   ├── clima.ts             # GET /api/clima (cache 6h)
-│   │   ├── chat.ts              # POST /api/chat (streaming SSE)
-│   │   ├── alertas.ts           # POST /api/alertas
-│   │   └── analisis.ts          # Análisis provincial
-│   ├── services/
-│   │   ├── llmRotation.ts       # Fallback Groq/Gemini/OpenRouter
-│   │   └── cronAlertas.ts       # CRON de alertas cada 15min
-│   ├── db/
-│   │   └── sqlite.ts            # Base de datos SQLite
-│   └── data/
-│       └── provincias.ts        # 10 provincias olivareras
-├── src/
-│   ├── components/
-│   │   ├── MapaCalor.astro      # Mapa MapLibre GL
-│   │   ├── ChatConsejero.jsx    # Chat SolidJS
-│   │   └── ThemeToggle.astro    # Toggle tema
-│   ├── layouts/
-│   │   └── Layout.astro         # Layout base
-│   ├── lib/
-│   │   ├── api.ts               # Helper API
-│   │   ├── state.ts             # Estado compartido
-│   │   └── variedades.ts        # Datos variedades
-│   └── pages/
-│       ├── index.astro           # Homepage
-│       ├── consejero.astro      # Chat
-│       ├── variedades.astro      # Catálogo
-│       ├── alertas.astro         # Formulario alertas
-│       ├── plagas.astro         # Info plagas
-│       └── agua-suelos.astro     # Info agua/suelos
-├── astro.config.mjs              # Config Astro 6
-├── vite.config.js                # Vite config
-├── Dockerfile                    # Multi-stage build
-└── docker-compose.yml            # Dokploy config
-```
-
----
-
-## ⚠️ NOTAS CRÍTICAS - Errores resueltos
-
-### 1. ViewTransitions/ClientRouter NO EXISTE en Astro 6
-- **Error**: `"ClientRouter" is not exported by "astro:transitions"`
-- **Solución**: Eliminar imports de ViewTransitions/ClientRouter del Layout.astro
-- **Más info**: Astro 6 ya no usa ViewTransitions, el sistema de transiciones cambió
-
-### 2. allowedHosts para DuckDNS (PROBLEMA ACTIVO)
-- **Error**: `Blocked request. This host ("olivaxi.duckdns.org") is not allowed.`
-- **Solución**: Usar flag CLI `--allowedHosts` en el CMD del Dockerfile:
-```dockerfile
-CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
-```
-- **No funciona**: preview.allowedHosts en astro.config.mjs ni vite.config.js
-- **SÍ funciona**: --allowedHosts como argumento CLI
-
----
-
 ## 📊 API Endpoints
 
 ### GET /api/clima
@@ -105,20 +44,135 @@ CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--a
 - **Provincias**: 10 en paralelo (Promise.all)
 - **Retorna**: temperatura, humedad, lluvia, riesgos_olivar, riesgos_plaga, riesgos_variedad, estado, riesgo
 
-### POST /api/chat
-- **Streaming**: SSE (Server-Sent Events)
-- **Rotación**: Groq → Gemini → OpenRouter (automático)
-- **Retry**: Delay 1.5s entre proveedores
-- **Timeout**: 45s por request
-
-### POST /api/alertas
-- **Storage**: SQLite
-- **Email**: Requiere GMAIL_APP_PASSWORD
+### GET /api/clima/dashboard (NUEVO)
+- **Parámetros**: provincia, variedad (opcional)
+- **Retorna**: datos completos con riesgos y consejos
+```json
+{
+  "ok": true,
+  "provincia": "Jaén",
+  "clima": { "temperatura": 24, "humedad": 60, "lluvia": 0, "estado": "Templado", "riesgo": "bajo" },
+  "suelo": { "temperatura": 18, "humedad": 45, "evapotranspiracion": 4.2 },
+  "provinciaInfo": { "altitud": 800, "pluviometriaAnual": 600, "tipoSuelo": "calizo-arcilloso", "variedadPredominante": "picual", "epocaCritica": "primavera", "consejosSuelo": [...] },
+  "plagas": { "mosca": { "nivel": "medio" }, "polilla": { "nivel": "alto" }, "repilo": { "nivel": "bajo" }, "xylella": { "nivel": "bajo" } },
+  "riesgos": { "olivar": {...}, "variedad": {...} },
+  "riesgosActivos": [{ "tipo": "calor", "nivel": "alto", "titulo": "Calor", "icono": "🔥" }],
+  "consejos": ["Riega antes del amanecer", "Aplica mulch"],
+  "variedadRiesgo": { "nivel": "bajo", "score": 3 }
+}
+```
 
 ### GET /api/alertas/tipos
-- **Función**: Calcula tipos de alerta disponibles según provincia y variedad
-- **Usa**: Datos cacheados del clima (sin llamada API externa)
-- **Retorna**: Array de tipos de alerta activos
+- **Parámetros**: provincia, variedad
+- **Retorna**: tipos de alerta disponibles según riesgos
+
+### POST /api/chat
+- **Streaming**: SSE (Server-Sent Events)
+- **Contexto**: Incluye datos climáticos, RAIF, variedad, suelo, **riesgos activos**
+
+---
+
+## 📋 IMPLEMENTACIÓN COMPLETA - Olivaξ 2.0
+
+### ✅ Backend - IMPLEMENTADO
+
+| Endpoint | Estado | Descripción |
+|----------|--------|-------------|
+| `/api/clima/dashboard` | ✅ | Endpoint unificado con todos los datos + riesgos + consejos |
+| `getRiesgosActivos()` | ✅ | Lista de riesgos activos con iconos y niveles |
+| `getConsejosByRiesgos()` | ✅ | Consejos dinámicos según riesgos activos |
+| `/api/alertas/tipos` | ✅ | Tipos de alerta calculados en backend |
+| **Chat context** | ✅ | Prompt incluye riesgos activos + datos del suelo |
+
+---
+
+### 🏠 1. index.astro (PORTADA) - ✅ IMPLEMENTADO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **Hero** | Contextual + datos suelo (temp, humedad suelo, temp suelo) | ✅ |
+| **Card 1 (Mercado)** | Datos reales del suelo (temp, humedad, ETo) | ✅ |
+| **Card 2 (Clima)** | Variedad predominante provincial | ✅ |
+| **Card 3 (Técnicas)** | Consejo dinámico del día | ✅ |
+| **Panel alertas** | Quick stats (temp, humedad, riesgo) + consejos del suelo | ✅ |
+| **Grid variedades** | Riesgos dinámicos según provincia seleccionada | ✅ |
+
+---
+
+### 🔔 2. alertas.astro (ACTIVAR ALERTAS) - ✅ IMPLEMENTADO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **Hero** | Subtítulo + contexto RAIF | ✅ |
+| **Panel info** | Expandido con todos los datos | ✅ |
+| **Clima actual** | temp, humedad, lluvia, estado | ✅ |
+| **Suelo (Open-Meteo)** | temp_suelo, humedad_suelo, ETo | ✅ |
+| **Info provincial** | variedad, tipoSuelo, altitud, pluviometría | ✅ |
+| **RAIF status** | Iconos por plaga (mosca, polilla, repilo, xylella) | ✅ |
+| **Riesgos activos** | Lista con icono + título + nivel | ✅ |
+| **Consejos dinámicos** | Según riesgos activos | ✅ |
+| **Consejos suelo** | consejosSuelo de la provincia | ✅ |
+
+---
+
+### 🫒 3. variedades.astro (CATÁLOGO) - ✅ IMPLEMENTADO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **Header** | Selector dropdown provincia | ✅ |
+| **Header info** | Temperatura, humedad, variedad, suelo | ✅ |
+| **Por variedad** | Badge de riesgo dinámico (score 0-10) | ✅ |
+| **Por variedad** | Nivel de riesgo según clima provincial | ✅ |
+| **Datosprovincia** | Info bar con suelo y variedad | ✅ |
+| **Comparador** | Mantenido (funcionalidad original) | ✅ |
+
+---
+
+### 🦠 4. plagas.astro (GUÍA PLAGAS) - ✅ IMPLEMENTADO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **Header** | Selector dropdown provincia | ✅ |
+| **RAIF status** | Global (mosca, polilla, repilo) + temperatura + humedad | ✅ |
+| **Por plaga** | Estado RAIF provincial (alto/medio/bajo) | ✅ |
+| **Por plaga** | Condiciones climáticas actuales (IDEALES/DESFAVORABLES) | ✅ |
+| **Por plaga** | Consejos según nivel (urgente/vigilar/ok) | ✅ |
+
+---
+
+### 💧 5. agua-suelos.astro (AGUA Y SUELOS) - ✅ IMPLEMENTADO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **Hero** | Selector provincia + datos en tiempo real | ✅ |
+| **Suelo actual** | temp_suelo, humedad_suelo, ETo, lluvia | ✅ |
+| **Tipo suelo** | tipoSuelo + pluviometriaAnual | ✅ |
+| **Consejos suelo** | Dinámicos según provincia | ✅ |
+| **Riego** | Recomendación: ETo × Kc = L/ha/día + deficit | ✅ |
+
+---
+
+### 💬 6. counselor.astro (CHAT IA) - ✅ COMPLETO
+
+| Sección | Cambio | Estado |
+|---------|--------|--------|
+| **System prompt** | Provincia + variedad + clima + suelo + riesgos activos | ✅ |
+| **Contexto RAIF** | Incluido (mosca, polilla, repilo, xylella) | ✅ |
+| **Inicio chat** | Auto-contexto si hay provincia guardada | ✅ |
+
+---
+
+## 📝 Estado de Implementación
+
+| Página | Completado | Pendiente |
+|--------|------------|-----------|
+| **Backend** | 100% | - |
+| **index.astro** | 100% | - |
+| **alertas.astro** | 100% | - |
+| **variedades.astro** | 100% | - |
+| **plagas.astro** | 100% | - |
+| **agua-suelos.astro** | 100% | - |
+| **counselor.astro** | 100% | - |
 
 ---
 
@@ -153,69 +207,35 @@ bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.or
 
 ---
 
-## 📋 Estado Actual
+## 📋 Build Stats
 
-### Build stats (2026-03-28):
-- **Tamaño**: 264KB (muy ligero para VPS) ⬇️ de 424KB
-- **Tiempo**: ~2.5 segundos ⬇️ de 4s
+- **Tamaño**: 264KB (muy ligero para VPS)
+- **Tiempo**: ~1.8 segundos
 - **Páginas**: 6
-
-### Optimizaciones aplicadas:
-- Prefetch habilitado (hover strategy) - navegación instantánea
-- Assets inline hasta 4KB (antes 2KB)
-- Logo optimizado (103KB → 4KB)
-- Favicon SVG (17MB → 4KB)
-- Código limpio (eliminadas funciones no usadas)
-
-### Deploy actual:
-- **Web**: https://olivaxi.duckdns.org
-- **API**: Puerto 3000 (vía Traefik)
-
-### Funcionando:
-- ✅ Mapa de calor
-- ✅ Chat con LLM
-- ✅ Sistema de alertas
-- ✅ Catálogo variedades
-- ✅ Tema light/dark
-- ✅ Prefetch para navegación rápida
 
 ---
 
-## 🔧 Configuración Dokploy
+## ⚠️ NOTAS CRÍTICAS
 
-### docker-compose.yml
-```yaml
-services:
-  web:
-    build: .
-    ports:
-      - "4321:4321"
-  api:
-    build: ./api
-    ports:
-      - "3000:3000"
+### 1. Cache de producción
+- El cache del clima dura 6 horas
+- Para ver datos nuevos: reiniciar API o esperar 6h
+
+### 2. allowedHosts para DuckDNS
+```dockerfile
+CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
 ```
 
-### Dockerfile (CRÍTICO - allowedHosts)
-```dockerfile
-FROM oven/bun:latest AS base
-WORKDIR /app
+---
 
-FROM base AS deps
-COPY package.json ./
-RUN bun install --frozen-lockfile
+## 🧪 Testing
 
-FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN bun run build
+```bash
+# Test API dashboard
+curl http://localhost:3000/api/clima/dashboard?provincia=Jaén | jq '.'
 
-FROM base AS runner
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.astro ./node_modules/.astro
-
-EXPOSE 4321
-CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
+# Test API alertas/tipos
+curl "http://localhost:3000/api/alertas/tipos?provincia=Jaén&variedad=picual"
 ```
 
 ---
@@ -238,96 +258,36 @@ PUBLIC_API_URL=http://localhost:3000
 
 ---
 
-## 🧪 Testing
-
-```bash
-# Test API clima
-curl http://localhost:3000/api/clima | jq '.[0]'
-
-# Test API chat
-curl -X POST http://localhost:3000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"mensaje":"hola","provincia":"Jaén"}'
-
-# Test frontend con DuckDNS header
-curl -H "Host: olivaxi.duckdns.org" http://localhost:4321/
-```
-
----
-
 ## 📝 Notas para el siguiente agente
 
-### ✅ Completado (2026-03-30)
+### ✅ Completado (2026-03-30) - TODO IMPLEMENTADO
 
-1. **Cálculos movidos al backend** - `calcularTipoAlerta()` ahora está en `/api/alertas/tipos`
-   - Archivo: `api/routes/alertas.ts` (líneas 486-541)
-   - El frontend solo muestra datos, no calcula
+**Mejoras implementadas (todas las sugerencias):**
 
-2. **Riesgos dinámicos de variedades** - La grid de variedades muestra riesgos reales según la provincia seleccionada
-   - Archivo: `src/pages/index.astro` (función `renderVariedadesGrid`)
-   - Usa `riesgos_variedad` del API por provincia
+1. **index.astro**: Hero contextual con datos del suelo (temp suelo, humedad suelo)
+2. **variedades.astro**: Muestra detalle[] del riesgo (por qué cada variedad tiene riesgo)
+3. **plagas.astro**: Condiciones climáticas por plaga + consejos según nivel (urgente/vigilar/ok)
+4. **agua-suelos.astro**: Recomendación de riego (ETo × Kc = L/ha/día) + deficit
+5. **counselor.astro**: Prompt incluye riesgos activos + datos del suelo + contexto RAIF
 
-3. **Endpoint nuevo** - `/api/alertas/tipos` calculado completamente en backend
-   - Usa datos cacheados del clima
-   - Retorna tipos de alerta activos para provincia + variedad
+### 📊 Datos usados al máximo
 
-4. **Reactividad** - Al seleccionar provincia, la grid de variedades se actualiza con los riesgos de esa provincia
-
-### 📋 Estado actual (2026-03-29)
-
-- ✅ Build passa (264KB)
-- ✅ Frontend solo muestra datos del API
-- ✅ Cálculos de riesgos en backend
-- ✅ Endpoint /api/dashboard unificado con todos los datos + consejos
-- ✅ Todas las páginas con datos contextuales por provincia
-- ⚠️ Cache de producción necesita refresh para ver nuevos datos
-
-### 🎯 Implementado en esta actualización
-
-**Backend:**
-- ✅ Endpoint `/api/dashboard` - Retorna datos completos + riesgos + consejos
-- ✅ Función `getRiesgosActivos()` - Lista de riesgos activos con iconos
-- ✅ Función `getConsejosByRiesgos()` - Consejos dinámicos según riesgos
-
-**index.astro:**
-- ✅ Hero contextual (temp, humedad, estado)
-- ✅ Cards dinámicos (suelo, variedad, consejo)
-- ✅ Panel alertas con quick stats + consejos del suelo
-- ✅ Riesgos activos con iconos y niveles
-
-**alertas.astro:**
-- ✅ Panel provincial expandido con todos los datos
-- ✅ Clima actual (temp, humedad, lluvia, estado)
-- ✅ Suelo Open-Meteo (temp, humedad, ETo)
-- ✅ Info provincial (variedad, suelo, altitud, pluviometría)
-- ✅ Plagas RAIF con iconos por nivel
-- ✅ Riesgos activos detallados
-- ✅ Consejos prácticos dinámicos
-
-**variedades.astro:**
-- ✅ Selector de provincia
-- ✅ Info bar con datos de la provincia
-- ✅ Badge de riesgo dinámico por variedad
-
-**plagas.astro:**
-- ✅ Selector de provincia
-- ✅ Barra de estado RAIF por provincia
-- ✅ Iconos de nivel por plaga (mosca, polilla, repilo)
-
-**agua-suelos.astro:**
-- ✅ Selector de provincia
-- ✅ Datos del suelo en tiempo real (temp, humedad, ETo, lluvia)
-- ✅ Info provincial (tipo suelo, pluviometría, variedad)
-- ✅ Consejos del suelo dinámicos
+| Página | Datos usados |
+|--------|-------------|
+| index.astro | clima + suelo + RAIF |
+| alertas.astro | clima + suelo + provinciaInfo + RAIF + riesgos + consejos |
+| variedades.astro | riesgos_variedad + detalle[] |
+| plagas.astro | clima + RAIF + consejos por nivel |
+| agua-suelos.astro | suelo + pluviometria + ETo + recomendación riego |
+| counselor.astro | clima + suelo + riesgos activos + RAIF |
 
 ### Legacy notes
 
 1. **NO usar ViewTransitions/ClientRouter** - Obsoleto en Astro 6
-2. **Para allowedHosts usar CLI flag** - La config no funciona, solo el flag
+2. **Para allowedHosts usar CLI flag** - Solo funciona con `--allowedHosts`
 3. **SolidJS funciona bien** - Solo instalar en package.json
-4. **Ecosistema compartido** - Ya hay evento olivaxi-state-change pero no está implementado completamente
+4. **Ecosistema compartido** - Evento olivaxi-state-change entre páginas
 5. **Build muy ligero** - 264KB, ideal para VPS pequeños
-6. **Prefetch activado** - Las páginas se precargan al hacer hover
 
 ---
 

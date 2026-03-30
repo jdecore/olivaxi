@@ -195,6 +195,7 @@ const varieties = [
 
           <div class="dynamic-riesgo" style="margin-bottom: 8px;">
             <span class="dynamic-riesgo-badge" data-variedad={v.id} style="display:none">-</span>
+            <div class="dynamic-riesgo-detail" style="display:none;margin-top:4px;font-size:9px;color:var(--color-muted)"></div>
           </div>
 
           <button class="var-btn" data-nombre={v.nombre}>COMPARAR</button>
@@ -774,6 +775,7 @@ const varieties = [
             <span>💧 ${d.clima.humedad}%</span>
             <span>🫒 ${d.provinciaInfo.variedadPredominante}</span>
             <span>🪨 ${d.provinciaInfo.tipoSuelo}</span>
+            <span>⚠️ ${d.provinciaInfo.epocaCritica ? 'Época crítica: '+d.provinciaInfo.epocaCritica : ''}</span>
           `;
           provinciaInfoBar.style.display = 'flex';
         }
@@ -787,13 +789,25 @@ const varieties = [
 
   function actualizarRiesgos() {
     VARIEDADES_KEYS.forEach(v => {
-      const badge = document.querySelector(`.var-card[data-nombre="${v}"] .dynamic-riesgo-badge`);
+      const card = document.querySelector(`.var-card[data-nombre="${v}"]`);
+      if (!card) return;
+      
+      const badge = card.querySelector('.dynamic-riesgo-badge');
+      const detailDiv = card.querySelector('.dynamic-riesgo-detail');
+      
       if (badge && riesgosVariedad[v]) {
         const nivel = riesgosVariedad[v].nivel || 'bajo';
         const score = riesgosVariedad[v].score || 0;
+        const detalle = riesgosVariedad[v].detalle || [];
+        
         badge.textContent = `${nivel.toUpperCase()} (${score}/10)`;
         badge.className = `dynamic-riesgo-badge riesgo-${nivel}`;
         badge.style.display = 'inline-block';
+        
+        if (detailDiv && detalle.length > 0) {
+          detailDiv.innerHTML = detalle.slice(0, 2).map(d => `<span class="detail-tag">${d}</span>`).join(' ');
+          detailDiv.style.display = 'block';
+        }
       }
     });
   }
