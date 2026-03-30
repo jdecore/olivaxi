@@ -241,7 +241,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 
 <div class="narrative-section" id="narrative-section">
 <div class="narrative-card">
-<div class="narrative-title">📊 Cambio Climático - Tendencias en tu zona</div>
+<div class="narrative-title">📊 Tendencias en tu zona</div>
 <div class="narrative-content" id="narrative-content"></div>
 <div class="narrative-conclusion" id="narrative-conclusion"></div>
 <div class="consejero-context-link" id="consejero-context-link"></div>
@@ -330,29 +330,7 @@ function renderAlertStrip() {
 }
 
 function getRiesgoGlobal(d) {
-  let activos = d?.riesgosActivos || [];
-  
-  if (activos.length === 0) {
-    activos = [];
-    const ro = d?.riesgos_olivar || {};
-    const rp = d?.riesgos_plaga || {};
-    
-    if (ro.calor?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    else if (ro.calor?.nivel === 'medio') activos.push({ nivel: 'medio' });
-    if (ro.baja_humedad?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    else if (ro.baja_humedad?.nivel === 'medio') activos.push({ nivel: 'medio' });
-    if (ro.baja_lluvia?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    else if (ro.baja_lluvia?.nivel === 'medio') activos.push({ nivel: 'medio' });
-    if (ro.frio?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    if (ro.alta_humedad?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    if (ro.alta_lluvia?.nivel === 'alto') activos.push({ nivel: 'alto' });
-    
-    if (rp.mosca?.nivel === 'alto' || rp.mosca?.nivel === 'medio') activos.push({ nivel: rp.mosca?.nivel });
-    if (rp.polilla?.nivel === 'alto' || rp.polilla?.nivel === 'medio') activos.push({ nivel: rp.polilla?.nivel });
-    if (rp.repilo?.nivel === 'alto' || rp.repilo?.nivel === 'medio') activos.push({ nivel: rp.repilo?.nivel });
-    if (rp.xylella?.nivel === 'alto') activos.push({ nivel: 'alto' });
-  }
-  
+  const activos = d?.riesgosActivos || [];
   if (activos.length === 0) return 'bajo';
   const priority = { 'crítico': 4, 'alto': 3, 'medio': 2, 'bajo': 1 };
   return activos.reduce((prev, curr) =>
@@ -443,19 +421,6 @@ function renderAlertasPanel(d) {
     )
   })) : [];
 
-  if (!riesgos.length) {
-    const ro = d?.riesgos_olivar || {};
-    const rp = d?.riesgos_plaga || {};
-    if (ro.calor?.nivel === 'alto') riesgos.push({ icon: '🔥', text: 'Calor extremo', level: 'alto', categoria: 'clima' });
-    else if (ro.calor?.nivel === 'medio') riesgos.push({ icon: '🌡️', text: 'Calor', level: 'medio', categoria: 'clima' });
-    if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ icon: '🏜️', text: 'Sequía', level: 'alto', categoria: 'clima' });
-    else if (ro.baja_humedad?.nivel === 'medio') riesgos.push({ icon: '💧', text: 'Baja humedad', level: 'medio', categoria: 'clima' });
-    if (ro.frio?.nivel === 'alto') riesgos.push({ icon: '❄️', text: 'Helada', level: 'alto', categoria: 'clima' });
-    if (rp.mosca?.nivel === 'alto' || rp.mosca?.nivel === 'medio') riesgos.push({ icon: '🪰', text: 'Mosca', level: rp.mosca?.nivel || 'medio', categoria: 'plagas' });
-    if (rp.polilla?.nivel === 'alto' || rp.polilla?.nivel === 'medio') riesgos.push({ icon: '🦋', text: 'Polilla', level: rp.polilla?.nivel || 'medio', categoria: 'plagas' });
-    if (rp.repilo?.nivel === 'alto' || rp.repilo?.nivel === 'medio') riesgos.push({ icon: '🍂', text: 'Repilo', level: rp.repilo?.nivel || 'medio', categoria: 'hongos' });
-  }
-
   const rv = d?.riesgos_variedad?.[var_];
   if (rv) {
     const n = rv.nivel || 'bajo';
@@ -519,32 +484,7 @@ function updateRiesgoBadge(d) {
     return;
   }
 
-  let activos = d?.riesgosActivos || [];
-  
-  if (activos.length === 0) {
-    activos = [];
-    const ro = d?.riesgos_olivar || {};
-    const rp = d?.riesgos_plaga || {};
-    
-    if (ro.calor?.nivel === 'alto') activos.push({ tipo: 'calor', titulo: 'Calor extremo', icono: '🔥', nivel: 'alto' });
-    else if (ro.calor?.nivel === 'medio') activos.push({ tipo: 'calor', titulo: 'Calor', icono: '🔥', nivel: 'medio' });
-    if (ro.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: 'alto' });
-    else if (ro.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Humedad baja', icono: '🏜️', nivel: 'medio' });
-    if (ro.baja_lluvia?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: 'alto' });
-    else if (ro.baja_lluvia?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Lluvia baja', icono: '🌧️', nivel: 'medio' });
-    if (ro.frio?.nivel === 'alto') activos.push({ tipo: 'frio', titulo: 'Helada', icono: '❄️', nivel: 'alto' });
-    else if (ro.frio?.nivel === 'medio') activos.push({ tipo: 'frio', titulo: 'Frío', icono: '❄️', nivel: 'medio' });
-    if (ro.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'humedad', titulo: 'Humedad alta', icono: '💧', nivel: 'alto' });
-    if (ro.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', titulo: 'Lluvia intensa', icono: '🌧️', nivel: 'alto' });
-    
-    if (rp.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', titulo: 'Mosca activa', icono: '🪰', nivel: 'alto' });
-    else if (rp.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', titulo: 'Mosca', icono: '🪰', nivel: 'medio' });
-    if (rp.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', titulo: 'Polilla activa', icono: '🦋', nivel: 'alto' });
-    else if (rp.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', titulo: 'Polilla', icono: '🦋', nivel: 'medio' });
-    if (rp.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', titulo: 'Repilo activo', icono: '🍂', nivel: 'alto' });
-    else if (rp.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', titulo: 'Repilo', icono: '🍂', nivel: 'medio' });
-    if (rp.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨', nivel: 'alto' });
-  }
+  const activos = d?.riesgosActivos || [];
   
   const nivel = getRiesgoGlobal(d);
   
@@ -714,28 +654,7 @@ function renderAll() {
 function updateRiesgoBadgeFromClima(p) {
   if (!RIESGO_BADGE || !MAPA_CARD) return;
   const prov = p.provincia;
-  
-  const activos = [];
-  const ro = p.riesgos_olivar || {};
-  if (ro.calor?.nivel === 'alto') activos.push({ tipo: 'calor', titulo: 'Calor extremo', icono: '🔥', nivel: ro.calor.nivel });
-  else if (ro.calor?.nivel === 'medio') activos.push({ tipo: 'calor', titulo: 'Calor', icono: '🔥', nivel: ro.calor.nivel });
-  if (ro.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: ro.baja_humedad.nivel });
-  else if (ro.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Humedad baja', icono: '🏜️', nivel: ro.baja_humedad.nivel });
-  if (ro.frio?.nivel === 'alto') activos.push({ tipo: 'frio', titulo: 'Helada', icono: '❄️', nivel: ro.frio.nivel });
-  else if (ro.frio?.nivel === 'medio') activos.push({ tipo: 'frio', titulo: 'Frío', icono: '❄️', nivel: ro.frio.nivel });
-  if (ro.baja_lluvia?.nivel === 'alto') activos.push({ tipo: 'sequia', titulo: 'Sequía', icono: '🏜️', nivel: ro.baja_lluvia.nivel });
-  else if (ro.baja_lluvia?.nivel === 'medio') activos.push({ tipo: 'sequia', titulo: 'Lluvia baja', icono: '🌧️', nivel: ro.baja_lluvia.nivel });
-  if (ro.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', titulo: 'Lluvia intensa', icono: '🌧️', nivel: ro.alta_lluvia.nivel });
-  if (ro.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'humedad', titulo: 'Humedad alta', icono: '💧', nivel: ro.alta_humedad.nivel });
-  
-  const rp = p.riesgos_plaga || {};
-  if (rp.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', titulo: 'Mosca activa', icono: '🪰', nivel: rp.mosca.nivel });
-  else if (rp.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', titulo: 'Mosca', icono: '🪰', nivel: rp.mosca.nivel });
-  if (rp.polilla?.nivel === 'alto') activos.push({ tipo: 'polilla', titulo: 'Polilla activa', icono: '🦋', nivel: rp.polilla.nivel });
-  else if (rp.polilla?.nivel === 'medio') activos.push({ tipo: 'polilla', titulo: 'Polilla', icono: '🦋', nivel: rp.polilla.nivel });
-  if (rp.repilo?.nivel === 'alto') activos.push({ tipo: 'repilo', titulo: 'Repilo activo', icono: '🍂', nivel: rp.repilo.nivel });
-  else if (rp.repilo?.nivel === 'medio') activos.push({ tipo: 'repilo', titulo: 'Repilo', icono: '🍂', nivel: rp.repilo.nivel });
-  if (rp.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', titulo: 'Xylella', icono: '🚨', nivel: rp.xylella.nivel });
+  const activos = p?.riesgosActivos || [];
   
   const prioridad = { 'crítico': 4, 'alto': 3, 'medio': 2, 'bajo': 1 };
   const nivel = activos.length ? activos.reduce((a, b) => (prioridad[b.nivel] || 1) > (prioridad[a.nivel] || 1) ? b : a, { nivel: 'bajo' }).nivel : 'bajo';

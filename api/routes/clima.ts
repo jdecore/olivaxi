@@ -341,7 +341,6 @@ export async function getClimaData() {
       temperatura: temp,
       humedad,
       lluvia,
-      riesgo,
       estado,
       source: "api",
       // Datos del suelo (Open-Meteo)
@@ -533,25 +532,25 @@ function getConsejosByRiesgos(riesgos_olivar: any, riesgos_plaga: any, riesgosAc
   return [...new Set(consejos)];
 }
 
-function getRiesgosActivos(provData: any): any[] {
+export function getRiesgosActivos(provData: any): any[] {
   const activos: any[] = [];
   const riesgos_olivar = provData?.riesgos_olivar || {};
   const riesgos_plaga = provData?.riesgos_plaga || {};
   
-  if (riesgos_olivar?.calor?.nivel === 'alto') activos.push({ tipo: 'calor', categoria: 'clima', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
-  else if (riesgos_olivar?.calor?.nivel === 'medio') activos.push({ tipo: 'calor', categoria: 'clima', nivel: 'medio', titulo: 'Calor', icono: '🌡️' });
+  if (riesgos_olivar?.calor?.nivel === 'alto') activos.push({ tipo: 'ola_calor', categoria: 'clima', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
+  else if (riesgos_olivar?.calor?.nivel === 'medio') activos.push({ tipo: 'calor_critico', categoria: 'clima', nivel: 'medio', titulo: 'Calor', icono: '🌡️' });
   
-  if (riesgos_olivar?.frio?.nivel === 'alto') activos.push({ tipo: 'frio', categoria: 'clima', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
-  else if (riesgos_olivar?.frio?.nivel === 'medio') activos.push({ tipo: 'frio', categoria: 'clima', nivel: 'medio', titulo: 'Frío', icono: '🌡️' });
+  if (riesgos_olivar?.frio?.nivel === 'alto') activos.push({ tipo: 'helada', categoria: 'clima', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
+  else if (riesgos_olivar?.frio?.nivel === 'medio') activos.push({ tipo: 'helada_critica', categoria: 'clima', nivel: 'medio', titulo: 'Frío', icono: '🌡️' });
   
-  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia', categoria: 'clima', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
-  else if (riesgos_olivar?.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'sequia', categoria: 'clima', nivel: 'medio', titulo: 'Baja humedad', icono: '💧' });
+  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') activos.push({ tipo: 'sequia_extrema', categoria: 'clima', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
+  else if (riesgos_olivar?.baja_humedad?.nivel === 'medio') activos.push({ tipo: 'estres_hidrico', categoria: 'clima', nivel: 'medio', titulo: 'Baja humedad', icono: '💧' });
   
-  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'hongos', categoria: 'hongos', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
-  else if (riesgos_olivar?.alta_humedad?.nivel === 'medio') activos.push({ tipo: 'hongos', categoria: 'hongos', nivel: 'medio', titulo: 'Humedad elevada', icono: '🍄' });
+  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') activos.push({ tipo: 'alta_humedad', categoria: 'hongos', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
+  else if (riesgos_olivar?.alta_humedad?.nivel === 'medio') activos.push({ tipo: 'alta_humedad', categoria: 'hongos', nivel: 'medio', titulo: 'Humedad elevada', icono: '🍄' });
   
-  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'lluvia', categoria: 'clima', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
-  else if (riesgos_olivar?.alta_lluvia?.nivel === 'medio') activos.push({ tipo: 'lluvia', categoria: 'clima', nivel: 'medio', titulo: 'Lluvia moderada', icono: '🌧️' });
+  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') activos.push({ tipo: 'inundacion', categoria: 'clima', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
+  else if (riesgos_olivar?.alta_lluvia?.nivel === 'medio') activos.push({ tipo: 'inundacion', categoria: 'clima', nivel: 'medio', titulo: 'Lluvia moderada', icono: '🌧️' });
   
   if (riesgos_plaga?.mosca?.nivel === 'alto') activos.push({ tipo: 'mosca', categoria: 'plagas', nivel: 'alto', titulo: 'Mosca', icono: '🪰' });
   else if (riesgos_plaga?.mosca?.nivel === 'medio') activos.push({ tipo: 'mosca', categoria: 'plagas', nivel: 'medio', titulo: 'Mosca', icono: '🪰' });

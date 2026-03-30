@@ -89,15 +89,17 @@ export default function ChatConsejero() {
     if (autoPregunta) {
       const sendAutoQuestion = async () => {
         await initChat();
-        await new Promise(r => setTimeout(r, 300));
-        if (provincia()) {
+        await new Promise(r => setTimeout(r, 500));
+        const provEcosistema = OlivaxiEcosistema.provincia;
+        if (provEcosistema) {
+          setProvincia(provEcosistema);
           setInput(autoPregunta);
-          await enviarPregunta();
+          setTimeout(() => enviarPregunta(), 100);
         } else {
           setInput(autoPregunta);
         }
       };
-      sendAutoQuestion();
+      setTimeout(sendAutoQuestion, 100);
     }
   });
 
@@ -267,9 +269,16 @@ export default function ChatConsejero() {
         .typing-dots .dot3 { animation-delay: 0.4s; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         @media (max-width: 640px) {
-          .chat-hero h1 { font-size: 28px; }
-          .title-typewriter { font-size: 22px; min-height: 28px; }
-          .skill-btn { padding: 12px 16px; }
+          .chat-container { padding: 8px 12px; }
+          .chat-hero { margin-bottom: 8px; }
+          .chat-hero h1 { font-size: 20px; line-height: 1.2; }
+          .title-typewriter { font-size: 18px; min-height: 24px; }
+          .skills-card { padding: 10px 8px; min-height: 70px; }
+          .skill-btn { padding: 10px 12px; font-size: 12px; }
+          .input-area { padding: 12px; min-height: 80px; }
+          .chat-input-wrapper { padding: 6px 10px; min-height: 50px; }
+          .chat-input { height: 28px; font-size: 14px; }
+          .mode-pill-button { padding: 8px 12px; font-size: 12px; }
         }
         .limit-message { background: #fff; border-radius: 12px; padding: 16px 20px; text-align: center; color: #666; font-weight: 500; max-width: 700px; margin: 0 auto; }
         .limit-btn { background: #1C1C1C; border: none; border-radius: 8px; padding: 10px 20px; color: #F7F4EE; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 12px auto 0; }

@@ -84,15 +84,16 @@ class OlivaxiMapa extends HTMLElement {
     const loading = this.querySelector('.mapa-loading');
     const mapaDiv = this.querySelector('.mapa-inner');
     
-    // Wait for maplibregl
+    // Wait for maplibregl with longer timeout
     if (typeof maplibregl === 'undefined') {
-      loading.querySelector('p').textContent = 'Cargando librería...';
-      for (let i = 0; i < 30; i++) {
+      loading.querySelector('p').textContent = 'Cargando mapa...';
+      for (let i = 0; i < 100; i++) {
         await new Promise(r => setTimeout(r, 100));
         if (typeof maplibregl !== 'undefined') break;
       }
       if (typeof maplibregl === 'undefined') {
-        loading.querySelector('p').textContent = 'Error: MapLibre no cargó';
+        console.error('MapLibre not loaded after 10s');
+        loading.querySelector('p').innerHTML = 'Error: Mapa no disponible.<br><small style="font-size:11px">💡 Desactiva bloqueadores de anuncios para mejor experiencia</small>';
         return;
       }
     }
@@ -328,11 +329,10 @@ customElements.define('olivaxi-mapa', OlivaxiMapa);
 <link rel="preconnect" href="https://unpkg.com" crossorigin />
 <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin />
 
-<!-- Lazy load MapLibre solo cuando el mapa sea visible -->
+<!-- Cargar MapLibre inmediatamente en móvil -->
 <script>
 (function() {
-  const mapContainer = document.querySelector('olivaxi-mapa');
-  if (!mapContainer) return;
+  if (window.maplibregl) return;
   
   const loadMapLibre = () => {
     if (window.maplibregl) return;
@@ -344,17 +344,14 @@ customElements.define('olivaxi-mapa', OlivaxiMapa);
     
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
-    script.crossOrigin = '';
-    document.body.appendChild(script);
+    script.crossOrigin = 'anonymous';
+    document.head.appendChild(script);
   };
   
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      loadMapLibre();
-      observer.disconnect();
-    }
-  }, { rootMargin: '200px' });
-  
-  observer.observe(mapContainer);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadMapLibre);
+  } else {
+    loadMapLibre();
+  }
 })();
 </script>

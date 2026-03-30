@@ -20,7 +20,7 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
     overflow: hidden;
     position: relative;
     z-index: 1;
-    padding-top: 0;
+    padding-top: 56px;
   }
 
   .chat-wrapper {
@@ -36,8 +36,20 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
     z-index: 1;
   }
 
+  @media (max-width: 900px) {
+    .main-container {
+      padding-top: 72px;
+    }
+  }
+
   main.main-container {
-    padding-top: 0;
+    padding-top: 56px;
+  }
+
+  @media (max-width: 900px) {
+    main.main-container {
+      padding-top: 72px;
+    }
   }
 
   body > footer {

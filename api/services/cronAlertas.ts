@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import db from "../db/sqlite";
-import { PROVINCIAS } from "../data/provincias";
 import { calcularRiesgosOlivar } from "./riesgos";
+import { getClimaData, getClimaByProvincia, getRiesgosActivos } from "../routes/clima";
 
 // Configuración de email
 const gmailUser = process.env.GMAIL_USER;
@@ -45,7 +45,6 @@ const CONSEJOS: Record<string, string[]> = {
 
 // Helper wrapper
 const callRiesgosOlivar = (t: number, h: number, l: number) => calcularRiesgosOlivar({ temp: t, humedad: h, lluvia: l });
-const PRIORIDAD_RIESGO: Record<string, number> = { alto: 3, medio: 2, bajo: 1 };
 const NORMALIZAR_TIPO_ALERTA: Record<string, string> = {
   calor: 'ola_calor',
   helada: 'helada',
@@ -55,50 +54,6 @@ const NORMALIZAR_TIPO_ALERTA: Record<string, string> = {
 
 function normalizarTipoAlerta(tipo: string): string {
   return NORMALIZAR_TIPO_ALERTA[tipo] || tipo || 'condiciones_optimas';
-}
-
-function normalizarHumedadSuelo(humedadSuelo: number | undefined): number {
-  const valor = Number(humedadSuelo ?? 0);
-  if (!Number.isFinite(valor)) return 0;
-  return valor <= 1 ? valor * 100 : valor;
-}
-
-function getRiesgosActivos(datos: any): any[] {
-  const riesgos: any[] = [];
-  const temp = Number(datos.temp ?? 0);
-  const humedad = Number(datos.humedad ?? 0);
-  const lluvia = Number(datos.lluvia ?? 0);
-  const sueloTemp = Number(datos.suelo_temp ?? 0);
-  const sueloHumedad = normalizarHumedadSuelo(datos.suelo_humedad);
-  const eto = Number(datos.evapotranspiracion ?? 0);
-  const pluviometriaAnual = Number(datos.pluviometriaAnual ?? 0);
-  const kc = 0.7;
-  const deficit = Math.max(0, eto * kc - lluvia);
-  const lluviaMedia = pluviometriaAnual > 0 ? pluviometriaAnual / 365 : 0;
-  const ro = callRiesgosOlivar(temp, humedad, lluvia);
-  const rp = datos.riesgos_plaga || {};
-
-  if (ro.calor?.nivel === 'alto') riesgos.push({ tipo: 'ola_calor', nivel: 'alto', titulo: 'Calor extremo', icono: '🔥' });
-  if (ro.frio?.nivel === 'alto') riesgos.push({ tipo: 'helada', nivel: 'alto', titulo: 'Helada', icono: '❄️' });
-  if (ro.alta_humedad?.nivel === 'alto') riesgos.push({ tipo: 'alta_humedad', nivel: 'alto', titulo: 'Humedad alta', icono: '🍄' });
-  if (ro.alta_lluvia?.nivel === 'alto') riesgos.push({ tipo: 'inundacion', nivel: 'alto', titulo: 'Lluvia intensa', icono: '🌊' });
-  if (ro.baja_humedad?.nivel === 'alto') riesgos.push({ tipo: 'sequia_extrema', nivel: 'alto', titulo: 'Sequía', icono: '🏜️' });
-
-  if (rp.mosca?.nivel === 'alto') riesgos.push({ tipo: 'mosca', nivel: 'alto', titulo: 'Mosca', icono: '🪰' });
-  if (rp.polilla?.nivel === 'alto') riesgos.push({ tipo: 'polilla', nivel: 'alto', titulo: 'Polilla', icono: '🦋' });
-  if (rp.xylella?.nivel === 'alto') riesgos.push({ tipo: 'xylella', nivel: 'alto', titulo: 'Xylella', icono: '🚨' });
-  if (rp.repilo?.nivel === 'alto') riesgos.push({ tipo: 'repilo', nivel: 'alto', titulo: 'Repilo', icono: '🍂' });
-
-  if (sueloHumedad < 20 || eto > 6.5 || deficit > 4 || (lluviaMedia > 0 && lluvia < lluviaMedia * 0.25 && eto > 4)) {
-    riesgos.push({ tipo: 'sequia_extrema', nivel: 'alto', titulo: 'Estrés hídrico de suelo', icono: '📉' });
-  }
-  if (sueloHumedad > 80) riesgos.push({ tipo: 'inundacion', nivel: 'alto', titulo: 'Suelo encharcado', icono: '🌊' });
-  if (humedad > 75 && lluvia > 2 && temp >= 10 && temp <= 20) riesgos.push({ tipo: 'repilo', nivel: lluvia > 6 ? 'alto' : 'medio', titulo: 'Repilo fúngico', icono: '🍂' });
-  if (sueloHumedad > 75 && sueloTemp >= 18 && sueloTemp <= 26 && temp >= 15 && temp <= 30) riesgos.push({ tipo: 'hongos_criticos', nivel: sueloHumedad > 85 ? 'alto' : 'medio', titulo: 'Verticilosis', icono: '🍄' });
-  if (humedad > 80 && temp >= 15 && temp <= 22 && lluvia > 3) riesgos.push({ tipo: 'hongos_criticos', nivel: lluvia > 8 ? 'alto' : 'medio', titulo: 'Antracnosis', icono: '🦠' });
-  if (lluvia > 8 && temp < 16 && humedad > 75) riesgos.push({ tipo: 'hongos_criticos', nivel: lluvia > 15 ? 'alto' : 'medio', titulo: 'Tuberculosis', icono: '🧫' });
-
-  return riesgos.sort((a, b) => (PRIORIDAD_RIESGO[b.nivel] || 1) - (PRIORIDAD_RIESGO[a.nivel] || 1));
 }
 
 function activarPorTipo(tipo: string, riesgosActivos: any[]): boolean {
@@ -126,50 +81,14 @@ export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: nu
   const now = Date.now();
   const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
-  const provincesToCheck = [...new Set(alertasActivas.map((a) => a.provincia))].slice(0, 10);
-  console.log("[CRON] Provincias a verificar:", provincesToCheck);
-
-  // Obtener coordenadas
-  const PROVINCIAS_COORDS: Record<string, { lat: number; lon: number }> = {};
-  for (const p of PROVINCIAS) {
-    PROVINCIAS_COORDS[p.nombre] = { lat: p.lat, lon: p.lon };
-  }
-
-  // Obtener datos climáticos
-  const datosClima: Record<string, any> = {};
-
-  await Promise.all(
-    provincesToCheck.map(async (provincia) => {
-      const p = PROVINCIAS_COORDS[provincia];
-      if (!p) return;
-      try {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration`
-        );
-        const d = await res.json();
-        datosClima[provincia] = {
-          temp: d.current?.temperature_2m ?? 0,
-          humedad: d.current?.relative_humidity_2m ?? 50,
-          lluvia: d.current?.precipitation ?? 0,
-          suelo_temp: d.current?.soil_temperature_0cm ?? 0,
-          suelo_humedad: d.current?.soil_moisture_0_to_1cm ?? 0,
-          evapotranspiracion: d.current?.et0_fao_evapotranspiration ?? 0,
-          pluviometriaAnual: 0,
-          riesgos_plaga: {},
-        };
-      } catch {
-        datosClima[provincia] = { temp: 0, humedad: 50, lluvia: 0, suelo_temp: 0, suelo_humedad: 0, evapotranspiracion: 0, pluviometriaAnual: 0, riesgos_plaga: {} };
-      }
-    })
-  );
-
-  console.log("[CRON] Datos climáticos:", datosClima);
+  await getClimaData();
 
   let enviados = 0;
   for (const alerta of alertasActivas) {
-    const clima = datosClima[alerta.provincia] || { temp: 0, humedad: 50, lluvia: 0, suelo_temp: 0, suelo_humedad: 0, evapotranspiracion: 0, pluviometriaAnual: 0, riesgos_plaga: {} };
+    const clima = getClimaByProvincia(alerta.provincia);
+    if (!clima) continue;
     const tipo = normalizarTipoAlerta(alerta.tipo || 'condiciones_optimas');
-    const temp = Number(clima.temp || 0);
+    const temp = Number(clima.temperatura || 0);
     const riesgosActivos = getRiesgosActivos(clima);
     
     // Skip si ya se notificó en las últimas 12 horas
@@ -188,7 +107,7 @@ export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: nu
     const icon = tipo === 'helada' ? '❄️' : tipo === 'inundacion' ? '🌊' : tipo === 'mosca' ? '🪰' : tipo === 'polilla' ? '🦋' : tipo === 'repilo' ? '🍂' : tipo === 'xylella' ? '🚨' : tipo === 'hongos_criticos' ? '🍄' : '🔥';
     const titulo = `ALERTA ${tipo.replaceAll('_', ' ').toUpperCase()}`;
     const consejos = CONSEJOS[tipo] || [];
-    const riesgos = callRiesgosOlivar(temp, clima.humedad, clima.lluvia);
+    const riesgos = callRiesgosOlivar(temp, Number(clima.humedad || 0), Number(clima.lluvia || 0));
 
     const html = `
 <p>Hola <strong>${alerta.nombre}</strong>,</p>
