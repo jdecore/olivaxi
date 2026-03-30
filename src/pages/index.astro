@@ -462,7 +462,10 @@ function renderAlertasPanel(d) {
   const info = d ? `<div class="provincia-info"><div><strong>🫒</strong> ${d.variedadPredominante || 'N/A'} &nbsp; <strong>🪨</strong> ${d.tipoSuelo || 'N/A'}</div><div><strong>⛰️</strong> ${d.altitud || '?'}m &nbsp; <strong>🌧️</strong> ${d.pluviometriaAnual || '?'}mm/año</div></div>` : '';
   const rawSueloHum = d?.sueloAnalitica?.humedadPorcentaje ?? d?.suelo?.humedad ?? d?.suelo_humedad ?? 0;
   const sueloHum = rawSueloHum <= 1 ? rawSueloHum * 100 : rawSueloHum;
-  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat"><div class="icon">${getRiesgoClass(d.riesgo) === 'alto' ? '🔴' : getRiesgoClass(d.riesgo) === 'medio' ? '🟡' : '🟢'}</div><div class="value">${d.riesgo || 'bajo'}</div><div class="label">Global</div></div></div>` : '';
+  const riesgoProvincia = d?.riesgo || 'bajo';
+  const riesgoVariedad = rv ? rv.nivel : null;
+  const getRiesgoDisplay = (n) => n === 'alto' || n === 'crítico' ? '🔴' : n === 'medio' ? '🟡' : '🟢';
+  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat"><div class="icon">${riesgoVariedad ? getRiesgoDisplay(riesgoVariedad) : getRiesgoDisplay(riesgoProvincia)}</div><div class="value">${riesgoVariedad || riesgoProvincia}</div><div class="label">${riesgoVariedad ? var_ : 'Provincia'}</div></div></div>` : '';
 
   const catTitle = { clima: '🌡️ Clima', suelo: '🪨 Suelo', plagas: '🦟 Plagas', hongos: '🍄 Hongos' };
   const grouped = riesgos.reduce((acc, r) => {
@@ -512,7 +515,8 @@ function renderSueloPanel(d) {
   
   const humedadClass = humedad < 30 ? 'bajo' : '';
   const humedadAdvice = humedad < 30 ? '🔴 Humedad baja' : (humedad > 60 ? '💧 Humedad alta' : '✅ Normal');
-  const etoAdvice = eto < 2 ? 'Riego mínimo hoy' : (eto < 4 ? 'Riego moderado' : '🔥 Riego abundante necesario');
+  const necesidadRiego = d.sueloAnalitica?.necesidadRiego || 0;
+  const etoAdvice = necesidadRiego < 1 ? '✅ Riego mínimo' : (necesidadRiego < 3 ? '💧 Riego moderado' : '🔥 Riego abundante');
   
   SUELO_CONTENT.innerHTML = `
     <div class="suelo-stat">
@@ -528,9 +532,9 @@ function renderSueloPanel(d) {
       <div class="advice">${humedadAdvice}</div>
     </div>
     <div class="suelo-stat">
-      <div class="icon">📈</div>
-      <div class="value">${eto.toFixed(1)}mm</div>
-      <div class="label">ETo (evapotranspiración)</div>
+      <div class="icon">🚿</div>
+      <div class="value">${(d.sueloAnalitica?.necesidadRiego || 0).toFixed(1)}mm</div>
+      <div class="label">Necesidad de riego</div>
       <div class="advice">${etoAdvice}</div>
     </div>
   `;
@@ -542,7 +546,10 @@ function renderNarrativeSection(d) {
   NARRATIVE_SECTION.classList.add('visible');
   const comp = d.comparacionHistorica;
   const tempClass = comp.variacion > 0 ? 'positivo' : comp.variacion < 0 ? 'negativo' : '';
-  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${comp.deficitLluvia ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${comp.precipitacionActual}mm</div><div class="narrative-sub">${comp.deficitLluvia ? '⚠️ Déficit' : 'Normal'}</div></div>`;
+  const lluviaSub = comp.deficitLluvia 
+    ? `${comp.precipitacionActual}mm · ${comp.variacionLluvia || 'déficit'} vs media` 
+    : `${comp.precipitacionActual}mm · dentro de lo normal`;
+  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${comp.deficitLluvia ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${comp.precipitacionActual}mm</div><div class="narrative-sub">${lluviaSub}</div></div>`;
   
   // Generar conclusión accionable
   const conclusionEl = $('narrative-conclusion');
@@ -551,31 +558,29 @@ function renderNarrativeSection(d) {
   const esCalor = comp.variacion > 0 || comp.riesgoCalor;
   const tieneDeficit = comp.deficitLluvia;
   
-  let conclusion = '';
-  let pregunta = '';
+  const diffTemp = Math.abs(comp.variacion);
   if (esFrio && tieneDeficit) {
-    conclusion = '🌡️ Tu zona está más fría de lo normal con déficit de lluvia. Monitoriza el riego esta semana.';
-    pregunta = '¿Cómo gestiono el riego con déficit de lluvia y temperatura baja?';
+    conclusionEl.textContent = `🌡️ ${comp.temperaturaActual}°C (${diffTemp}°C bajo media) + ${comp.precipitacionActual}mm (déficit). Riega y evita estancamiento de agua.`;
+    pregunta = `Tengo ${comp.temperaturaActual}°C (${diffTemp}°C bajo la media) y solo ${comp.precipitacionActual}mm de lluvia. ¿Cómo gestiono el riego?`;
   } else if (esCalor && tieneDeficit) {
-    conclusion = '🔥 Alerta: temperaturas elevadas y sin lluvia. Riega al amanecer para evitar estrés hídrico.';
-    pregunta = '¿Cómo protejo el olivar del estrés hídrico en temperaturas altas y sin lluvia?';
+    conclusionEl.textContent = `🔥 ${comp.temperaturaActual}°C + ${comp.precipitacionActual}mm. Alerta: temperaturas altas sin lluvia. Riega al amanecer.`;
+    pregunta = `Tengo ${comp.temperaturaActual}°C con solo ${comp.precipitacionActual}mm de lluvia. ¿Cómo protejo el olivar del estrés hídrico?`;
   } else if (esCalor && comp.riesgoCalor) {
-    conclusion = '⚠️ Riesgo de calor extremo. Protege el olivar con riego abundante.';
-    pregunta = '¿Cómo mitigo el riesgo de calor extremo en olivos?';
+    conclusionEl.textContent = `⚠️ ${comp.temperaturaActual}°C con riesgo de calor extremo. Protege el olivar con riego abundante.`;
+    pregunta = `Temperatura de ${comp.temperaturaActual}°C con riesgo de calor extremo. ¿Cómo mitigo el daño en mis olivos?`;
   } else if (!esFrio && !esCalor && !tieneDeficit) {
-    conclusion = '✅ Condiciones climáticas favorables. Ideal para tareas de mantenimiento.';
-    pregunta = '¿Qué tareas de mantenimiento recomiendan para mis olivos?';
+    conclusionEl.textContent = `✅ Temperatura y lluvia dentro de lo normal (${comp.temperaturaActual}°C, ${comp.precipitacionActual}mm). Ideal para mantenimiento.`;
+    pregunta = 'Las condiciones son normales. ¿Qué tareas de mantenimiento recomiendan para mis olivos?';
   } else if (esFrio) {
-    conclusion = '🌨️ Temperaturas por debajo de lo normal. Consulta las previsión de heladas.';
-    pregunta = '¿Cómo protejo los olivos de las heladas tardías?';
+    conclusionEl.textContent = `🌨️ ${comp.temperaturaActual}°C (${diffTemp}°C bajo media). Consulta la previsión de heladas.`;
+    pregunta = `Tengo ${comp.temperaturaActual}°C. ¿Cómo protejo los olivos de las heladas tardías?`;
   } else if (tieneDeficit) {
-    conclusion = '💧 Déficit de lluvia detectado. Aumenta la frecuencia de riego.';
-    pregunta = '¿Cómo optimizo el riego durante un período de déficit de lluvia?';
+    conclusionEl.textContent = `💧 Solo ${comp.precipitacionActual}mm de lluvia. Aumenta la frecuencia de riego.`;
+    pregunta = `Solo ${comp.precipitacionActual}mm de lluvia. ¿Cómo optimizo el riego durante este déficit?`;
   } else {
-    conclusion = '📊 Situación climática estable. Continúa con el monitoreo habitual.';
+    conclusionEl.textContent = `📊 Situación estable: ${comp.temperaturaActual}°C, ${comp.precipitacionActual}mm. Continúa monitoreando.`;
     pregunta = '¿Qué recomendaciones generales tienen para el cuidado del olivar?';
   }
-  conclusionEl.textContent = conclusion;
   
   const linkEl = $('consejero-context-link');
   if (linkEl && pregunta) {

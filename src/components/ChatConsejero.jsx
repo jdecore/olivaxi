@@ -87,10 +87,17 @@ export default function ChatConsejero() {
     const params = new URLSearchParams(window.location.search);
     const autoPregunta = params.get('q');
     if (autoPregunta) {
-      setTimeout(() => {
-        setInput(autoPregunta);
-        enviarPregunta();
-      }, 800);
+      const sendAutoQuestion = async () => {
+        await initChat();
+        await new Promise(r => setTimeout(r, 300));
+        if (provincia()) {
+          setInput(autoPregunta);
+          await enviarPregunta();
+        } else {
+          setInput(autoPregunta);
+        }
+      };
+      sendAutoQuestion();
     }
   });
 

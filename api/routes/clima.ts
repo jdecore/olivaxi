@@ -265,11 +265,14 @@ export async function getClimaData() {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration`,
+          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration&daily=et0_fao_evapotranspiration_sum&timezone=auto`,
           { signal: controller.signal }
         );
         clearTimeout(timeout);
         const d = await res.json();
+        const etoCurrent = Number(d.current?.et0_fao_evapotranspiration ?? 0);
+        const etoDaily = Number(d.daily?.et0_fao_evapotranspiration_sum?.[0] ?? 0);
+        const etoFallback = etoCurrent > 0 ? etoCurrent : (etoDaily > 0 ? etoDaily : 0);
         return {
           provincia: p,
           temp: d.current?.temperature_2m ?? 0,
@@ -277,7 +280,7 @@ export async function getClimaData() {
           lluvia: d.current?.precipitation ?? 0,
           suelo_temp: d.current?.soil_temperature_0cm ?? 0,
           suelo_humedad: d.current?.soil_moisture_0_to_1cm ?? 0,
-          evapotranspiracion: d.current?.et0_fao_evapotranspiration ?? 0,
+          evapotranspiracion: etoFallback,
         };
       } catch (error) {
         console.error("Error fetch:", error);
