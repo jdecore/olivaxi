@@ -216,7 +216,20 @@ const cambioClimatico = [
           <div class="estado-consejo">💡 ${consejo}</div>
         </div>
       `;
+
+      // Store nivel for sorting
+      card.dataset.nivelRiesgo = nivel === 'alto' ? '3' : nivel === 'medio' ? '2' : '1';
     });
+
+    // Reordenar cards por riesgo: alto → medio → bajo
+    const grid = document.getElementById('plagas-grid');
+    if (grid) {
+      const cards = Array.from(grid.querySelectorAll('.plaga-card'));
+      cards.sort((a, b) => {
+        return (parseInt(b.dataset.nivelRiesgo) || 1) - (parseInt(a.dataset.nivelRiesgo) || 1);
+      });
+      cards.forEach(card => grid.appendChild(card));
+    }
   }
 
   // --- Cargar datos via ecosistema ---

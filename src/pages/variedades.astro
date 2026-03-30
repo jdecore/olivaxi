@@ -496,6 +496,24 @@ const varieties = [
   .var-risk-badge.risk-medio { background: #F59E0B; color: white; }
   .var-risk-badge.risk-alto { background: #EF4444; color: white; }
 
+  .var-card.predominante {
+    border-color: var(--color-limon) !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 0 3px rgba(212,232,73,0.3);
+  }
+
+  .var-card.predominante::before {
+    content: '⭐ Variedad predominante';
+    display: block;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    text-align: center;
+    padding: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin: -1.25rem -1.25rem 1rem -1.25rem;
+  }
+
   .detail-tag {
     display: inline-block;
     padding: 4px 8px;
