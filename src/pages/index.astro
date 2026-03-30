@@ -4,678 +4,110 @@ import MapaCalor from '../components/MapaCalor.astro';
 ---
 
 <Layout title="olivaξ - Protege tu olivar del cambio climático">
-  <style is:global>
-  /* HERO MINIMALISTA ARC STYLE */
-  .hero-section {
-    min-height: 40vh;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 50px 24px 30px;
-    gap: 16px;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .hero-title {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: clamp(36px, 6vw, 56px) !important;
-    font-weight: 700;
-    color: #1C1C1C !important;
-    margin: 0;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    max-width: 700px;
-    animation: heroFadeIn 0.8s ease-out;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .hero-subtitle {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: clamp(16px, 2vw, 20px) !important;
-    font-weight: 400;
-    color: #6b6b60 !important;
-    margin: 0;
-    max-width: 600px;
-    line-height: 1.5;
-    animation: heroFadeIn 0.8s ease-out 0.15s both;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .hero-cta {
-    display: inline-flex !important;
-    align-items: center;
-    background: var(--color-limon) !important;
-    color: var(--color-aceituna) !important;
-    padding: 14px 28px;
-    border-radius: 0;
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    text-decoration: none;
-    border: 3px solid var(--color-border);
-    box-shadow: 4px 4px 0 var(--color-border);
-    transition: all 0.15s ease;
-    animation: heroFadeIn 0.8s ease-out 0.3s both;
-    visibility: visible !important;
-  }
-
-  .hero-cta:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 var(--color-border);
-  }
-
-  @keyframes heroFadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .hero-section {
-      min-height: 30vh;
-      padding: 40px 16px 20px;
-      gap: 10px;
-    }
-    .hero-title {
-      font-size: 1.75rem !important;
-    }
-    .hero-subtitle {
-      font-size: 0.9rem !important;
-    }
-  }
-
-  /* BENTO GRID - Neobrutalista refinado */
-  .bento-grid {
-    display: grid;
-    grid-template-columns: 60fr 40fr;
-    gap: 8px;
-    max-width: 1200px;
-    margin: 0 auto 1rem;
-    padding: 0 1rem;
-  }
-
-    .mapa-card, .sidebar-panels {
-      background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .mapa-card {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .mapa-card :global(olivaxi-mapa) {
-      flex: 1;
-      min-height: 0;
-    }
-
-    .sidebar-panels {
-      background: var(--color-limon);
-    }
-
-    .carousel-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .carousel-nav {
-      display: flex;
-      background: var(--color-limon);
-      border-bottom: 2px solid var(--color-border);
-      flex-shrink: 0;
-    }
-
-    .carousel-tab {
-      flex: 1;
-      padding: 12px 8px;
-      border: none;
-      border-right: 1px solid var(--color-border);
-      background: transparent;
-      color: var(--color-aceituna);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      transition: background 0.15s ease;
-    }
-
-    .carousel-tab:last-child { border-right: none; }
-
-    .carousel-tab:hover {
-      background: rgba(255,255,255,0.5);
-    }
-
-    .carousel-tab.active {
-      background: var(--color-white-surface);
-    }
-
-    .carousel-slide {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      padding: 12px;
-      gap: 8px;
-      overflow-y: auto;
-    }
-
-    .carousel-slide.active {
-      display: flex;
-    }
-
-    /* Grid botones */
-    .provincias-grid, .variedades-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-    }
-
-    .provincia-btn, .variedad-btn {
-      padding: 10px 8px;
-      border: 1.5px solid var(--color-border);
-      background: var(--color-white-surface);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--color-aceituna);
-      transition: all 0.15s ease;
-      text-align: center;
-    }
-
-    .provincia-btn:hover, .variedad-btn:hover {
-      background: var(--color-aceituna);
-      color: var(--color-sal);
-      transform: translateY(-1px);
-    }
-
-    .provincia-btn.selected, .variedad-btn.selected {
-      background: var(--color-aceituna);
-      color: var(--color-sal);
-      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
-    }
-
-    .provincia-btn .riesgo-dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      margin-right: 4px;
-    }
-
-    .riesgo-dot.alto { background: #ef4444; }
-    .riesgo-dot.medio { background: #f59e0b; }
-    .riesgo-dot.bajo { background: #22c55e; }
-
-    .provincia-btn .temp {
-      font-size: 10px;
-      color: var(--color-muted);
-      display: block;
-      margin-top: 2px;
-    }
-
-    /* Variedad btn */
-    .variedad-btn {
-      text-align: left;
-    }
-
-    .variedad-btn .nombre {
-      font-weight: 700;
-    }
-
-    .variedad-btn .riesgo-label {
-      font-size: 9px;
-      padding: 2px 5px;
-      border-radius: 3px;
-      display: inline-block;
-      margin-top: 4px;
-    }
-
-    .riesgo-label.alto { background: rgba(239,68,68,0.15); color: #dc2626; }
-    .riesgo-label.medio { background: rgba(245,158,11,0.15); color: #b45309; }
-    .riesgo-label.bajo { background: rgba(34,197,94,0.15); color: #15803d; }
-
-    .variedades-link {
-      display: block;
-      text-align: center;
-      padding: 8px;
-      margin-top: 8px;
-      background: var(--color-white-surface);
-      border: 1.5px dashed var(--color-border);
-      border-radius: 4px;
-      color: var(--color-aceituna);
-      font-size: 11px;
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .variedades-link:hover {
-      background: var(--color-aceituna);
-      color: var(--color-sal);
-      border-style: solid;
-    }
-
-    /* Alertas */
-    .alertas-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .alerta-item {
-      padding: 8px;
-      margin-bottom: 6px;
-      border-radius: 4px;
-      border-left: 3px solid;
-      font-size: 11px;
-      background: var(--color-white-surface);
-    }
-
-    .alerta-item.alto { border-color: #ef4444; }
-    .alerta-item.medio { border-color: #f59e0b; }
-    .alerta-item.bajo { border-color: #22c55e; }
-
-    .alerta-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .alerta-action-btn {
-      flex: 1;
-      padding: 8px;
-      border: 1.5px solid var(--color-border);
-      background: var(--color-white-surface);
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--color-aceituna);
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .alerta-action-btn:hover {
-      background: var(--color-aceituna);
-      color: var(--color-sal);
-    }
-
-    .no-province-msg {
-      text-align: center;
-      padding: 16px;
-      color: var(--color-aceituna);
-      font-size: 12px;
-      background: var(--color-white-surface);
-      border-radius: 4px;
-    }
-
-  @media (max-width: 900px) {
-    .bento-grid { 
-      grid-template-columns: 1fr;
-    }
-    .mapa-card {
-      height: 300px;
-    }
-    .sidebar-panels {
-      min-height: 300px;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .bento-grid {
-      gap: 6px;
-      padding: 0 0.5rem;
-    }
-    .mapa-card {
-      height: 260px;
-    }
-    .sidebar-panels {
-      min-height: 260px;
-    }
-    .provincias-grid, .variedades-grid {
-      gap: 4px;
-    }
-  }
-
-  </style>
-
-  <!-- HERO MINIMALISTA -->
-  <section class="hero-section" style="min-height: 40vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 50px 24px 24px; gap: 16px;">
-    <h1 class="hero-title" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; color: #1C1C1C; margin: 0; letter-spacing: -0.02em; line-height: 1.1; max-width: 700px;">Ciencia aplicada al cultivo</h1>
-    <p class="hero-subtitle" style="font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(14px, 1.8vw, 18px); font-weight: 400; color: #6b6b60; margin: 0; max-width: 600px; line-height: 1.5;">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
-  </section>
-
-  <!-- BENTO GRID HERO -->
-  <div class="bento-grid">
-    <!-- Map - left side (spans 2 rows) -->
-    <div class="bento-card mapa-card">
-      <MapaCalor id="mapa-calor" />
-    </div>
-
-    <!-- Sidebar panels - right side -->
-    <div class="sidebar-panels carousel-container">
-      <!-- Carousel Navigation Tabs -->
-      <div class="carousel-nav">
-        <button class="carousel-tab active" data-slide="provincias">📍 Provincias</button>
-        <button class="carousel-tab" data-slide="variedades">🫒 Variedades</button>
-        <button class="carousel-tab" data-slide="alertas">🚨 Alertas</button>
-      </div>
-
-      <!-- Slide 1: Provincias Grid -->
-      <div class="carousel-slide active" id="slide-provincias">
-        <div class="provincias-grid" id="provincias-grid">
-          <!-- Generated by JS -->
-        </div>
-      </div>
-
-      <!-- Slide 2: Variedades Grid -->
-      <div class="carousel-slide" id="slide-variedades">
-        <div class="variedades-grid" id="variedades-grid">
-          <!-- Generated by JS -->
-        </div>
-        <a href="/variedades" class="variedades-link">No sé mi variedad →</a>
-      </div>
-
-      <!-- Slide 3: Alertas -->
-      <div class="carousel-slide" id="slide-alertas">
-        <div class="alertas-list" id="alertas-list">
-          <div class="no-province-msg">Selecciona una provincia para ver alertas.</div>
-        </div>
-        <div class="alerta-actions">
-          <a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a>
-          <a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PREMIUM CARDS - CARRUSEL -->
-  <section class="premium-cards">
-    <div class="cards-wrapper">
-      <div class="cards-container" id="cards-container">
-        <a href="#" class="premium-card" style="cursor: default;">
-          <div class="card-image" style="background: linear-gradient(135deg, #D4E849 0%, #1C1C1C 100%);">
-            <span class="card-icon">🫒</span>
-          </div>
-          <div class="card-content">
-            <span class="card-category">MERCADO</span>
-            <h3 class="card-title">Precio del aceite hoy</h3>
-            <p class="card-text">AOVE €4.15/kg (+1.2%)</p>
-          </div>
-        </a>
-
-        <a href="/variedades" class="premium-card">
-          <div class="card-image" style="background: linear-gradient(135deg, #74B9FF 0%, #0984e3 100%);">
-            <span class="card-icon">🌍</span>
-          </div>
-          <div class="card-content">
-            <span class="card-category">CLIMA</span>
-            <h3 class="card-title">ClimOliveMed</h3>
-            <p class="card-text">Datos de España, Italia y Grecia</p>
-          </div>
-        </a>
-
-        <a href="/consejero" class="premium-card">
-          <div class="card-image" style="background: linear-gradient(135deg, #55EFC4 0%, #00b894 100%);">
-            <span class="card-icon">🛠️</span>
-          </div>
-          <div class="card-content">
-            <span class="card-category">RECOMENDACIÓN</span>
-            <h3 class="card-title">Técnicas de adaptación</h3>
-            <p class="card-text">Cubiertas, biochar, riego inteligente</p>
-          </div>
-        </a>
-      </div>
-      
-      <div class="cards-nav">
-        <button class="cards-nav-btn" id="prev-btn">←</button>
-        <button class="cards-nav-btn" id="next-btn">→</button>
-      </div>
-      <div class="cards-dots">
-        <span class="cards-dot active" data-index="0"></span>
-        <span class="cards-dot" data-index="1"></span>
-        <span class="cards-dot" data-index="2"></span>
-      </div>
-    </div>
-  </section>
-
-  <script>
-  const CAROUSEL_TABS = document.querySelectorAll('.carousel-tab');
-  const CAROUSEL_SLIDES = document.querySelectorAll('.carousel-slide');
-  const PROVINCIAS_GRID = document.getElementById('provincias-grid');
-  const VARIEDADES_GRID = document.getElementById('variedades-grid');
-  const ALERTAS_LIST = document.getElementById('alertas-list');
-  const PROVIDER_API = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
-
-  let datosClima = [];
-  let provinciaSeleccionada = localStorage.getItem('olivaxi_provincia') || '';
-  let variedadSeleccionada = localStorage.getItem('olivaxi_variedad') || '';
-
-  function initCarousel() {
-    CAROUSEL_TABS.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const slide = tab.dataset.slide;
-        CAROUSEL_TABS.forEach(t => t.classList.remove('active'));
-        CAROUSEL_SLIDES.forEach(s => s.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(`slide-${slide}`)?.classList.add('active');
-      });
-    });
-  }
-
-  function guardarSeleccion(tipo, valor) {
-    localStorage.setItem('olivaxi_' + tipo, valor);
-  }
-
-  function getRiesgoClass(riesgo) {
-    if (!riesgo) return 'bajo';
-    if (riesgo === 'alto' || riesgo === 'crítico') return 'alto';
-    if (riesgo === 'medio' || riesgo === 'media') return 'medio';
-    return 'bajo';
-  }
-
-  function renderProvinciasGrid(datos) {
-    if (!PROVINCIAS_GRID) return;
-    PROVINCIAS_GRID.innerHTML = datos.map(d => `
-      <button class="provincia-btn ${provinciaSeleccionada === d.provincia ? 'selected' : ''}" 
-              data-provincia="${d.provincia}" data-lat="${d.lat}" data-lon="${d.lon}">
-        <span class="riesgo-dot ${getRiesgoClass(d.riesgo)}"></span>
-        ${d.provincia}
-        <div class="temp">${d.temperatura}°C</div>
-      </button>
-    `).join('');
-
-    PROVINCIAS_GRID.querySelectorAll('.provincia-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const prov = btn.dataset.provincia;
-        const lat = parseFloat(btn.dataset.lat);
-        const lon = parseFloat(btn.dataset.lon);
-        
-        provinciaSeleccionada = prov;
-        guardarSeleccion('provincia', prov);
-        
-        document.querySelectorAll('.provincia-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        
-        window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia: prov, lat, lon } }));
-        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: prov } }));
-        window.dispatchEvent(new CustomEvent('olivaxi-state-change', { 
-          detail: { provincia: prov, variedad: variedadSeleccionada } 
-        }));
-
-        CAROUSEL_TABS.forEach(t => t.classList.remove('active'));
-        CAROUSEL_SLIDES.forEach(s => s.classList.remove('active'));
-        document.querySelector('[data-slide="alertas"]').classList.add('active');
-        document.getElementById('slide-alertas')?.classList.add('active');
-      });
-    });
-  }
-
-  function renderVariedadesGrid(datos) {
-    if (!VARIEDADES_GRID) return;
-    const VARIEDADES = {
-      cornicabra: { nombre: 'Cornicabra', riesgo: 'medio' },
-      picual: { nombre: 'Picual', riesgo: 'bajo' },
-      arbequina: { nombre: 'Arbequina', riesgo: 'bajo' },
-      hojiblanca: { nombre: 'Hojiblanca', riesgo: 'medio' },
-      manzanilla: { nombre: 'Manzanilla', riesgo: 'bajo' },
-      empeltre: { nombre: 'Empeltre', riesgo: 'alto' }
-    };
-
-    VARIEDADES_GRID.innerHTML = Object.entries(VARIEDADES).map(([id, v]) => `
-      <button class="variedad-btn ${variedadSeleccionada === id ? 'selected' : ''}" data-variedad="${id}">
-        <div class="nombre">${v.nombre}</div>
-        <span class="riesgo-label ${v.riesgo}">${v.riesgo.toUpperCase()}</span>
-      </button>
-    `).join('');
-
-    VARIEDADES_GRID.querySelectorAll('.variedad-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        variedadSeleccionada = btn.dataset.variedad;
-        guardarSeleccion('variedad', variedadSeleccionada);
-        
-        document.querySelectorAll('.variedad-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        
-        window.dispatchEvent(new CustomEvent('olivaxi-state-change', { 
-          detail: { provincia: provinciaSeleccionada, variedad: variedadSeleccionada } 
-        }));
-        
-        if (provinciaSeleccionada && datosClima.length) {
-          const provData = datosClima.find(p => p.provincia === provinciaSeleccionada);
-          if (provData) renderAlertasPanel(provData);
-        }
-      });
-    });
-  }
-
-  function renderAlertasPanel(datos) {
-    if (!ALERTAS_LIST) return;
-    
-    // Datos provinciales nuevos
-    const provinciaInfo = `
-      <div class="provincia-info" style="margin-bottom:12px;padding:8px;background:rgba(212,232,73,0.15);border-radius:8px;font-size:11px">
-        ${datos?.variedadPredominante ? `<div><strong>🫒 Variedad:</strong> ${datos.variedadPredominante}</div>` : ''}
-        ${datos?.tipoSuelo ? `<div><strong>🪨 Suelo:</strong> ${datos.tipoSuelo}</div>` : ''}
-        ${datos?.altitud ? `<div><strong>⛰️ Altitud:</strong> ${datos.altitud}m</div>` : ''}
-        ${datos?.pluviometriaAnual ? `<div><strong>🌧️ Lluvia:</strong> ${datos.pluviometriaAnual}mm/año</div>` : ''}
-        ${datos?.epocaCritica ? `<div><strong>⚠️ Época crítica:</strong> ${datos.epocaCritica}</div>` : ''}
-      </div>
-    `;
-
-    const alertas = [];
-    
-    // Riesgos de la variedad seleccionada
-    const rv = datos?.riesgos_variedad?.[variedadSeleccionada];
-    if (rv) {
-      const nivel = rv.nivel === 'crítico' ? 'alto' : rv.nivel === 'medio' ? 'medio' : 'bajo';
-      alertas.push({ icon: nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢', 
-                     text: `Riesgo ${rv.nivel} para ${variedadSeleccionada}`, level: nivel });
-      rv.detalle?.forEach(d => alertas.push({ icon: '⚠️', text: d, level: nivel }));
-    }
-
-    // Riesgos climáticos
-    const ro = datos?.riesgos_olivar || {};
-    const addRiesgo = (r, icon, txt) => { if (r?.nivel === 'alto') alertas.push({ icon, text: txt, level: 'alto' }); };
-    addRiesgo(ro.calor, '🔥', 'Ola de calor');
-    addRiesgo(ro.baja_humedad, '🏜️', 'Baja humedad');
-    addRiesgo(ro.alta_humedad, '🦠', 'Alta humedad');
-    addRiesgo(ro.baja_lluvia, '🏜️', 'Sequía');
-
-    // Riesgos de plagas
-    const rp = datos?.riesgos_plaga || {};
-    const addRiesgoPlaga = (r, icon, txt) => { if (r?.nivel === 'alto') alertas.push({ icon, text: txt, level: 'alto' }); };
-    addRiesgoPlaga(rp.mosca, '🦟', 'Mosca activa');
-    addRiesgoPlaga(rp.polilla, '🦋', 'Polilla activa');
-    addRiesgoPlaga(rp.xylella, '🦠', 'Xylella - Riesgo crítico');
-    addRiesgoPlaga(rp.repilo, '🍄', 'Repilo activo');
-
-    if (!provinciaSeleccionada) {
-      ALERTAS_LIST.innerHTML = '<div class="no-province-msg">Selecciona una provincia para ver alertas.</div>';
-      return;
-    }
-
-    // Mostrar info provincial + alertas
-    const alertasHtml = alertas.length === 0 
-      ? '<div class="alerta-item bajo"><span class="icono">✅</span>Sin alertas activas. Condiciones normales.</div>'
-      : alertas.map(a => `<div class="alerta-item ${a.level}"><span class="icono">${a.icon}</span>${a.text}</div>`).join('');
-    
-    ALERTAS_LIST.innerHTML = provinciaInfo + alertasHtml;
-  }
-
-  async function loadData() {
-    try {
-      const res = await fetch(`${PROVIDER_API}/api/clima`);
-      if (!res.ok) throw new Error('API error');
-      datosClima = await res.json();
-      if (datosClima.length) {
-        renderProvinciasGrid(datosClima);
-        renderVariedadesGrid(datosClima);
-        if (provinciaSeleccionada) {
-          const provData = datosClima.find(p => p.provincia === provinciaSeleccionada);
-          if (provData) renderAlertasPanel(provData);
-        }
-      }
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-      if (PROVINCIAS_GRID) PROVINCIAS_GRID.innerHTML = '<div class="no-province-msg">Error al cargar datos.</div>';
-    }
-  }
-
-  window.addEventListener('provincia-seleccionada', (e) => {
-    provinciaSeleccionada = e.detail?.provincia || '';
-    if (provinciaSeleccionada && datosClima.length) {
-      const provData = datosClima.find(p => p.provincia === provinciaSeleccionada);
-      if (provData) renderAlertasPanel(provData);
-    }
-  });
-
-  window.addEventListener('olivaxi-state-change', (e) => {
-    const { provincia, variedad } = e.detail || {};
-    if (provincia && provincia !== provinciaSeleccionada) {
-      provinciaSeleccionada = provincia;
-      if (datosClima.length) {
-        const provData = datosClima.find(p => p.provincia === provincia);
-        if (provData) renderAlertasPanel(provData);
-        const btn = document.querySelector(`.provincia-btn[data-provincia="${provincia}"]`);
-        document.querySelectorAll('.provincia-btn').forEach(b => b.classList.remove('selected'));
-        btn?.classList.add('selected');
-      }
-    }
-    if (variedad && variedad !== variedadSeleccionada) {
-      variedadSeleccionada = variedad;
-      const btn = document.querySelector(`.variedad-btn[data-variedad="${variedad}"]`);
-      document.querySelectorAll('.variedad-btn').forEach(b => b.classList.remove('selected'));
-      btn?.classList.add('selected');
-      if (provinciaSeleccionada && datosClima.length) {
-        const provData = datosClima.find(p => p.provincia === provinciaSeleccionada);
-        if (provData) renderAlertasPanel(provData);
-      }
-    }
-  });
-
-  document.querySelectorAll('.top3-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const provincia = card.dataset.provincia;
-      if (provincia) {
-        provinciaSeleccionada = provincia;
-        guardarSeleccion('provincia', provincia);
-        window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia } }));
-        window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia } }));
-      }
-    });
-  });
-
-  initCarousel();
-  loadData();
+<style is:global>
+.hero-section{min-height:40vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:50px 24px 30px;gap:16px}
+.hero-title{font-size:clamp(36px,6vw,56px);font-weight:700;color:var(--color-aceituna);margin:0;max-width:700px;animation:heroFadeIn .8s ease-out}
+.hero-subtitle{font-size:clamp(16px,2vw,20px);font-weight:400;color:var(--color-muted);margin:0;max-width:600px;line-height:1.5;animation:heroFadeIn .8s ease-out .15s both}
+@keyframes heroFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero-section{min-height:30vh;padding:40px 16px 20px;gap:10px}.hero-title{font-size:1.75rem}.hero-subtitle{font-size:.9rem}}
+.bento-grid{display:grid;grid-template-columns:60fr 40fr;gap:8px;max-width:1200px;margin:0 auto 1rem;padding:0 1rem}
+.mapa-card,.sidebar-panels{background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:6px;overflow:hidden}
+.mapa-card{display:flex;flex-direction:column}
+.mapa-card :global(olivaxi-mapa){flex:1;min-height:0}
+.sidebar-panels{background:var(--color-limon)}
+.carousel-container{display:flex;flex-direction:column;height:100%}
+.carousel-nav{display:flex;background:var(--color-limon);border-bottom:2px solid var(--color-border);flex-shrink:0}
+.carousel-tab{flex:1;padding:12px 8px;border:none;border-right:1px solid var(--color-border);background:transparent;color:var(--color-aceituna);font-size:12px;font-weight:700;cursor:pointer;text-align:center}
+.carousel-tab:last-child{border-right:none}
+.carousel-tab:hover{background:rgba(255,255,255,.5)}
+.carousel-tab.active{background:var(--color-white-surface)}
+.carousel-slide{display:none;flex-direction:column;flex:1;padding:12px;gap:8px;overflow-y:auto}
+.carousel-slide.active{display:flex}
+.provincias-grid,.variedades-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.provincia-btn,.variedad-btn{padding:10px 8px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;color:var(--color-aceituna);text-align:center}
+.provincia-btn:hover,.variedad-btn:hover{background:var(--color-aceituna);color:var(--color-sal)}
+.provincia-btn.selected,.variedad-btn.selected{background:var(--color-aceituna);color:var(--color-sal)}
+.provincia-btn .riesgo-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.riesgo-dot.alto{background:#ef4444}.riesgo-dot.medio{background:#f59e0b}.riesgo-dot.bajo{background:#22c55e}
+.provincia-btn .temp{font-size:10px;color:var(--color-muted);display:block;margin-top:2px}
+.variedad-btn{text-align:left}.variedad-btn .nombre{font-weight:700}
+.variedad-btn .riesgo-label{font-size:9px;padding:2px 5px;border-radius:3px;display:inline-block;margin-top:4px}
+.riesgo-label.alto{background:rgba(239,68,68,.15);color:#dc2626}.riesgo-label.medio{background:rgba(245,158,11,.15);color:#b45309}.riesgo-label.bajo{background:rgba(34,197,94,.15);color:#15803d}
+.variedades-link{display:block;text-align:center;padding:8px;margin-top:8px;background:var(--color-white-surface);border:1.5px dashed var(--color-border);border-radius:4px;color:var(--color-aceituna);font-size:11px;font-weight:600;text-decoration:none}
+.variedades-link:hover{background:var(--color-aceituna);color:var(--color-sal);border-style:solid}
+.alertas-list{flex:1;overflow-y:auto}
+.alerta-item{padding:8px;margin-bottom:6px;border-radius:4px;border-left:3px solid;font-size:11px;background:var(--color-white-surface)}
+.alerta-item.alto{border-color:#ef4444}.alerta-item.medio{border-color:#f59e0b}.alerta-item.bajo{border-color:#22c55e}
+.alerta-actions{display:flex;gap:8px;flex-shrink:0}
+.alerta-action-btn{flex:1;padding:8px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:4px;font-size:11px;font-weight:600;color:var(--color-aceituna);text-decoration:none;text-align:center}
+.alerta-action-btn:hover{background:var(--color-aceituna);color:var(--color-sal)}
+.no-province-msg{text-align:center;padding:16px;color:var(--color-aceituna);font-size:12px;background:var(--color-white-surface);border-radius:4px}
+@media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:300px}.sidebar-panels{min-height:300px}}
+@media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}}
+.premium-cards{margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
+.cards-wrapper{position:relative}
+.cards-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;padding:8px 0}
+.cards-container::-webkit-scrollbar{display:none}
+.premium-card{flex:0 0 280px;background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;overflow:hidden;text-decoration:none;scroll-snap-align:center;transition:transform .15s ease}
+.premium-card:hover{transform:translateY(-2px)}
+.card-image{height:100px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--color-limon) 0%,var(--color-aceituna) 100%)}
+.premium-card:nth-child(2) .card-image{background:linear-gradient(135deg,#74B9FF 0%,#0984e3 100%)}
+.premium-card:nth-child(3) .card-image{background:linear-gradient(135deg,#55EFC4 0%,#00b894 100%)}
+.card-icon{font-size:2rem}
+.card-content{padding:12px}
+.card-category{font-size:.7rem;font-weight:700;color:var(--color-muted);letter-spacing:.1em}
+.card-title{font-size:.95rem;font-weight:700;color:var(--color-aceituna);margin:4px 0}
+.card-text{font-size:.85rem;color:var(--color-muted)}
+.cards-nav{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.cards-nav-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--color-border);background:var(--color-white-surface);color:var(--color-aceituna);font-size:1rem;cursor:pointer}
+.cards-nav-btn:hover{background:var(--color-limon)}
+.cards-dots{display:flex;justify-content:center;gap:6px;margin-top:4px}
+.cards-dot{width:8px;height:8px;border-radius:50%;background:var(--color-muted);opacity:.4}
+.cards-dot.active{background:var(--color-limon);opacity:1}
+</style>
+
+<section class="hero-section">
+<h1 class="hero-title">Ciencia aplicada al cultivo</h1>
+<p class="hero-subtitle">Convierte datos científicos en decisiones prácticas en tiempo real para proteger tus olivos.</p>
+</section>
+
+<div class="bento-grid">
+<div class="mapa-card"><MapaCalor id="mapa-calor" /></div>
+<div class="sidebar-panels carousel-container">
+<div class="carousel-nav">
+<button class="carousel-tab active" data-slide="provincias">📍 Provincias</button>
+<button class="carousel-tab" data-slide="variedades">🫒 Variedades</button>
+<button class="carousel-tab" data-slide="alertas">🚨 Alertas</button>
+</div>
+<div class="carousel-slide active" id="slide-provincias"><div class="provincias-grid" id="provincias-grid"></div></div>
+<div class="carousel-slide" id="slide-variedades"><div class="variedades-grid" id="variedades-grid"></div><a href="/variedades" class="variedades-link">No sé mi variedad →</a></div>
+<div class="carousel-slide" id="slide-alertas"><div class="alertas-list" id="alertas-list"><div class="no-province-msg">Selecciona una provincia para ver alertas.</div></div><div class="alerta-actions"><a href="/plagas" class="alerta-action-btn">🔬 Guía Plagas</a><a href="/alertas" class="alerta-action-btn">🔔 Activar Notificaciones</a></div></div>
+</div>
+</div>
+
+<section class="premium-cards">
+<div class="cards-wrapper">
+<div class="cards-container" id="cards-container">
+<a href="#" class="premium-card"><div class="card-image"><span class="card-icon">🫒</span></div><div class="card-content"><span class="card-category">MERCADO</span><h3 class="card-title">Precio del aceite hoy</h3><p class="card-text">AOVE €4.15/kg (+1.2%)</p></div></a>
+<a href="/variedades" class="premium-card"><div class="card-image"><span class="card-icon">🌍</span></div><div class="card-content"><span class="card-category">CLIMA</span><h3 class="card-title">ClimOliveMed</h3><p class="card-text">Datos de España, Italia y Grecia</p></div></a>
+<a href="/consejero" class="premium-card"><div class="card-image"><span class="card-icon">🛠️</span></div><div class="card-content"><span class="card-category">RECOMENDACIÓN</span><h3 class="card-title">Técnicas de adaptación</h3><p class="card-text">Cubiertas, biochar, riego inteligente</p></div></a>
+</div>
+<div class="cards-nav"><button class="cards-nav-btn" id="prev-btn">←</button><button class="cards-nav-btn" id="next-btn">→</button></div>
+<div class="cards-dots"><span class="cards-dot active" data-index="0"></span><span class="cards-dot" data-index="1"></span><span class="cards-dot" data-index="2"></span></div>
+</div>
+</section>
+
+<script>
+const CAROUSEL_TABS=document.querySelectorAll('.carousel-tab'),CAROUSEL_SLIDES=document.querySelectorAll('.carousel-slide'),PROVINCIAS_GRID=document.getElementById('provincias-grid'),VARIEDADES_GRID=document.getElementById('variedades-grid'),ALERTAS_LIST=document.getElementById('alertas-list'),PROVIDER_API=import.meta.env.PUBLIC_API_URL?.replace(/\/$/,'')||'http://localhost:3000';
+let datosClima=[],provinciaSeleccionada=localStorage.getItem('olivaxi_provincia')||'',variedadSeleccionada=localStorage.getItem('olivaxi_variedad')||'';
+function initCarousel(){CAROUSEL_TABS.forEach(t=>t.addEventListener('click',()=>{const s=t.dataset.slide;CAROUSEL_TABS.forEach(x=>x.classList.remove('active'));CAROUSEL_SLIDES.forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('slide-'+s)?.classList.add('active')}))}
+function guardarSeleccion(t,v){localStorage.setItem('olivaxi_'+t,v)}
+function getRiesgoClass(r){if(!r)return'bajo';if(r==='alto'||r==='crítico')return'alto';if(r==='medio'||r==='media')return'medio';return'bajo'}
+function renderProvinciasGrid(d){if(!PROVINCIAS_GRID)return;PROVINCIAS_GRID.innerHTML=d.map(p=>`<button class="provincia-btn ${provinciaSeleccionada===p.provincia?'selected':''}" data-provincia="${p.provincia}" data-lat="${p.lat}" data-lon="${p.lon}"><span class="riesgo-dot ${getRiesgoClass(p.riesgo)}"></span>${p.provincia}<div class="temp">${p.temperatura}°C</div></button>`).join('');PROVINCIAS_GRID.querySelectorAll('.provincia-btn').forEach(b=>b.addEventListener('click',()=>{provinciaSeleccionada=b.dataset.provincia;guardarSeleccion('provincia',provinciaSeleccionada);document.querySelectorAll('.provincia-btn').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');window.dispatchEvent(new CustomEvent('flyToProvincia',{detail:{provincia:provinciaSeleccionada}}));window.dispatchEvent(new CustomEvent('provincia-seleccionada',{detail:{provincia:provinciaSeleccionada}}));CAROUSEL_TABS.forEach(x=>x.classList.remove('active'));CAROUSEL_SLIDES.forEach(x=>x.classList.remove('active'));document.querySelector('[data-slide="alertas"]').classList.add('active');document.getElementById('slide-alertas')?.classList.add('active')}))}
+function renderVariedadesGrid(){if(!VARIEDADES_GRID)return;const V={cornicabra:{nombre:'Cornicabra',riesgo:'medio'},picual:{nombre:'Picual',riesgo:'bajo'},arbequina:{nombre:'Arbequina',riesgo:'bajo'},hojiblanca:{nombre:'Hojiblanca',riesgo:'medio'},manzanilla:{nombre:'Manzanilla',riesgo:'bajo'},empeltre:{nombre:'Empeltre',riesgo:'alto'}};VARIEDADES_GRID.innerHTML=Object.entries(V).map(([id,v])=>`<button class="variedad-btn ${variedadSeleccionada===id?'selected':''}" data-variedad="${id}"><div class="nombre">${v.nombre}</div><span class="riesgo-label ${v.riesgo}">${v.riesgo.toUpperCase()}</span></button>`).join('');VARIEDADES_GRID.querySelectorAll('.variedad-btn').forEach(b=>b.addEventListener('click',()=>{variedadSeleccionada=b.dataset.variedad;guardarSeleccion('variedad',variedadSeleccionada);document.querySelectorAll('.variedad-btn').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');window.dispatchEvent(new CustomEvent('olivaxi-state-change',{detail:{provincia:provinciaSeleccionada,variedad:variedadSeleccionada}}));if(provinciaSeleccionada&&datosClima.length){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}}))}
+function renderAlertasPanel(d){if(!ALERTAS_LIST)return;if(!provinciaSeleccionada){ALERTAS_LIST.innerHTML='<div class="no-province-msg">Selecciona una provincia para ver alertas.</div>';return}const a=[];const rv=d?.riesgos_variedad?.[variedadSeleccionada];if(rv){const n=rv.nivel||'bajo';a.push({icon:n==='crítico'||n==='alto'?'🔴':n==='medio'?'🟡':'🟢',text:'Riesgo '+n+' para '+variedadSeleccionada,level:n==='crítico'?'alto':n})}const ro=d?.riesgos_olivar||{};if(ro.calor?.nivel==='alto')a.push({icon:'🔥',text:ro.calor.descripcion,level:'alto'});if(ro.baja_humedad?.nivel==='alto')a.push({icon:'🏜️',text:ro.baja_humedad.descripcion,level:'alto'});const rp=d?.riesgos_plaga||{};if(rp.mosca?.nivel==='alto')a.push({icon:'🦟',text:rp.mosca.descripcion,level:'alto'});if(rp.polilla?.nivel==='alto')a.push({icon:'🦋',text:rp.polilla.descripcion,level:'alto'});const info=d?.variedadPredominante?`<div class="provincia-info">${d.variedadPredominante?'<div><strong>🫒</strong> '+d.variedadPredominante+'</div>':''}${d.epocaCritica?'<div><strong>⚠️</strong> '+d.epocaCritica+'</div>':''}</div>`:'';const html=a.length===0?'<div class="alerta-item bajo"><span class="icono">✅</span>Sin alertas activas.</div>':a.map(x=>`<div class="alerta-item ${x.level}"><span class="icono">${x.icon}</span>${x.text}</div>`).join('');ALERTAS_LIST.innerHTML=info+html}
+async function loadData(){try{const r=await fetch(PROVIDER_API+'/api/clima');if(!r.ok)throw new Error('API error');datosClima=await r.json();if(datosClima.length){renderProvinciasGrid(datosClima);renderVariedadesGrid();if(provinciaSeleccionada){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}}}catch(e){if(PROVINCIAS_GRID)PROVINCIAS_GRID.innerHTML='<div class="no-province-msg">Error al cargar datos.</div>'}}
+window.addEventListener('provincia-seleccionada',e=>{provinciaSeleccionada=e.detail?.provincia||'';if(provinciaSeleccionada&&datosClima.length){const p=datosClima.find(x=>x.provincia===provinciaSeleccionada);if(p)renderAlertasPanel(p)}});
+initCarousel();loadData();
 </script>
+</Layout>

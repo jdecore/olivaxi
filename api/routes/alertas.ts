@@ -484,9 +484,66 @@ const isValidEmail = (email: string): boolean => {
 };
 
 // ============================================
+// Calcular tipos de alerta disponibles (backend)
+// ============================================
+function calcularTiposAlerta(provincia: string, variedad: string): string[] {
+  const provinciaData = getClimaByProvincia(provincia);
+  
+  if (!provinciaData) return ['condiciones_optimas'];
+  
+  const temp = provinciaData.temperatura ?? 20;
+  const humedad = provinciaData.humedad ?? 50;
+  const lluvia = provinciaData.lluvia ?? 0;
+  
+  const riesgos_variedad = provinciaData.riesgos_variedad?.[variedad];
+  const riesgos_olivar = provinciaData.riesgos_olivar || {};
+  const riesgos_plaga = provinciaData.riesgos_plaga || {};
+  const alertas: string[] = [];
+
+  if (riesgos_variedad?.nivel === 'crítico' || riesgos_variedad?.nivel === 'medio') {
+    alertas.push('calor_critico');
+  }
+
+  if (riesgos_olivar?.calor?.nivel === 'alto') alertas.push('ola_calor');
+  if (riesgos_olivar?.frio?.nivel === 'alto') alertas.push('helada');
+  if (riesgos_olivar?.baja_humedad?.nivel === 'alto') alertas.push('sequia_extrema');
+  if (riesgos_olivar?.alta_humedad?.nivel === 'alto') alertas.push('alta_humedad');
+  if (riesgos_olivar?.baja_lluvia?.nivel === 'alto') alertas.push('sequia_extrema');
+  if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') alertas.push('inundacion');
+
+  if (riesgos_plaga?.mosca?.nivel === 'alto') alertas.push('mosca');
+  if (riesgos_plaga?.polilla?.nivel === 'alto') alertas.push('polilla');
+  if (riesgos_plaga?.xylella?.nivel === 'alto') alertas.push('xylella');
+  if (riesgos_plaga?.repilo?.nivel === 'alto') alertas.push('repilo');
+
+  return [...new Set(alertas)];
+}
+
+// ============================================
 // ENDPOINTS
 // ============================================
 const alertas = new Hono();
+
+// Endpoint para obtener tipos de alerta disponibles (todo cálculo en backend)
+alertas.get("/tipos", async (c) => {
+  const provincia = c.req.query('provincia');
+  const variedad = c.req.query('variedad') || '';
+  
+  if (!provincia) {
+    return c.json({ error: "Provincia requerida" }, 400);
+  }
+  
+  if (!VALID_PROVINCIAS.includes(provincia)) {
+    return c.json({ error: "Provincia inválida" }, 400);
+  }
+  
+  if (variedad && !VALID_VARIEDADES.includes(variedad)) {
+    return c.json({ error: "Variedad inválida" }, 400);
+  }
+  
+  const tipos = calcularTiposAlerta(provincia, variedad);
+  return c.json({ tipos });
+});
 
 // Endpoint para verificar email (double opt-in)
 alertas.post("/verify", async (c) => {

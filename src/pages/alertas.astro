@@ -15,6 +15,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   <!-- Form -->
   <section class="alertas-section">
+    <div id="provincia-info" class="provincia-info-panel"></div>
     <form id="form-alerta" class="alertas-form">
       <div class="form-field">
         <label for="nombre">Tu nombre</label>
@@ -275,6 +276,43 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   #btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
+  .provincia-info-panel {
+    background: rgba(212, 232, 73, 0.1);
+    border: 2px solid var(--color-limon);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .provincia-info-panel.show {
+    display: block;
+  }
+  .provincia-info-panel h4 {
+    margin: 0 0 0.5rem;
+    color: var(--color-aceituna);
+    font-size: 1rem;
+  }
+  .provincia-info-panel .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .provincia-info-panel .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .provincia-info-panel .consejos {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 0.8rem;
+  }
+  .provincia-info-panel .consejos li {
+    margin-bottom: 0.25rem;
+  }
+
   .alertas-info {
     font-size: 0.8rem;
     color: #6b6b60;
@@ -332,36 +370,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   async function calcularTipoAlerta(provincia, variedad) {
     try {
       const apiBase = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") || "http://45.90.237.135:3001";
-      const res = await fetch(`${apiBase}/api/clima`);
-      const datos = await res.json();
-      const datosProv = datos.find((p) => p.provincia === provincia);
-      
-      if (!datosProv) return [];
-
-      const riesgos_variedad = datosProv.riesgos_variedad?.[variedad];
-      const riesgos_olivar = datosProv.riesgos_olivar || {};
-      const riesgos_plaga = datosProv.riesgos_plaga || {};
-      const alertas: string[] = [];
-
-      // Riesgos de la variedad
-      if (riesgos_variedad?.nivel === 'crítico') alertas.push("calor_critico");
-      if (riesgos_variedad?.nivel === 'medio') alertas.push("calor_critico");
-
-      // Riesgos del olivar
-      if (riesgos_olivar?.calor?.nivel === 'alto') alertas.push("ola_calor");
-      if (riesgos_olivar?.frio?.nivel === 'alto') alertas.push("helada");
-      if (riesgos_olivar?.baja_humedad?.nivel === 'alto') alertas.push("sequia_extrema");
-      if (riesgos_olivar?.alta_humedad?.nivel === 'alto') alertas.push("alta_humedad");
-      if (riesgos_olivar?.baja_lluvia?.nivel === 'alto') alertas.push("sequia_extrema");
-      if (riesgos_olivar?.alta_lluvia?.nivel === 'alto') alertas.push("inundacion");
-
-      // Riesgos de plagas
-      if (riesgos_plaga?.mosca?.nivel === 'alto') alertas.push("mosca");
-      if (riesgos_plaga?.polilla?.nivel === 'alto') alertas.push("polilla");
-      if (riesgos_plaga?.xylella?.nivel === 'alto') alertas.push("xylella");
-      if (riesgos_plaga?.repilo?.nivel === 'alto') alertas.push("repilo");
-
-      return [...new Set(alertas)];
+      const res = await fetch(`${apiBase}/api/alertas/tipos?provincia=${encodeURIComponent(provincia)}&variedad=${encodeURIComponent(variedad)}`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.tipos || [];
     } catch (e) {
       console.error("Error calculating alert:", e);
       return [];
@@ -393,7 +405,41 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     }
   }
 
+  const provinciaInfoPanel = document.getElementById("provincia-info");
+  
+  async function cargarDatosProvincia(provinciaNombre) {
+    if (!provinciaNombre || !provinciaInfoPanel) return;
+    
+    try {
+      const res = await fetch(`${apiBase}/api/clima`);
+      const datos = await res.json();
+      const prov = datos.find(p => p.provincia === provinciaNombre);
+      
+      if (prov) {
+        const plagaNivel = prov.riesgos_plaga?.polilla?.nivelRAIF || prov.riesgos_plaga?.polilla?.nivel || 'bajo';
+        const iconoPlaga = plagaNivel === 'alto' ? '🔴' : plagaNivel === 'medio' ? '🟡' : '🟢';
+        
+        provinciaInfoPanel.innerHTML = `
+          <h4>📍 Información de ${provinciaNombre}</h4>
+          <div class="info-grid">
+            ${prov.variedadPredominante ? `<div class="info-item">🫒 <b>${prov.variedadPredominante}</b></div>` : ''}
+            ${prov.tipoSuelo ? `<div class="info-item">🪨 ${prov.tipoSuelo}</div>` : ''}
+            ${prov.altitud ? `<div class="info-item">⛰️ ${prov.altitud}m</div>` : ''}
+            ${prov.pluviometriaAnual ? `<div class="info-item">🌧️ ${prov.pluviometriaAnual}mm/año</div>` : ''}
+            ${prov.epocaCritica ? `<div class="info-item">⚠️ ${prov.epocaCritica}</div>` : ''}
+            <div class="info-item">🦟 Plagas: ${iconoPlaga} ${plagaNivel}</div>
+          </div>
+          ${prov.consejosSuelo?.length ? `<ul class="consejos">${prov.consejosSuelo.map(c => `<li>💡 ${c}</li>`).join('')}</ul>` : ''}
+        `;
+        provinciaInfoPanel.classList.add('show');
+      }
+    } catch (e) {
+      console.error('Error cargando datos provinciales:', e);
+    }
+  }
+
   selectProvincia?.addEventListener("change", async () => {
+    await cargarDatosProvincia(selectProvincia.value);
     if (selectProvincia.value && selectVariedad.value) {
       await actualizarTipoAlerta();
     }
