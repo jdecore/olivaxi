@@ -623,7 +623,7 @@ const varieties = [
 </style>
 
 <script>
-  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const API_BASE = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
   const provinciaSelect = document.getElementById('select-provincia');
   const provinciaInfoBar = document.getElementById('provincia-info-bar');
   const VARIEDADES_KEYS = ['cornicabra', 'picual', 'arbequina', 'hojiblanca', 'manzanilla', 'empeltre'];

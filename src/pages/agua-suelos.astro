@@ -320,7 +320,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const API_BASE = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
   const provinciaSelect = document.getElementById('provincia-select-agua');
   const sueloDatos = document.getElementById('suelo-datos');
   const sueloInfo = document.getElementById('suelo-info');

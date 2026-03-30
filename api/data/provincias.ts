@@ -237,7 +237,7 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
     variedadPredominante: "manzanilla",
     epocaCritica: "primavera",
     plagasEndemicas: ["mosca", "repilo"],
-    plaguesActuales: {
+    plagasActuales: {
       polilla: "bajo",
       mosca: "medio",
       repilo: "medio",

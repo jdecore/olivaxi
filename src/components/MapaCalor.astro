@@ -26,7 +26,7 @@ class OlivaxiMapa extends HTMLElement {
   }
 
   async init() {
-    const API_BASE = this.dataset.api || import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+    const API_BASE = this.dataset.api || (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
     const TILE_SERVER = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
 
     this.innerHTML = `

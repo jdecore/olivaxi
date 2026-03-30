@@ -22,4 +22,4 @@ COPY --from=builder /app/node_modules/.astro ./node_modules/.astro
 
 EXPOSE 4321
 
-CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--dist", "dist"]
+CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--dist", "dist", "--allowedHosts", "olivaxi.duckdns.org"]

@@ -262,9 +262,13 @@ export async function getClimaData() {
   const data = await Promise.all(
     PROVINCIAS.map(async (p) => {
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration`
+          `https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration`,
+          { signal: controller.signal }
         );
+        clearTimeout(timeout);
         const d = await res.json();
         return {
           provincia: p,

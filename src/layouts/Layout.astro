@@ -40,7 +40,6 @@ const { title = "olivaξ" } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" sizes="any" href="/logo.svg" />
     <title>{title}</title>
-    <slot name="head" />
   </head>
   <body>
     <nav class="navbar">
@@ -175,7 +174,7 @@ const { title = "olivaξ" } = Astro.props;
         setupNavListeners();
         setupScrollHide();
 
-        document.addEventListener('astro:after-swap', function() {
+        document.addEventListener('astro:page-load', function() {
           setupNavListeners();
           setupScrollHide();
         });

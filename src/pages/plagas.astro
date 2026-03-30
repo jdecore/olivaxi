@@ -164,7 +164,7 @@ const cambioClimatico = [
 </Layout>
 
 <script>
-  const API_BASE = import.meta.env.PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  const API_BASE = (import.meta.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
   const provinciaSelect = document.getElementById('provincia-select-plagas');
   const raifStatusBar = document.getElementById('raif-status-bar');
 
