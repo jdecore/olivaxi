@@ -94,88 +94,47 @@ import MapaCalor from '../components/MapaCalor.astro';
     }
   }
 
-  /* BENTO GRID con Container Queries */
+  /* BENTO GRID - Neobrutalista refinado */
   .bento-grid {
     display: grid;
     grid-template-columns: 60fr 40fr;
-    gap: 4px;
+    gap: 8px;
     max-width: 1200px;
-    margin: 2px auto 1rem;
+    margin: 0 auto 1rem;
     padding: 0 1rem;
-    align-items: stretch;
-    height: 480px;
   }
 
-    .mapa-card {
-      grid-column: 1;
-      grid-row: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      border: 3px solid var(--color-border);
+    .mapa-card, .sidebar-panels {
       background: var(--color-white-surface);
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
-    .mapa-card :global(#mapa-container) {
+    .mapa-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mapa-card :global(olivaxi-mapa) {
       flex: 1;
-      min-height: unset;
+      min-height: 0;
     }
 
     .sidebar-panels {
-      grid-column: 2;
-      grid-row: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      border: 3px solid var(--color-border);
-      background: var(--color-white-surface);
     }
 
-  @media (max-width: 900px) {
-    .bento-grid { 
-      grid-template-columns: 1fr; 
-      height: auto;
-    }
-    .mapa-card {
-      grid-row: auto;
-      height: 320px;
-    }
-    .mapa-card :global(#mapa-container) {
-      height: 100%;
-    }
-    .sidebar-panels {
-      grid-column: 1;
-      height: auto;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .bento-grid {
-      gap: 4px;
-      margin: 2px auto 1rem;
-      padding: 0 0.5rem;
-    }
-    .mapa-card {
-      height: 250px;
-    }
-  }
-
-    /* CARRUSEL SIDEBAR */
+    /* Carrusel integrado */
     .carousel-container {
       display: flex;
       flex-direction: column;
       height: 100%;
-      overflow: hidden;
     }
 
     .carousel-nav {
       display: flex;
-      gap: 2px;
-      padding: 8px;
       background: var(--color-sal);
       border-bottom: 2px solid var(--color-border);
       flex-shrink: 0;
@@ -183,1020 +142,19 @@ import MapaCalor from '../components/MapaCalor.astro';
 
     .carousel-tab {
       flex: 1;
-      padding: 10px 4px;
-      border: 2px solid var(--color-border);
-      background: var(--color-white-surface);
-      color: var(--color-aceituna);
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-    }
-
-    .carousel-tab:hover {
-      background: var(--color-limon);
-    }
-
-    .carousel-tab.active {
-      background: var(--color-limon);
-      border-color: var(--color-aceituna);
-    }
-
-    .carousel-slide {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      gap: 8px;
-    }
-
-    .carousel-slide.active {
-      display: flex;
-    }
-
-    /* Slide 1: Provincias Grid */
-    .provincias-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-    }
-
-    .provincia-btn {
-      padding: 10px 8px;
-      border: 2px solid var(--color-border);
-      background: var(--color-sal);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--color-aceituna);
-      transition: all 0.15s ease;
-      text-align: center;
-    }
-
-    .provincia-btn:hover {
-      background: var(--color-limon);
-      border-color: var(--color-aceituna);
-    }
-
-    .provincia-btn.selected {
-      background: var(--color-limon);
-      border-color: var(--color-aceituna);
-      box-shadow: 0 2px 0 var(--color-aceituna);
-    }
-
-    .provincia-btn .riesgo-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 4px;
-    }
-
-    .riesgo-dot.alto { background: #ef4444; }
-    .riesgo-dot.medio { background: #f59e0b; }
-    .riesgo-dot.bajo { background: #22c55e; }
-
-    .provincia-btn .temp {
-      font-size: 10px;
-      color: var(--color-muted);
-      margin-top: 2px;
-    }
-
-  .bento-card {
-    background: var(--color-white-surface);
-    border: 2px solid var(--color-border);
-    border-radius: 6px;
-    padding: 16px;
-    overflow: hidden;
-    container-type: inline-size;
-  }
-
-  /* :has() - Alertas críticas */
-  .bento-card:has(.alerta-critica) {
-    border-color: #DC3545;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
-  }
-
-  /* Container Queries para tarjetas */
-  @container (min-width: 400px) {
-    .stat-number { font-size: clamp(28px, 4vw, 42px); }
-    .bento-card { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  }
-
-  .bento-card.accent {
-    background: #F4FF41;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .stat-number {
-    font-family: 'Literata', Georgia, serif;
-    font-size: clamp(24px, 5vw, 36px);
-    color: var(--color-aceituna);
-  }
-
-  .stat-label {
-    font-size: clamp(10px, 1.5vw, 12px);
-    color: var(--color-muted);
-  }
-
-    .hero-card {
-      background: var(--color-aceituna);
-      border: 2px solid var(--color-aceituna);
-      border-radius: 6px;
-      padding: 20px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .hero-title {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 38px;
-      color: var(--color-sal);
-      line-height: 1.2;
-    }
-
-    .hero-title em {
-      color: var(--color-limon);
-      font-style: normal;
-    }
-
-    .hero-subtitle {
-      font-size: 13px;
-      color: rgba(247,244,238,0.55);
-      margin-top: 12px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .hero-provincia {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .hero-provincia label {
-      color: rgba(247,244,238,0.7);
-      font-size: 13px;
-    }
-
-    .hero-provincia select {
-      background: rgba(247,244,238,0.1);
-      color: var(--color-sal);
-      border: 1px solid rgba(247,244,238,0.3);
-      border-radius: 4px;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .hero-provincia select option {
-      background: var(--color-aceituna);
-      color: var(--color-sal);
-    }
-
-    .btn-primary {
-      background: var(--color-limon);
-      color: var(--color-aceituna);
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 700;
-      text-decoration: none;
-      border: 2px solid var(--color-limon);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: rgba(247,244,238,0.8);
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 14px;
-      text-decoration: none;
-      border: 2px solid rgba(247,244,238,0.3);
-    }
-
-    .hero-stats {
-      display: flex;
-      gap: 24px;
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .hero-stat-item { display: flex; flex-direction: column; }
-
-    .hero-stat-num {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 24px;
-      color: var(--color-sal);
-    }
-
-    .hero-stat-label { font-size: 11px; color: rgba(240,237,230,0.6); }
-
-    .consejero-preview h3 {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 14px;
-      color: var(--color-aceituna);
-      margin-bottom: 8px;
-    }
-
-    .consejero-preview p { font-size: 12px; color: var(--color-muted); line-height: 1.5; }
-
-    .variedad-destacada {
-      background: var(--color-white-surface);
-      padding: 12px;
-      border-radius: 4px;
-    }
-
-    .variedad-destacada h3 {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 14px;
-      color: var(--color-aceituna);
-      margin-bottom: 8px;
-    }
-
-    .variedad-destacada p { font-size: 12px; color: var(--color-muted); }
-
-    .variedad-tag {
-      display: inline-block;
-      background: var(--color-limon);
-      color: var(--color-aceituna);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      margin-top: 8px;
-      font-weight: 700;
-    }
-
-    .mapa-card { 
-      padding: 0; 
-      display: flex;
-      flex-direction: column;
-      min-height: 300px;
-      height: 300px;
-      overflow: visible;
-    }
-
-    /* SECTION VALUES */
-    .section-values { background-color: var(--color-sal); padding: 2.5rem 0; }
-
-    .values-title {
-      text-align: center;
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: var(--color-aceituna);
-      margin-bottom: 2rem;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .values-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    .value-card {
-      border-radius: 0;
-      padding: 1.5rem;
-      border: 3px solid var(--color-border);
-      box-shadow: 4px 4px 0 var(--color-border);
-    }
-
-    .value-card.light { background-color: var(--color-white-surface); }
-    .value-card.dark { background-color: var(--color-aceituna); color: var(--color-sal); }
-    .value-card:hover { border-top-color: var(--color-limon); }
-
-    .value-icon { font-size: 2.25rem; }
-
-    .value-card h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 0.5rem 0;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .value-card.dark h3 { color: var(--color-sal); }
-    .value-card p { color: var(--color-muted); font-size: 0.9rem; }
-    .value-card.dark p { color: rgba(247,244,238,0.7); }
-
-    /* SECTION CTA */
-    .section-cta { background: var(--color-aceituna); padding: 4rem 0; }
-
-    .cta-content {
-      text-align: center;
-      color: var(--color-sal);
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-
-    .cta-title {
-      font-size: 1.875rem;
-      font-weight: 700;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .cta-subtitle {
-      color: rgba(247,244,238,0.8);
-      margin-top: 1rem;
-      line-height: 1.6;
-    }
-
-    .cta-btn {
-      display: inline-block;
-      background-color: var(--color-limon);
-      color: var(--color-aceituna);
-      padding: 1rem 2rem;
-      border-radius: 4px;
-      font-size: 1.125rem;
-      font-weight: 700;
-      text-decoration: none;
-      margin-top: 2rem;
+      padding: 12px 8px;
       border: none;
-    }
-
-    .cta-btn:hover { opacity: 0.9; }
-
-    /* SECTION STEPS */
-    .section-steps { background-color: var(--color-white-surface); padding: 4rem 0; }
-
-    .steps-title {
-      text-align: center;
-      font-size: 1.875rem;
-      font-weight: 700;
+      border-right: 1px solid var(--color-border);
+      background: transparent;
       color: var(--color-aceituna);
-      margin-bottom: 3rem;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .steps-container { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
-
-    .step { max-width: 20rem; text-align: center; }
-
-    .step-number {
-      font-size: 3.75rem;
-      font-weight: 700;
-      color: var(--color-limon);
-      line-height: 1;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .step-icon {
-      background-color: var(--color-sal);
-      border-radius: 4px;
-      width: 4rem;
-      height: 4rem;
-      margin: 1rem auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-    }
-
-    .step-title {
-      font-weight: 700;
-      color: var(--color-aceituna);
-      margin-top: 1rem;
-      font-family: 'Literata', Georgia, serif;
-    }
-
-    .step-desc { color: var(--color-muted); font-size: 0.875rem; margin-top: 0.5rem; }
-
-    /* SECTION SIGNUP */
-    .section-signup { background-color: var(--color-muted); padding: 2.5rem 0; }
-
-    .signup-content {
-      text-align: center;
-      color: var(--color-sal);
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    .signup-title { font-size: 1.875rem; font-weight: 700; font-family: 'Literata', Georgia, serif; }
-
-    .signup-subtitle { margin-top: 1rem; color: rgba(247,244,238,0.8); }
-
-    .signup-form { display: flex; gap: 0.5rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap; }
-
-    .signup-input {
-      background-color: var(--color-sal);
-      color: var(--color-aceituna);
-      padding: 0.75rem 1rem;
-      border-radius: 0;
-      width: 16rem;
-      border: 3px solid var(--color-border);
-    }
-
-    .signup-input::placeholder { color: var(--color-muted); }
-
-    .signup-btn {
-      background-color: var(--color-limon);
-      color: var(--color-aceituna);
-      padding: 0.75rem 1.5rem;
-      border-radius: 0;
-      font-weight: 700;
-      border: 3px solid var(--color-border);
-      box-shadow: 4px 4px 0 var(--color-border);
-      cursor: pointer;
-    }
-
-    .signup-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--color-border); }
-
-    .signup-footer { font-size: 0.875rem; color: rgba(247,244,238,0.6); margin-top: 1rem; }
-
-    /* MAPA */
-    .mapa-loading { text-align: center; padding: 2rem 0; }
-    .spinner {
-      border: 4px solid #D4E849;
-      border-top: 4px solid transparent;
-      border-radius: 50%;
-      width: 2rem;
-      height: 2rem;
-      margin: 0 auto 1rem;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .mapa-loading p { color: var(--color-muted); font-size: 12px; }
-    .mapa-error { text-align: center; padding: 2rem 0; color: #ef4444; font-size: 12px; }
-    .mapa-container { border-radius: 6px; height: 100%; }
-
-    /* TABLA DE PROVINCIAS */
-    .tabla-provincias {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-    .tabla-provincias th {
-      text-align: left;
-      padding: 8px 6px;
-      border-bottom: 2px solid var(--color-border);
-      color: var(--color-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .tabla-provincias td {
-      padding: 8px 6px;
-      border-bottom: 1px solid var(--color-border);
-    }
-    .tabla-provincias tr.riesgo-alto {
-      background: rgba(239, 68, 68, 0.1);
-    }
-    .tabla-provincias tr.riesgo-medio {
-      background: rgba(245, 158, 11, 0.1);
-    }
-    .tabla-provincias tr.riesgo-bajo {
-      background: rgba(34, 197, 94, 0.1);
-    }
-    .tabla-provincias .temp-cell {
-      font-weight: 700;
-    }
-    .badge-riesgo {
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .badge-riesgo.alto {
-      background: rgba(239, 68, 68, 0.2);
-      color: #dc2626;
-    }
-    .badge-riesgo.medio {
-      background: rgba(245, 158, 11, 0.2);
-      color: #b45309;
-    }
-    .badge-riesgo.bajo {
-      background: rgba(34, 197, 94, 0.2);
-      color: #15803d;
-    }
-
-    /* TOP 3 RIESGOS */
-    .top3-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    @media (max-width: 600px) {
-      .top3-grid { grid-template-columns: 1fr; }
-    }
-    .top3-card {
-      background: var(--color-white-surface);
-      border: 2px solid var(--color-border);
-      border-radius: 6px;
-      padding: 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .top3-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .top3-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .top3-emoji {
-      font-size: 20px;
-    }
-    .top3-provincia {
-      font-weight: 700;
-      color: var(--color-aceituna);
-      font-size: 14px;
-    }
-    .top3-risk {
       font-size: 12px;
       font-weight: 600;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .top3-risk.alto { color: #dc2626; }
-    .top3-risk.medio { color: #b45309; }
-    .top3-temp {
-      font-size: 11px;
-      color: var(--color-muted);
-    }
-
-    /* ANALISIS CARD */
-    .analisis-card {
-      grid-column: 2;
-      grid-row: 2;
-    }
-
-    @media (max-width: 767px) {
-      .analisis-card { grid-column: 1; grid-row: auto; }
-    }
-
-    .mapa-destacado {
-      max-width: 1200px;
-      margin: 0 auto 1.5rem;
-      padding: 0 1rem;
-    }
-
-    .mapa-destacado :global(#mapa-container) {
-      height: 450px;
-      border-radius: 8px;
-      border: 3px solid var(--color-border);
-    }
-
-    /* PREMIUM CARDS - CARRUSEL */
-    .premium-cards {
-      max-width: 100%;
-      margin: 2rem 0;
-      padding: 0 1rem;
-      overflow: hidden;
-    }
-
-    .cards-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .cards-container {
-      display: flex;
-      gap: 1.5rem;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      padding: 1rem 0;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .cards-container::-webkit-scrollbar {
-      display: none;
-    }
-
-    .premium-card {
-      flex: 0 0 calc(33.333% - 1rem);
-      min-width: 280px;
-      max-width: 380px;
-      background: var(--color-white-surface);
-      border-radius: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      overflow: hidden;
-      text-decoration: none;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      scroll-snap-align: center;
-      border: 2px solid var(--color-border);
-    }
-
-    .premium-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-    }
-
-    .card-image {
-      height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-icon {
-      font-size: 2.5rem;
-    }
-
-    .card-content {
-      padding: 1.25rem;
-    }
-
-    .card-category {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #6b6b60;
-      letter-spacing: 0.1em;
-    }
-
-    .card-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--color-aceituna);
-      margin: 0.4rem 0;
-    }
-
-    .card-text {
-      font-size: 0.85rem;
-      color: var(--color-muted);
-      margin: 0;
-    }
-
-    /* FLECHAS DE NAVEGACIÓN */
-    .cards-nav {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .cards-nav-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid var(--color-border);
-      background: var(--color-white-surface);
-      color: var(--color-aceituna);
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cards-nav-btn:hover {
-      background: var(--color-limon);
-      border-color: var(--color-limon);
-    }
-
-    .cards-dots {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 0.5rem;
-    }
-
-    .cards-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--color-muted);
-      opacity: 0.4;
-      transition: all 0.2s ease;
-    }
-
-    .cards-dot.active {
-      background: var(--color-limon);
-      opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-      .premium-card {
-        flex: 0 0 calc(85% - 1rem);
-        min-width: 240px;
-      }
-      .cards-nav-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-      }
-    }
-
-    /* CLIMOLIVEMED SECTION */
-    .section-climolive {
-      background: var(--color-aceituna);
-      padding: 2rem 1rem;
-    }
-
-    @media (max-width: 600px) {
-      .section-climolive {
-        padding: 1.5rem 0.75rem;
-      }
-      .climolive-title {
-        font-size: 1.5rem;
-      }
-      .climolive-desc {
-        font-size: 0.9rem;
-      }
-    }
-
-    .climolive-container {
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .climolive-header {
-      margin-bottom: 1.5rem;
-    }
-
-    .climolive-badge {
-      display: inline-block;
-      background: var(--color-limon);
-      color: var(--color-aceituna);
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .climolive-title {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 2rem;
-      color: var(--color-sal);
-      margin-top: 1rem;
-    }
-
-    .climolive-desc {
-      color: rgba(247,244,238,0.8);
-      line-height: 1.6;
-      margin-bottom: 2rem;
-      font-size: 1rem;
-    }
-
-    .climolive-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 600px) {
-      .climolive-grid { grid-template-columns: 1fr; }
-    }
-
-    .climolive-card {
-      background: rgba(247,244,238,0.1);
-      border: 3px solid var(--color-sal);
-      border-radius: 0;
-      padding: 1.5rem;
-      box-shadow: 4px 4px 0 var(--color-sal);
-    }
-
-    .climolive-flag {
-      font-size: 2rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    .climolive-card h3 {
-      color: var(--color-sal);
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .climolive-card p {
-      color: rgba(247,244,238,0.6);
-      font-size: 0.875rem;
-    }
-
-    .climolive-note {
-      color: rgba(247,244,238,0.6);
-      font-size: 0.875rem;
-    }
-
-    /* RECOMENDACIONES PRÁCTICAS SECTION */
-    .section-recomendaciones {
-      background: var(--color-sal);
-      padding: 2.5rem 1rem;
-    }
-
-    .recomendaciones-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .recomendaciones-title {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 1.75rem;
-      color: var(--color-aceituna);
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .recomendaciones-subtitle {
-      color: var(--color-muted);
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .recomendaciones-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    @media (max-width: 900px) {
-      .recomendaciones-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 600px) {
-      .recomendaciones-grid { grid-template-columns: 1fr; }
-    }
-
-    .recom-card {
-      background: var(--color-white-surface);
-      border: 3px solid var(--color-border);
-      border-radius: 0;
-      padding: 1.5rem;
-      box-shadow: 4px 4px 0 var(--color-border);
-    }
-
-    .recom-icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .recom-card h3 {
-      font-size: 1rem;
-      color: var(--color-aceituna);
-      margin-bottom: 0.5rem;
-    }
-
-    .recom-card p {
-      font-size: 0.875rem;
-      color: var(--color-muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .recom-card ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .recom-card li {
-      font-size: 0.8rem;
-      color: var(--color-muted);
-      padding: 4px 0;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .recom-card li:last-child {
-      border-bottom: none;
-    }
-
-    .recom-ideal {
-      display: block;
-      margin-top: 0.75rem;
-      padding: 6px 12px;
-      background: var(--color-limon);
-      color: var(--color-aceituna);
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    /* PRECIOS SECTION */
-    .section-precios {
-      background: var(--color-sal);
-      padding: 2.5rem 1rem;
-    }
-
-    .precios-container {
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .precios-title {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 1.75rem;
-      color: var(--color-aceituna);
-      margin-bottom: 0.5rem;
-    }
-
-    .precios-subtitle {
-      color: var(--color-muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .precios-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 600px) {
-      .precios-grid { grid-template-columns: 1fr; }
-    }
-
-    .precio-card {
-      background: var(--color-white-surface);
-      border: 3px solid var(--color-border);
-      border-radius: 0;
-      padding: 1.5rem;
-      box-shadow: 4px 4px 0 var(--color-border);
-    }
-
-    .precio-header {
-      font-size: 0.9rem;
-      color: var(--color-muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .precio-value {
-      font-family: 'Literata', Georgia, serif;
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--color-aceituna);
-    }
-
-    .precio-change {
-      font-size: 0.8rem;
-      margin-top: 0.5rem;
-      padding: 4px 10px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .precio-change.positivo {
-      background: rgba(34, 197, 94, 0.15);
-      color: #15803d;
-    }
-
-    .precio-change.negativo {
-      background: rgba(239, 68, 68, 0.15);
-      color: #dc2626;
-    }
-
-    .precios-note {
-      color: var(--color-muted);
-      font-size: 0.85rem;
-    }
-
-    /* CARRUSEL SIDEBAR */
-    .carousel-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .carousel-nav {
-      display: flex;
-      gap: 2px;
-      padding: 8px;
-      background: var(--color-sal);
-      border-bottom: 2px solid var(--color-border);
-      flex-shrink: 0;
-    }
-
-    .carousel-tab {
-      flex: 1;
-      padding: 10px 4px;
-      border: 2px solid var(--color-border);
-      background: var(--color-white-surface);
-      color: var(--color-aceituna);
-      font-size: 11px;
-      font-weight: 700;
       cursor: pointer;
       text-align: center;
-      transition: all 0.15s ease;
+      transition: background 0.15s ease;
     }
+
+    .carousel-tab:last-child { border-right: none; }
 
     .carousel-tab:hover {
       background: var(--color-limon);
@@ -1204,32 +162,31 @@ import MapaCalor from '../components/MapaCalor.astro';
 
     .carousel-tab.active {
       background: var(--color-limon);
-      border-color: var(--color-aceituna);
     }
 
     .carousel-slide {
       display: none;
       flex-direction: column;
       flex: 1;
-      overflow-y: auto;
       padding: 12px;
       gap: 8px;
+      overflow-y: auto;
     }
 
     .carousel-slide.active {
       display: flex;
     }
 
-    /* Slide 1: Provincias Grid */
-    .provincias-grid {
+    /* Grid botones */
+    .provincias-grid, .variedades-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 6px;
     }
 
-    .provincia-btn {
+    .provincia-btn, .variedad-btn {
       padding: 10px 8px;
-      border: 2px solid var(--color-border);
+      border: 1.5px solid var(--color-border);
       background: var(--color-sal);
       border-radius: 4px;
       cursor: pointer;
@@ -1240,21 +197,20 @@ import MapaCalor from '../components/MapaCalor.astro';
       text-align: center;
     }
 
-    .provincia-btn:hover {
+    .provincia-btn:hover, .variedad-btn:hover {
       background: var(--color-limon);
-      border-color: var(--color-aceituna);
+      transform: translateY(-1px);
     }
 
-    .provincia-btn.selected {
+    .provincia-btn.selected, .variedad-btn.selected {
       background: var(--color-limon);
-      border-color: var(--color-aceituna);
-      box-shadow: 0 2px 0 var(--color-aceituna);
+      box-shadow: inset 0 -2px 0 var(--color-aceituna);
     }
 
     .provincia-btn .riesgo-dot {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       margin-right: 4px;
     }
@@ -1266,66 +222,41 @@ import MapaCalor from '../components/MapaCalor.astro';
     .provincia-btn .temp {
       font-size: 10px;
       color: var(--color-muted);
+      display: block;
       margin-top: 2px;
     }
 
-    /* Slide 2: Variedades Grid */
-    .variedades-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-    }
-
+    /* Variedad btn */
     .variedad-btn {
-      padding: 10px 8px;
-      border: 2px solid var(--color-border);
-      background: var(--color-sal);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--color-aceituna);
-      transition: all 0.15s ease;
       text-align: left;
-    }
-
-    .variedad-btn:hover {
-      background: var(--color-limon);
-      border-color: var(--color-aceituna);
-    }
-
-    .variedad-btn.selected {
-      background: var(--color-limon);
-      border-color: var(--color-aceituna);
     }
 
     .variedad-btn .nombre {
       font-weight: 700;
-      margin-bottom: 2px;
     }
 
     .variedad-btn .riesgo-label {
-      font-size: 10px;
-      padding: 2px 6px;
+      font-size: 9px;
+      padding: 2px 5px;
       border-radius: 3px;
       display: inline-block;
       margin-top: 4px;
     }
 
-    .riesgo-label.alto { background: rgba(239,68,68,0.2); color: #dc2626; }
-    .riesgo-label.medio { background: rgba(245,158,11,0.2); color: #b45309; }
-    .riesgo-label.bajo { background: rgba(34,197,94,0.2); color: #15803d; }
+    .riesgo-label.alto { background: rgba(239,68,68,0.15); color: #dc2626; }
+    .riesgo-label.medio { background: rgba(245,158,11,0.15); color: #b45309; }
+    .riesgo-label.bajo { background: rgba(34,197,94,0.15); color: #15803d; }
 
     .variedades-link {
       display: block;
       text-align: center;
-      padding: 10px;
+      padding: 8px;
       margin-top: 8px;
       background: var(--color-sal);
-      border: 2px dashed var(--color-border);
+      border: 1.5px dashed var(--color-border);
       border-radius: 4px;
       color: var(--color-aceituna);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       text-decoration: none;
     }
@@ -1335,7 +266,7 @@ import MapaCalor from '../components/MapaCalor.astro';
       border-style: solid;
     }
 
-    /* Slide 3: Alertas */
+    /* Alertas */
     .alertas-list {
       flex: 1;
       overflow-y: auto;
@@ -1346,39 +277,23 @@ import MapaCalor from '../components/MapaCalor.astro';
       margin-bottom: 6px;
       border-radius: 4px;
       border-left: 3px solid;
-      font-size: 12px;
+      font-size: 11px;
     }
 
-    .alerta-item.alto {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #ef4444;
-    }
-
-    .alerta-item.medio {
-      background: rgba(245, 158, 11, 0.1);
-      border-color: #f59e0b;
-    }
-
-    .alerta-item.bajo {
-      background: rgba(34, 197, 94, 0.1);
-      border-color: #22c55e;
-    }
-
-    .alerta-item .icono {
-      margin-right: 6px;
-    }
+    .alerta-item.alto { background: rgba(239,68,68,0.08); border-color: #ef4444; }
+    .alerta-item.medio { background: rgba(245,158,11,0.08); border-color: #f59e0b; }
+    .alerta-item.bajo { background: rgba(34,197,94,0.08); border-color: #22c55e; }
 
     .alerta-actions {
       display: flex;
       gap: 8px;
-      margin-top: 8px;
       flex-shrink: 0;
     }
 
     .alerta-action-btn {
       flex: 1;
       padding: 8px;
-      border: 2px solid var(--color-border);
+      border: 1.5px solid var(--color-border);
       background: var(--color-sal);
       border-radius: 4px;
       font-size: 11px;
@@ -1386,7 +301,6 @@ import MapaCalor from '../components/MapaCalor.astro';
       color: var(--color-aceituna);
       text-decoration: none;
       text-align: center;
-      cursor: pointer;
     }
 
     .alerta-action-btn:hover {
@@ -1395,21 +309,39 @@ import MapaCalor from '../components/MapaCalor.astro';
 
     .no-province-msg {
       text-align: center;
-      padding: 20px 10px;
+      padding: 16px;
       color: var(--color-muted);
       font-size: 12px;
     }
 
-    @media (max-width: 600px) {
-      .provincias-grid, .variedades-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 4px;
-      }
-      .provincia-btn, .variedad-btn {
-        padding: 8px 6px;
-        font-size: 11px;
-      }
+  @media (max-width: 900px) {
+    .bento-grid { 
+      grid-template-columns: 1fr;
     }
+    .mapa-card {
+      height: 300px;
+    }
+    .sidebar-panels {
+      min-height: 300px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .bento-grid {
+      gap: 6px;
+      padding: 0 0.5rem;
+    }
+    .mapa-card {
+      height: 260px;
+    }
+    .sidebar-panels {
+      min-height: 260px;
+    }
+    .provincias-grid, .variedades-grid {
+      gap: 4px;
+    }
+  }
+
   </style>
 
   <!-- HERO MINIMALISTA -->
