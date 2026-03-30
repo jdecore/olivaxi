@@ -42,8 +42,8 @@ const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
   const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
   
   let record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    record = { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
+  if (!record || Date.now() > record.resetTime) {
+    record = { count: 0, resetTime: Date.now() + RATE_LIMIT_WINDOW };
     rateLimitMap.set(ip, record);
   }
   
