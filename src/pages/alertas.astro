@@ -457,7 +457,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     if (!provinciaNombre || !provinciaInfoPanel) return;
     
     try {
-      const res = await fetch(`${apiBase}/api/clima/dashboard?provincia=${encodeURIComponent(provinciaNombre)}`);
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${apiBase}/api/clima/dashboard?provincia=${encodeURIComponent(provinciaNombre)}`, { signal: controller.signal });
+      clearTimeout(t);
       if (!res.ok) throw new Error('API error');
       const d = await res.json();
       

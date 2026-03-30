@@ -37,6 +37,7 @@ export default function ChatConsejero() {
   const [titleText, setTitleText] = createSignal('');
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
+  const [showContext, setShowContext] = createSignal(false);
   
   let messagesEndRef;
 
@@ -278,6 +279,14 @@ export default function ChatConsejero() {
         .chat-input { flex: 1; height: 36px; border: none; background: transparent; font-size: 16px; color: #1C1C1C; outline: none; padding: 0; }
         .chat-input::placeholder { color: #999; }
         .chat-input:disabled { opacity: 0.6; }
+        .context-panel { background: #f5efe8; border: 2px solid #1C1C1C; border-radius: 12px; padding: 12px; margin: 0 auto 8px; max-width: 700px; }
+        .context-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; font-weight: 600; color: #1C1C1C; }
+        .context-toggle { font-size: 12px; }
+        .context-content { margin-top: 10px; font-size: 12px; line-height: 1.6; display: none; }
+        .context-content.show { display: block; }
+        .context-item { display: flex; gap: 8px; margin-bottom: 6px; }
+        .context-label { font-weight: 600; color: #4a4a40; min-width: 80px; }
+        .context-value { color: #1C1C1C; }
         .loading-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F7F4EE; z-index: 100; }
         .loading-olive { font-size: 4rem; margin-bottom: 1rem; animation: float 2s ease-in-out infinite; }
         .loading-text { font-size: 1.5rem; font-weight: 600; color: #1C1C1C; }
@@ -315,6 +324,22 @@ export default function ChatConsejero() {
               <For each={SKILLS}>{(skill) => (
                 <button class="skill-btn" onClick={() => selectSkill(skill.id)}>{skill.label}</button>
               )}</For>
+            </div>
+          </div>
+          <div class="context-panel">
+            <div class="context-header" onClick={() => setShowContext(!showContext())}>
+              <span>📋 Tu contexto actual</span>
+              <span class="context-toggle">{showContext() ? '▲ Ocultar' : '▼ Ver'}</span>
+            </div>
+            <div class={`context-content ${showContext() ? 'show' : ''}`}>
+              <div class="context-item"><span class="context-label">📍 Provincia:</span><span class="context-value">{provincia()}</span></div>
+              {variedad() && <div class="context-item"><span class="context-label">🫒 Variedad:</span><span class="context-value">{variedad()}</span></div>}
+              {climaActual() && <>
+                <div class="context-item"><span class="context-label">🌡️ Clima:</span><span class="context-value">{climaActual().temperatura}°C, {climaActual().humedad}% humedad, {climaActual().lluvia}mm lluvia</span></div>
+                {climaActual().suelo_temp && <div class="context-item"><span class="context-label">🌱 Suelo:</span><span class="context-value">{climaActual().suelo_temp}°C, {Math.round(climaActual().suelo_humedad * 100)}% humedad</span></div>}
+                {climaActual().evapotranspiracion && <div class="context-item"><span class="context-label">💧 ETo:</span><span class="context-value">{climaActual().evapotranspiracion} mm/día</span></div>}
+              </>}
+              {climaActual()?.riesgos_plaga && <div class="context-item"><span class="context-label">⚠️ Plagas:</span><span class="context-value">{Object.entries(climaActual().riesgos_plaga).filter(([k,v]) => v?.nivel === 'alto').map(([k]) => k).join(', ') || 'Sin alertas'}</span></div>}
             </div>
           </div>
         </Show>

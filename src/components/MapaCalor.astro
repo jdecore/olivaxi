@@ -35,6 +35,7 @@ class OlivaxiMapa extends HTMLElement {
           <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
           <button class="filter-btn" data-filtro="humedad">💧</button>
           <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
+          <button class="filter-btn" data-filtro="riesgo">⚠️</button>
         </div>
         <div class="mapa-inner"></div>
         <div class="mapa-legend"></div>
@@ -150,6 +151,20 @@ class OlivaxiMapa extends HTMLElement {
     return escala[escala.length - 1][1];
   }
 
+  getMarkerColor(datos) {
+    // Usar el nivel de riesgo más alto para el color del marcador
+    const riesgo = datos.riesgo || 'bajo';
+    if (riesgo === 'alto' || riesgo === 'crítico') return '#ef4444';
+    if (riesgo === 'medio') return '#f59e0b';
+    return '#22c55e';
+  }
+
+  getRiskBadge(riesgo) {
+    if (riesgo === 'alto' || riesgo === 'crítico') return '🔴';
+    if (riesgo === 'medio') return '🟡';
+    return '🟢';
+  }
+
   render() {
     if (!this.map || !this.map.loaded()) return;
     
@@ -157,38 +172,64 @@ class OlivaxiMapa extends HTMLElement {
     this.markers = [];
 
     this.datos.forEach(d => {
-      const color = this.getColor(d[this.filtro], this.filtro);
+      // Color por filtro o por riesgo si variedad seleccionada
+      let color;
+      if (this.filtro === 'riesgo' && this.variedad) {
+        // Usar riesgo de la variedad seleccionada
+        const rv = d.riesgos_variedad?.[this.variedad];
+        color = rv?.nivel === 'alto' || rv?.nivel === 'crítico' ? '#ef4444' : rv?.nivel === 'medio' ? '#f59e0b' : '#22c55e';
+      } else {
+        color = this.getColor(d[this.filtro], this.filtro);
+      }
+      
       const el = document.createElement('div');
-      el.style.cssText = `width:14px;height:14px;background:${color};border:2px solid #fff;border-radius:50%;opacity:0.95;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.3)`;
+      el.style.cssText = `width:16px;height:16px;background:${color};border:2px solid #fff;border-radius:50%;opacity:0.95;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4);transition:transform .2s`;
+      el.onmouseenter = () => el.style.transform = 'scale(1.3)';
+      el.onmouseleave = () => el.style.transform = 'scale(1)';
       
-      const val = this.filtro === 'temperatura' ? d.temperatura + '°C' : this.filtro === 'humedad' ? d.humedad + '%' : d.lluvia + 'mm';
+      const val = this.filtro === 'temperatura' ? d.temperatura + '°C' : 
+                  this.filtro === 'humedad' ? d.humedad + '%' : 
+                  this.filtro === 'precipitacion' ? d.lluvia + 'mm' :
+                  d.riesgo || 'bajo';
       
-      // Tooltip mejorado con datos provinciales
       const isDark = document.documentElement.dataset.theme === 'dark';
       const bg = isDark ? '#1a1a1a' : '#fff';
       const txt = isDark ? '#F7F4EE' : '#1C1C1C';
       
-      // Extraer datos RAIF si existen
-      const plagaRAIF = d.riesgos_plaga?.polilla?.nivelRAIF || d.riesgos_plaga?.polilla?.nivel || 'bajo';
-      const iconoPlaga = plagaRAIF === 'alto' ? '🔴' : plagaRAIF === 'medio' ? '🟡' : '🟢';
+      // Colores de riesgo
+      const riesgoColor = this.getMarkerColor(d);
+      const riesgoBadge = this.getRiskBadge(d.riesgo);
+      
+      // Riesgos activos
+      const riesgosActivos = [];
+      if (d.riesgos_olivar?.calor?.nivel === 'alto') riesgosActivos.push({ icon: '🔥', text: 'Calor extremo' });
+      if (d.riesgos_olivar?.baja_humedad?.nivel === 'alto') riesgosActivos.push({ icon: '🏜️', text: 'Sequía' });
+      if (d.riesgos_olivar?.alta_humedad?.nivel === 'alto') riesgosActivos.push({ icon: '🦠', text: 'Humedad alta' });
+      if (d.riesgos_plaga?.mosca?.nivel === 'alto') riesgosActivos.push({ icon: '🦟', text: 'Mosca activa' });
+      if (d.riesgos_plaga?.polilla?.nivel === 'alto') riesgosActivos.push({ icon: '🦋', text: 'Polilla activa' });
+      if (d.riesgos_plaga?.xylella?.nivel === 'alto') riesgosActivos.push({ icon: '☠️', text: 'Xylella' });
+      
+      const riesgosHtml = riesgosActivos.length > 0 
+        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${riesgosActivos.map(r => `<span style="background:${riesgoColor}20;color:${riesgoColor};padding:2px 6px;border-radius:4px;font-size:10px">${r.icon} ${r.text}</span>`).join('')}</div>`
+        : '';
       
       const popupHtml = `
-        <div style="font-family:system-ui;padding:10px;background:${bg};color:${txt};border-radius:8px;min-width:180px;font-size:12px">
-          <div style="font-weight:bold;font-size:14px;margin-bottom:8px">🫒 ${d.provincia}</div>
-          <div style="margin-bottom:4px">🌡️ ${val}</div>
-          ${d.variedadPredominante ? `<div style="margin-bottom:4px">🫒 Var: <b>${d.variedadPredominante}</b></div>` : ''}
-          ${d.tipoSuelo ? `<div style="margin-bottom:4px">🪨 Suelo: <b>${d.tipoSuelo}</b></div>` : ''}
-          ${d.altitud ? `<div style="margin-bottom:4px">⛰️ Altitud: <b>${d.altitud}m</b></div>` : ''}
-          ${d.pluviometriaAnual ? `<div style="margin-bottom:4px">🌧️ Lluvia: <b>${d.pluviometriaAnual}mm</b></div>` : ''}
-          ${d.epocaCritica ? `<div style="margin-bottom:4px">⚠️ Época: <b>${d.epocaCritica}</b></div>` : ''}
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ccc">
-            <div style="display:flex;align-items:center;gap:4px">🦟 Plagas: ${iconoPlaga} <b>${plagaRAIF}</b></div>
+        <div style="font-family:system-ui;padding:12px;background:${bg};color:${txt};border-radius:8px;min-width:200px;font-size:12px">
+          <div style="font-weight:bold;font-size:14px;margin-bottom:8px;border-bottom:2px solid ${riesgoColor};padding-bottom:6px">
+            ${this.getRiskBadge(d.riesgo)} ${d.provincia} <span style="font-size:11px;font-weight:normal">(${d.riesgo?.toUpperCase() || 'bajo'})</span>
           </div>
-          <div style="margin-top:8px;color:#D4E849;font-size:10px">Click para ver detalles</div>
+          <div style="margin-bottom:4px">🌡️ <b>${val}</b> · 💧 ${d.humedad}% · 🌧️ ${d.lluvia}mm</div>
+          ${d.variedadPredominante ? `<div style="margin-bottom:4px">🫒 <b>${d.variedadPredominante}</b></div>` : ''}
+          ${d.tipoSuelo ? `<div style="margin-bottom:4px">🪨 <b>${d.tipoSuelo}</b></div>` : ''}
+          ${d.altitud ? `<div style="margin-bottom:4px">⛰️ <b>${d.altitud}m</b></div>` : ''}
+          ${d.pluviometriaAnual ? `<div style="margin-bottom:4px">🌧️ <b>${d.pluviometriaAnual}mm</b>/año</div>` : ''}
+          ${d.epocaCritica ? `<div style="margin-bottom:4px;padding:4px;background:#D4E84920;border-radius:4px">⚠️ <b>${d.epocaCritica}</b></div>` : ''}
+          ${riesgosHtml}
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ccc;color:#D4E849;font-size:10px">Click para ver más →</div>
         </div>
       `;
       
-      const popup = new maplibregl.Popup({ offset: [0, -10], closeButton: false }).setHTML(popupHtml);
+      const popup = new maplibregl.Popup({ offset: [0, -12], closeButton: false }).setHTML(popupHtml);
 
       el.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('provincia-seleccionada', { detail: { provincia: d.provincia } }));
@@ -225,7 +266,8 @@ class OlivaxiMapa extends HTMLElement {
     const L = {
       temperatura: [['<10°C','#74B9FF'],['10-20°C','#55EFC4'],['20-28°C','#A8D8A8'],['28-35°C','#FDCB6E'],['35-38°C','#E17055'],['>38°C','#D63031']],
       humedad: [['<20%','#D63031'],['20-40%','#E17055'],['40-60%','#FDCB6E'],['60-80%','#55EFC4'],['>80%','#74B9FF']],
-      precipitacion: [['0mm','#FDCB6E'],['<2mm','#55EFC4'],['2-10mm','#74B9FF'],['>10mm','#0984e3']]
+      precipitacion: [['0mm','#FDCB6E'],['<2mm','#55EFC4'],['2-10mm','#74B9FF'],['>10mm','#0984e3']],
+      riesgo: [['🟢 Bajo','#22c55e'],['🟡 Medio','#f59e0b'],['🔴 Alto','#ef4444']]
     };
     legend.innerHTML = (L[this.filtro] || []).map(([l,c]) => 
       `<span style="display:flex;align-items:center;gap:3px"><i style="width:10px;height:10px;background:${c};border-radius:3px"></i><span style="color:${txt};font-size:10px">${l}</span></span>`

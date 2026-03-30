@@ -592,6 +592,24 @@ const varieties = [
     color: #15803d;
   }
 
+  .detail-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 2px;
+    background: #D4E849;
+    color: #1C1C1C;
+    font-size: 9px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .detail-tag:hover {
+    background: #1C1C1C;
+    color: #D4E849;
+  }
+
   .sticky-bar {
     position: fixed;
     bottom: 0;
@@ -761,7 +779,10 @@ const varieties = [
     }
     
     try {
-      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`);
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${API_BASE}/api/clima/dashboard?provincia=${encodeURIComponent(provincia)}`, { signal: controller.signal });
+      clearTimeout(t);
       if (!res.ok) return;
       const d = await res.json();
       
@@ -805,7 +826,7 @@ const varieties = [
         badge.style.display = 'inline-block';
         
         if (detailDiv && detalle.length > 0) {
-          detailDiv.innerHTML = detalle.slice(0, 2).map(d => `<span class="detail-tag">${d}</span>`).join(' ');
+          detailDiv.innerHTML = detalle.slice(0, 2).map(d => `<a href="/consejero?pregunta=${encodeURIComponent('¿Cómo tratar ' + d + '?')}" class="detail-tag">💬 ${d}</a>`).join('');
           detailDiv.style.display = 'block';
         }
       }

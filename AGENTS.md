@@ -176,6 +176,15 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 
 ---
 
+## 🔧 Optimizaciones de Rendimiento
+
+- **Timeout en llamadas API**: 5-8 segundos máximo
+- **Cache del clima**: 6 horas (reinicie API para actualizar)
+- **Datos estáticos**: El build genera HTML con los datos en tiempo de build
+- **Recomendación**: Ejecutar API y frontend en el mismo servidor para menor latencia
+
+---
+
 ## 🚀 Cómo ejecutar
 
 ### Frontend (Astro)
@@ -278,8 +287,19 @@ PUBLIC_API_URL=http://localhost:3000
 | alertas.astro | clima + suelo + provinciaInfo + RAIF + riesgos + consejos |
 | variedades.astro | riesgos_variedad + detalle[] |
 | plagas.astro | clima + RAIF + consejos por nivel |
-| agua-suelos.astro | suelo + pluviometria + ETo + recomendación riego |
+| agua-suelos.astro | suelo + pluviometria + ETo + recomendación riego + déficit vs media anual |
 | counselor.astro | clima + suelo + riesgos activos + RAIF |
+
+### 🎯 Mejoras Adicionales Posibles (Futura Iteración)
+
+| Página | Idea | Complejidad |
+|--------|------|-------------|
+| **index** | Notificación push cuando hay riesgo ALTO | Alta |
+| **variedades** | "Tu variedad vs predominante" - comparar riesgos | Media |
+| **plagas** | Ranking de riesgo provincial (ordenar por nivel) | Media |
+| **agua-suelos** | Histórico de evapotranspiración (últimos 7 días) | Alta |
+| **Ecosistema** | Guardar todo el estado en localStorage | Baja |
+| **Dashboard** | Añadir más KPIs y gráficos visuales | Media |
 
 ### Legacy notes
 
