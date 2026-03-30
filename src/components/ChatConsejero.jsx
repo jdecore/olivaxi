@@ -41,6 +41,18 @@ export default function ChatConsejero() {
 
   const getSkillColor = (skillId) => SKILLS.find(s => s.id === skillId)?.color || '#f5efe8';
 
+  const toChatClima = (d) => d?.ok ? ({
+    provincia: d.provincia,
+    temperatura: d.clima?.temperatura,
+    humedad: d.clima?.humedad,
+    lluvia: d.clima?.lluvia,
+    suelo_temp: d.suelo?.temperatura,
+    suelo_humedad: d.suelo?.humedad,
+    evapotranspiracion: d.suelo?.evapotranspiracion,
+    riesgosActivos: d.riesgosActivos || [],
+    riesgo: d.clima?.riesgo || 'bajo',
+  }) : null;
+
   const initChat = async () => {
     setTimeout(() => setShowLoading(false), 1500);
     const savedProv = OlivaxiEcosistema.provincia;
@@ -48,8 +60,8 @@ export default function ChatConsejero() {
     if (savedProv) {
       setProvincia(savedProv);
       try {
-        const data = await OlivaxiEcosistema.fetchClima();
-        const provData = data.find((p) => p.provincia === savedProv);
+        const d = await OlivaxiEcosistema.fetchDashboard();
+        const provData = toChatClima(d);
         if (provData) setClimaActual(provData);
       } catch {}
     }
@@ -58,10 +70,10 @@ export default function ChatConsejero() {
 
   const seleccionarProvincia = async (prov) => {
     setProvincia(prov);
-    OlivaxiEcosistema.setProvincia(prov, { fetchDashboard: false });
+    OlivaxiEcosistema.setProvincia(prov);
     try {
-      const data = await OlivaxiEcosistema.fetchClima();
-      const provData = data.find((p) => p.provincia === prov);
+      const d = await OlivaxiEcosistema.fetchDashboard();
+      const provData = toChatClima(d);
       if (provData) setClimaActual(provData);
     } catch {}
   };

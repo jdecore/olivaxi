@@ -99,6 +99,7 @@ const LLM_ALERTAS_PROVIDERS = [
     model: "llama3.1-70b",
   },
 ];
+let llmProviderCursor = 0;
 
 interface ContextoAlerta {
   nombre: string;
@@ -228,14 +229,69 @@ INSTRUCCIONES:
 1. Usa el nombre del usuario
 2. El asunto debe ser claro y urgente (ej: "🔥 ALERTA: Calor extremo en Jaén")
 3. Indica la temperatura actual y qué significa para su olivo
-4. Da 4-5 ACCIONES CONCRETAS Y URGENTES que debe tomar ahora mismo
+4. Da acciones concretas por cada riesgo activo relevante (máximo 4 riesgos)
 5. Considera su variedad de olivo específica al dar recomendaciones
 6. Menciona la fase fenológica actual si es relevante
 7. Usa emojis para hacerlo visual y urgente
 8. El email debe ser moderado (150-250 palabras)
 9. Firma como "🫒 Equipo olivaξ"
+10. Estructura recomendada:
+   - Resumen de situación (2-3 líneas)
+   - "Qué hacer ahora (0-6h)" con bullets
+   - "Qué vigilar en 24h" con bullets
+   - Consejos específicos por riesgo activo (una línea por riesgo)
 
 Devuelve SOLO el contenido HTML del body del email (sin etiquetas <html> ni <body>).`;
+}
+
+function getRotatedProviders() {
+  if (!LLM_ALERTAS_PROVIDERS.length) return [];
+  const start = llmProviderCursor % LLM_ALERTAS_PROVIDERS.length;
+  llmProviderCursor = (llmProviderCursor + 1) % LLM_ALERTAS_PROVIDERS.length;
+  return [
+    ...LLM_ALERTAS_PROVIDERS.slice(start),
+    ...LLM_ALERTAS_PROVIDERS.slice(0, start),
+  ];
+}
+
+function normalizeLLMHtml(content: string): string {
+  const cleaned = content
+    .replace(/^```html\s*/i, "")
+    .replace(/^```/i, "")
+    .replace(/```$/i, "")
+    .trim();
+  if (cleaned.includes("<p") || cleaned.includes("<div") || cleaned.includes("<ul")) return cleaned;
+  return `<p>${cleaned.replace(/\n{2,}/g, "</p><p>").replace(/\n/g, "<br/>")}</p>`;
+}
+
+function buildPersonalizedFallbackEmail(alerta: any, contexto: ContextoAlerta | null, riesgosActivos: any[], tipo: string, temp: number): string {
+  const top = riesgosActivos[0];
+  const topRiesgos = riesgosActivos.slice(0, 4);
+  const clima = contexto ? `${contexto.temp}°C · ${contexto.humedad}% humedad · ${contexto.lluvia}mm lluvia` : `${temp.toFixed(1)}°C`;
+  const suelo = contexto ? `${contexto.suelo.temperatura}°C suelo · ${contexto.suelo.humedad}% humedad suelo · ETo ${contexto.suelo.evapotranspiracion} mm/día` : "";
+
+  const porRiesgoHtml = topRiesgos.map((r) => {
+    const consejos = (CONSEJOS[r.tipo] || CONSEJOS[tipo] || []).slice(0, 2);
+    return `<li><strong>${r.icono || "⚠️"} ${r.titulo || r.tipo}</strong> (${(r.nivel || "medio").toUpperCase()}): ${consejos.join(" · ") || "Monitoriza y actúa de forma preventiva."}</li>`;
+  }).join("");
+
+  const ahora = (CONSEJOS[top?.tipo] || CONSEJOS[tipo] || []).slice(0, 3).map(c => `<li>${c}</li>`).join("");
+  const vigilar = [
+    `📈 Revisa evolución de ${top?.titulo || "riesgos"} cada 6-12h`,
+    "🧪 Verifica humedad de suelo antes del siguiente riego",
+    "🍃 Inspecciona hojas/fruto para síntomas tempranos",
+  ].map(c => `<li>${c}</li>`).join("");
+
+  return `<p>Hola <strong>${alerta.nombre}</strong>,</p>
+<p><strong>${top?.icono || "🚨"} Alerta personalizada para ${alerta.provincia}</strong></p>
+<p><strong>Situación actual:</strong> ${clima}${suelo ? ` · ${suelo}` : ""}</p>
+<p><strong>Qué hacer ahora (0-6h):</strong></p>
+<ul>${ahora || "<li>Refuerza monitoreo y aplica medidas preventivas inmediatas.</li>"}</ul>
+<p><strong>Qué vigilar en 24h:</strong></p>
+<ul>${vigilar}</ul>
+<p><strong>Recomendaciones por riesgo detectado:</strong></p>
+<ul>${porRiesgoHtml || "<li>Sin riesgos críticos, mantén monitoreo preventivo.</li>"}</ul>
+<p>🫒 Equipo olivaξ</p>`;
 }
 
 async function generarEmailConLLM(
@@ -253,7 +309,7 @@ async function generarEmailConLLM(
 
   const errors: Error[] = [];
 
-  for (const provider of LLM_ALERTAS_PROVIDERS) {
+  for (const provider of getRotatedProviders()) {
     if (!provider.key) {
       errors.push(new Error(`${provider.name} sin API key`));
       continue;
@@ -270,12 +326,13 @@ async function generarEmailConLLM(
         headers: {
           Authorization: `Bearer ${provider.key}`,
           "Content-Type": "application/json",
+          ...(provider.name.startsWith("Gemini") ? { "x-goog-api-key": provider.key } : {}),
         },
         body: JSON.stringify({
           model: provider.model,
           messages,
           max_tokens: 1000,
-          temperature: 0.7,
+          temperature: tipo === "alerta" ? 0.55 : 0.7,
         }),
         signal: controller.signal,
       });
@@ -289,9 +346,9 @@ async function generarEmailConLLM(
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
-      if (content) {
+      if (content && typeof content === "string" && content.trim().length > 40) {
         console.log(`[LLM-Alertas] Email generado con ${provider.name}`);
-        return content;
+        return normalizeLLMHtml(content);
       }
     } catch (e) {
       console.error(`[LLM-Alertas] Error con ${provider.name}:`, e);
@@ -334,23 +391,17 @@ async function enviarAlertaInmediata(alerta: any, ip: string): Promise<boolean> 
   }
 
   if (!emailHtml) {
-    const icon = tipo === 'helada' ? '❄️' : tipo === 'inundacion' ? '🌊' : tipo === 'mosca' ? '🪰' : tipo === 'polilla' ? '🦋' : tipo === 'repilo' ? '🍂' : tipo === 'xylella' ? '🚨' : tipo === 'hongos_criticos' ? '🍄' : '🔥';
-    const titulo = `ALERTA ${tipo.replaceAll('_', ' ').toUpperCase()}`;
-    const consejos = CONSEJOS[tipo] || [];
-    emailHtml = `<p>Hola <strong>${alerta.nombre}</strong>,</p>
-<p><strong>${icon} ${titulo}</strong></p>
-<p>Tu provincia <strong>${alerta.provincia}</strong> presenta riesgo activo ahora mismo.</p>
-<p>🌡️ Temperatura actual: <strong>${temp.toFixed(1)}°C</strong></p>
-<p><strong>Riesgos activos:</strong> ${riesgosActivos.slice(0, 3).map(r => `${r.icono} ${r.titulo}`).join(' · ') || 'Sin riesgos críticos'}</p>
-<p><strong>Acciones recomendadas:</strong></p>
-<ul>${consejos.map(c => `<li>${c}</li>`).join('') || ''}</ul>
-<p>🫒 Equipo olivaξ</p>`;
+    emailHtml = buildPersonalizedFallbackEmail(alerta, contexto, riesgosActivos, tipo, temp);
   }
+  const topRisk = riesgosActivos[0];
+  const subject = llmUsed
+    ? `${topRisk?.icono || "🚨"} ALERTA URGENTE - ${alerta.provincia}: ${topRisk?.titulo || tipo}`
+    : `${topRisk?.icono || "🚨"} ALERTA INMEDIATA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
 
   await transporter.sendMail({
     from: `olivaξ <${gmailUser}>`,
     to: alerta.email,
-    subject: llmUsed ? `🚨 ALERTA URGENTE - ${alerta.provincia}: ${temp.toFixed(1)}°C` : `🚨 ALERTA INMEDIATA - ${alerta.provincia}`,
+    subject,
     html: emailHtml,
   });
 
@@ -895,7 +946,6 @@ alertas.post("/check", async (c) => {
       );
 
       let emailHtml: string | null = null;
-      let emailSubject = `🔥 ALERTA: ${alerta.provincia} a ${temp.toFixed(1)}°C`;
       let llmUsed = false;
 
       // Intentar generar email con LLM
@@ -911,26 +961,20 @@ alertas.post("/check", async (c) => {
       // Fallback al template tradicional
       if (!emailHtml) {
         console.log("[ALERTAS] Usando template tradicional de alerta (fallback)");
-        const icon = tipo === 'helada' ? '❄️' : tipo === 'inundacion' ? '🌊' : tipo === 'mosca' ? '🪰' : tipo === 'polilla' ? '🦋' : tipo === 'repilo' ? '🍂' : tipo === 'xylella' ? '🚨' : tipo === 'hongos_criticos' ? '🍄' : '🔥';
-        const titulo = `ALERTA ${tipo.replaceAll('_', ' ').toUpperCase()}`;
-        const consejos = CONSEJOS[tipo] || [];
-        
-        emailHtml = `<p>Hola <strong>${alerta.nombre}</strong>,</p>
-<p><strong>${icon} ${titulo}</strong></p>
-<p>Tu provincia <strong>${alerta.provincia}</strong> ha alcanzado los <strong>${temp.toFixed(1)}°C</strong>.</p>
-<p><strong>Riesgos activos:</strong> ${riesgosActivos.slice(0, 3).map(r => `${r.icono} ${r.titulo}`).join(' · ') || 'Sin riesgos críticos'}</p>
-<p><strong>Consejos urgentes:</strong></p>
-<ul>${consejos.map(c => `<li>${c}</li>`).join('') || ''}</ul>
-<p>🫒 Equipo olivaξ</p>`;
+        emailHtml = buildPersonalizedFallbackEmail(alerta, contexto, riesgosActivos, tipo, temp);
       } else {
         // El LLM ya incluye la firma, no añadir nada extra
       }
+      const topRisk = riesgosActivos[0];
+      const emailSubject = llmUsed
+        ? `${topRisk?.icono || "🚨"} ALERTA URGENTE - ${alerta.provincia}: ${topRisk?.titulo || tipo}`
+        : `${topRisk?.icono || "🚨"} ALERTA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
 
       try {
         await transporter.sendMail({
           from: `olivaξ <${gmailUser}>`,
           to: alerta.email,
-          subject: llmUsed ? `🚨 ALERTA URGENTE - ${alerta.provincia}: ${temp.toFixed(1)}°C` : emailSubject,
+          subject: emailSubject,
           html: emailHtml,
         });
         console.log("[ALERTAS] Alerta enviada a:", alerta.email, llmUsed ? "(con LLM)" : "(template)");

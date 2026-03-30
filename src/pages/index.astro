@@ -441,7 +441,12 @@ function renderAlertasPanel(d) {
   const nivelRiesgo = riesgoVariedad ? riesgoVariedad : riesgoProvincia;
   const nivelTexto = nivelRiesgo === 'alto' || nivelRiesgo === 'crítico' ? 'ALTO' : nivelRiesgo === 'medio' ? 'MEDIO' : 'BAJO';
   const nivelColor = nivelRiesgo === 'alto' || nivelRiesgo === 'crítico' ? '#ef4444' : nivelRiesgo === 'medio' ? '#f59e0b' : '#22c55e';
-  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat" style="background:${nivelColor}15;border:1px solid ${nivelColor}40"><div class="icon" style="color:${nivelColor}">${riesgoVariedad ? getRiesgoDisplay(riesgoVariedad) : getRiesgoDisplay(riesgoProvincia)}</div><div class="value" style="color:${nivelColor}">${nivelTexto}</div><div class="label">${riesgoVariedad ? var_ : 'Riesgo'}</div></div></div>` : '';
+  const riskIsLow = !(nivelRiesgo === 'alto' || nivelRiesgo === 'crítico' || nivelRiesgo === 'medio');
+  const riskCardStyle = riskIsLow
+    ? 'background:var(--color-white-surface);border:1px solid var(--color-border)'
+    : `background:${nivelColor}15;border:1px solid ${nivelColor}40`;
+  const riskTextColor = riskIsLow ? 'var(--color-aceituna)' : nivelColor;
+  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat" style="${riskCardStyle}"><div class="icon" style="color:${riskTextColor}">${riesgoVariedad ? getRiesgoDisplay(riesgoVariedad) : getRiesgoDisplay(riesgoProvincia)}</div><div class="value" style="color:${riskTextColor}">${nivelTexto}</div><div class="label">${riesgoVariedad ? var_ : 'Riesgo'}</div></div></div>` : '';
 
   const catTitle = { clima: '🌡️ Clima', suelo: '🪨 Suelo', plagas: '🦟 Plagas', hongos: '🍄 Hongos' };
   const grouped = riesgos.reduce((acc, r) => {
@@ -554,55 +559,55 @@ function renderSueloPanel(d) {
 
 // --- Render: Narrative section ---
 function renderNarrativeSection(d) {
-  if (!NARRATIVE_SECTION || !d || !d.comparacionHistorica) return;
+  if (!NARRATIVE_SECTION || !d) return;
   NARRATIVE_SECTION.classList.add('visible');
-  const comp = d.comparacionHistorica;
-  const tempClass = comp.variacion > 0 ? 'positivo' : comp.variacion < 0 ? 'negativo' : '';
+  const riesgosActivos = d.riesgosActivos || [];
+  const top = riesgosActivos[0] || null;
+  const riesgoGlobal = d.clima?.riesgo || 'bajo';
+  const tempClass = (riesgoGlobal === 'alto' || riesgoGlobal === 'crítico') ? 'positivo' : '';
   const deficitRiego = d.sueloAnalitica?.deficitRiego || 0;
-  const lluviaSub = deficitRiego > 0 
-    ? `💧 Necesitas regar` 
-    : `✅ No necesitas regar`;
-  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${deficitRiego.toFixed(1)}mm</div><div class="narrative-sub">${lluviaSub}</div></div>`;
+  const necesidadRiego = d.sueloAnalitica?.necesidadRiego || 0;
+  const plagasAltas = ['mosca', 'polilla', 'repilo', 'xylella'].filter(k => d.plagas?.[k]?.nivel === 'alto').length;
+  const hongosActivos = riesgosActivos.filter(r => r.categoria === 'hongos').length;
+  const resumenRiesgo = top ? `${top.icono} ${top.titulo}` : '✅ Sin riesgo activo';
+  const aguaTexto = deficitRiego > 0 ? `Déficit ${deficitRiego.toFixed(1)} mm/día` : 'Balance hídrico estable';
+  const aguaSub = necesidadRiego > 0 ? `Riego objetivo: ${necesidadRiego.toFixed(1)} mm/día` : 'No requiere ajuste de riego';
+  const sanidadTexto = plagasAltas > 0 ? `🦟 ${plagasAltas} plaga(s) en ALTO` : (hongosActivos > 0 ? `🍄 ${hongosActivos} riesgo(s) de hongos` : '✅ Sanidad estable');
+  const sanidadSub = d.provinciaInfo?.epocaCritica ? `Época crítica: ${d.provinciaInfo.epocaCritica}` : 'Monitoreo preventivo recomendado';
+  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Riesgo global hoy</div><div class="narrative-value">${riesgoGlobal.toUpperCase()}</div><div class="narrative-sub">${resumenRiesgo}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Agua y suelo</div><div class="narrative-value">${aguaTexto}</div><div class="narrative-sub">${aguaSub}</div></div><div class="narrative-item ${(plagasAltas > 0 || hongosActivos > 0) ? 'positivo' : ''}"><div class="narrative-label">Sanidad del olivar</div><div class="narrative-value">${sanidadTexto}</div><div class="narrative-sub">${sanidadSub}</div></div>`;
   
   // Generar conclusión accionable
   const conclusionEl = $('narrative-conclusion');
   if (!conclusionEl) return;
-  const esFrio = comp.variacion < 0;
-  const esCalor = comp.variacion > 0 || comp.riesgoCalor;
-  const tieneDeficit = deficitRiego > 0;
+  const tiposActivos = new Set(riesgosActivos.map(r => r.tipo));
+  const tieneDeficit = deficitRiego > 0 || tiposActivos.has('deficit_pluviometrico') || tiposActivos.has('eto_alta');
+  const riesgoAlto = riesgoGlobal === 'alto' || riesgoGlobal === 'crítico';
+  const riesgoHongo = hongosActivos > 0 || tiposActivos.has('repilo') || tiposActivos.has('verticilosis') || tiposActivos.has('antracnosis') || tiposActivos.has('tuberculosis');
   
   let pregunta = '';
   let linea1 = '';
   let linea2 = '';
   
-  if (esFrio && tieneDeficit) {
-    linea1 = 'Tu zona está más fría de lo normal con déficit de lluvia.';
-    linea2 = 'Monitoriza el riego esta semana y evita encharcamientos.';
-    pregunta = 'Mi zona está más fría de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?';
-  } else if (esCalor && tieneDeficit) {
-    linea1 = 'Tu zona está más caliente de lo normal con déficit de lluvia.';
-    linea2 = 'Riega al amanecer y aplica mulch para retener humedad.';
-    pregunta = 'Mi zona está más caliente de lo normal con déficit de lluvia. ¿Cómo adapto el riego a estas condiciones?';
-  } else if (esCalor && comp.riesgoCalor) {
-    linea1 = 'Tu zona tiene riesgo de calor extremo.';
-    linea2 = 'Protege el olivar con riego abundante y evita podas.';
-    pregunta = 'Mi zona tiene riesgo de calor extremo. ¿Cómo protejo el olivar?';
-  } else if (!esFrio && !esCalor && !tieneDeficit) {
-    linea1 = 'Tu zona tiene condiciones óptimas para el olivar.';
-    linea2 = 'Es ideal para tareas de mantenimiento.';
-    pregunta = 'Las condiciones son óptimas. ¿Qué tareas de mantenimiento recomiendan para mis olivos?';
-  } else if (esFrio) {
-    linea1 = 'Tu zona está más fría de lo normal.';
-    linea2 = 'Consulta la previsión de heladas y protege árboles jóvenes.';
-    pregunta = 'Mi zona está más fría de lo normal. ¿Cómo protejo los olivos de las heladas tardías?';
+  if (riesgoAlto && tieneDeficit) {
+    linea1 = 'Tu zona tiene riesgo ALTO con estrés hídrico activo.';
+    linea2 = 'Prioriza riego al amanecer, acolchado y revisión diaria de suelo.';
+    pregunta = 'Tengo riesgo alto y déficit hídrico. Dame un plan de 3 acciones para hoy y mañana.';
+  } else if (riesgoHongo) {
+    linea1 = 'Se detectan condiciones favorables a hongos en tu zona.';
+    linea2 = 'Mejora ventilación, evita riego por aspersión y vigila síntomas.';
+    pregunta = 'Tengo riesgo de hongos. ¿Qué protocolo preventivo aplico esta semana por variedad?';
   } else if (tieneDeficit) {
     linea1 = 'Tu zona tiene déficit hídrico.';
     linea2 = 'Aumenta la frecuencia de riego gradualmente.';
-    pregunta = 'Tengo déficit hídrico. ¿Cómo optimizo el riego durante este déficit?';
+    pregunta = 'Tengo déficit hídrico. ¿Cómo optimizo el riego según ETo, tipo de suelo y mi variedad?';
+  } else if (riesgoAlto) {
+    linea1 = 'Tu zona presenta riesgo ALTO hoy.';
+    linea2 = 'Actúa sobre el riesgo principal y confirma evolución en 24h.';
+    pregunta = 'Hoy tengo riesgo alto en mi zona. ¿Qué hago primero y qué monitorizo mañana?';
   } else {
     linea1 = 'Situación estable en tu zona.';
-    linea2 = 'Continúa monitoreando las condiciones climáticas.';
-    pregunta = '¿Qué recomendaciones generales tienen para el cuidado del olivar?';
+    linea2 = 'Mantén monitoreo y tareas de mantenimiento preventivo.';
+    pregunta = 'Con riesgo bajo hoy, ¿qué tareas preventivas recomiendas esta semana para mi olivar?';
   }
   
   conclusionEl.innerHTML = `<div class="narrative-conclusion-line1">${linea1}</div><div class="narrative-conclusion-line2">${linea2}</div>`;
@@ -636,10 +641,10 @@ function renderAll() {
   } else if (prov && datosClima.length) {
     // Si no hay dashboard pero hay provincia, usar datos de clima
     const p = datosClima.find(x => x.provincia === prov);
-    if (p) {
-      renderAlertasPanel(p);
-      updateRiesgoBadgeFromClima(p);
-    }
+      if (p) {
+        renderAlertasPanel(p);
+        updateRiesgoBadgeFromClima(p);
+      }
   } else {
     renderAlertasPanel(null);
     if (!prov) {

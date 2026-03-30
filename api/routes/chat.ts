@@ -108,19 +108,11 @@ chat.post("/", async (c) => {
   const variedadLocal = provinciaInfo?.variedadPredominante ?? '';
   
   // Riesgos activos
-  const riesgosOlivar = provinciaInfo?.riesgos_olivar || {};
-  const riesgosPlaga = provinciaInfo?.riesgos_plaga || {};
-  let riesgosTexto = '✅ Sin riesgos activos';
-  const riesgosActivos: string[] = [];
-  if (riesgosOlivar?.calor?.nivel === 'alto') riesgosActivos.push('🔥 CALOR ALTO');
-  if (riesgosOlivar?.calor?.nivel === 'medio') riesgosActivos.push('🌡️ Calor medio');
-  if (riesgosOlivar?.frio?.nivel === 'alto') riesgosActivos.push('❄️ HELADA');
-  if (riesgosOlivar?.baja_humedad?.nivel === 'alto') riesgosActivos.push('🏜️ SEQUÍA');
-  if (riesgosOlivar?.alta_humedad?.nivel === 'alto') riesgosActivos.push('🍄 Humedad alta');
-  if (riesgosPlaga?.mosca?.nivel === 'alto') riesgosActivos.push('🪰 MOSCA ALTA');
-  if (riesgosPlaga?.polilla?.nivel === 'alto') riesgosActivos.push('🦋 POLILLA ALTA');
-  if (riesgosPlaga?.repilo?.nivel === 'alto') riesgosActivos.push('🍂 REPILO ALTO');
-  if (riesgosActivos.length > 0) riesgosTexto = riesgosActivos.join(' | ');
+  const riesgosActivosRaw = Array.isArray(provinciaInfo?.riesgosActivos) ? provinciaInfo.riesgosActivos : [];
+  const riesgosActivosTexto = riesgosActivosRaw.slice(0, 8).map((r: any) =>
+    `${r.icono || '⚠️'} ${r.titulo || r.tipo} [${r.categoria || 'general'}] (${(r.nivel || 'medio').toUpperCase()})`
+  );
+  const riesgosTexto = riesgosActivosTexto.length ? riesgosActivosTexto.join(' | ') : '✅ Sin riesgos activos';
   
   const contextoAnterior = historial ? `Historial previo: ${historial}` : '';
   const contextoVariedad = variedad ? `Variedad del usuario: ${variedad}` : '';
