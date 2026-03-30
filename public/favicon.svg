@@ -1,4 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#1C1C1C" rx="6"/>
-  <text x="16" y="23" font-family="Arial" font-size="20" font-weight="bold" fill="#D4E849" text-anchor="middle">ξ</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="og64" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B7D3A"/>
+      <stop offset="100%" stop-color="#4A5A28"/>
+    </linearGradient>
+    <linearGradient id="lg64" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9ACD32"/>
+      <stop offset="100%" stop-color="#6B8E23"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="64" height="64" fill="#1C1C1C" rx="10"/>
+  
+  <!-- O con aceituna -->
+  <circle cx="22" cy="32" r="14" fill="#D4E849"/>
+  <ellipse cx="22" cy="34" rx="6" ry="8" fill="url(#og64)"/>
+  <ellipse cx="19" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.35)"/>
+  <path d="M25 24 Q30 20 32 24 Q30 27 25 24" fill="url(#lg64)"/>
+  
+  <!-- Texto Olivaξ -->
+  <text x="40" y="28" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#D4E849">Oliva</text>
+  <text x="40" y="44" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#D4E849" stroke="#1C1C1C" stroke-width="1">ξ</text>
 </svg>

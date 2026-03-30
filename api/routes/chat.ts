@@ -8,6 +8,14 @@ const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 20;
 const RATE_WINDOW = 60 * 1000;
 
+// Cleanup expired entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of rateLimit.entries()) {
+    if (now > val.resetAt) rateLimit.delete(key);
+  }
+}, 10 * 60 * 1000);
+
 // Skills disponibles para el chat
 const SKILL_PROMPTS: Record<string, string> = {
   libre: '',  // Sin skill específico - conversación general

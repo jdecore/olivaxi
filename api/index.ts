@@ -9,25 +9,37 @@ import { ejecutarCheckAlertas } from "./services/cronAlertas";
 
 const app = new Hono();
 
-// Rate limiting simple en memoria (resetea cada hora)
-// EXCLUIR las peticiones del CRON interno (header X-Internal-Cron)
+// Allowed origins for CORS (production + dev)
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : ['https://olivaxi.duckdns.org', 'http://olivaxi.duckdns.org:4321', 'http://localhost:4321', 'http://localhost:3000'];
+
+// Rate limiting simple en memoria con cleanup periódico
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 100;
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
+
+// Cleanup expired entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (now > value.resetTime + RATE_LIMIT_WINDOW) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 10 * 60 * 1000);
 
 const isInternalCron = (c: any): boolean => {
   return c.req.header('X-Internal-Cron') === 'true';
 };
 
 const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
-  // Skip rate limit para CRON interno
   if (isInternalCron(c)) {
     await next();
     return;
   }
   
   const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
-  const now = Date.now();
   
   let record = rateLimitMap.get(ip);
   if (!record || now > record.resetTime) {
@@ -49,7 +61,13 @@ app.use("*", rateLimitMiddleware);
 app.use(
   "*",
   cors({
-    origin: '*',
+    origin: (origin) => {
+      if (!origin) return true; // Allow requests without origin (curl, server-to-server)
+      return ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost');
+    },
+    allowHeaders: ['Content-Type', 'X-Internal-Cron'],
+    exposeHeaders: ['Content-Length'],
+    maxAge: 86400,
   })
 );
 

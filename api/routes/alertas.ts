@@ -3,13 +3,22 @@ import nodemailer from "nodemailer";
 import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
 import { getClimaByProvincia, getClimaData } from "./clima";
+import { calcularRiesgosPlaga, calcularRiesgosOlivar } from "../services/riesgos";
 
 // ============================================
 // SEGURIDAD - Rate Limiting simple (in-memory)
 // ============================================
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minuto
-const RATE_LIMIT_MAX = 10; // máximo 10 requests por IP
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const RATE_LIMIT_MAX = 10;
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+// Cleanup expired entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of requestCounts.entries()) {
+    if (now > val.resetTime + RATE_LIMIT_WINDOW) requestCounts.delete(key);
+  }
+}, 10 * 60 * 1000);
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -289,132 +298,18 @@ const CONSEJOS: Record<string, string[]> = {
   condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
 };
 
+// Use functions from ../services/riesgos.ts
+// calcularRiesgosPlaga and calcularRiesgosOlivar imported at top
+
 const VALID_PROVINCIAS = PROVINCIAS.map(p => p.nombre);
 const VALID_VARIEDADES = Object.keys(VARIEDADES_INFO);
 const VALID_TIPOS = Object.keys(CONSEJOS);
 
+// Helper to call imported functions (they use object params)
+const callRiesgosPlaga = (t: number, h: number, l: number) => calcularRiesgosPlaga({ temp: t, humedad: h, lluvia: l });
+const callRiesgosOlivar = (t: number, h: number, l: number) => calcularRiesgosOlivar({ temp: t, humedad: h, lluvia: l });
+
 // ============================================
-// Funciones de cálculo de riesgos (para contexto LLM)
-// ============================================
-function calcularRiesgosPlaga(temp: number, humedad: number, lluvia: number) {
-  const mosca = (() => {
-    const tempAlto = temp >= 18 && temp <= 32;
-    const humidityAlto = humedad > 60;
-    const tempMedio = temp >= 15 && temp <= 35;
-    const humidityMedio = humedad > 40;
-    const tempBajo = temp > 35 || temp < 10;
-    const humedadBajo = humedad < 30;
-
-    if (tempAlto && humidityAlto) {
-      return { nivel: 'alto', descripcion: 'Condiciones perfectas para reproducción de mosca' };
-    } else if (tempMedio && humidityMedio) {
-      return { nivel: 'medio', descripcion: 'Vigilar aparición de mosca del olivo' };
-    } else if (tempBajo || humedadBajo) {
-      return { nivel: 'bajo', descripcion: 'Riesgo bajo de mosca del olivo' };
-    }
-    return { nivel: 'bajo', descripcion: 'Riesgo bajo de mosca del olivo' };
-  })();
-
-  const polilla = (() => {
-    const tempOptimo = temp >= 15 && temp <= 25;
-    const lluviaBaja = lluvia < 5;
-    const tempMedio = temp >= 10 && temp <= 30;
-    const tempBajo = temp < 8 || temp > 32;
-
-    if (tempOptimo && lluviaBaja) {
-      return { nivel: 'alto', descripcion: 'Condiciones favorables para polilla' };
-    } else if (tempMedio) {
-      return { nivel: 'medio', descripcion: 'Monitorear trampas de polilla' };
-    } else if (tempBajo) {
-      return { nivel: 'bajo', descripcion: 'Riesgo bajo de polilla' };
-    }
-    return { nivel: 'bajo', descripcion: 'Riesgo bajo de polilla' };
-  })();
-
-  const xylella = (() => {
-    const alto = temp > 20 && humedad > 70 && lluvia > 10;
-    const medio = temp > 15 && humedad > 50;
-
-    if (alto) {
-      return { nivel: 'alto', descripcion: 'Condiciones de riesgo - Revisar vectores' };
-    } else if (medio) {
-      return { nivel: 'medio', descripcion: 'Condiciones moderadas - Vigilancia preventiva' };
-    }
-    return { nivel: 'bajo', descripcion: 'Riesgo bajo de Xylella' };
-  })();
-
-  const repilo = (() => {
-    const alto = lluvia > 5 && temp >= 10 && temp <= 20;
-    const medio = humedad > 70 && temp < 25;
-
-    if (alto) {
-      return { nivel: 'alto', descripcion: 'Condiciones ideales para repilo - Aplicar fungicida' };
-    } else if (medio) {
-      return { nivel: 'medio', descripcion: 'Humedad elevada - Vigilar manchas en hojas' };
-    }
-    return { nivel: 'bajo', descripcion: 'Riesgo bajo de repilo' };
-  })();
-
-  return { mosca, polilla, xylella, repilo };
-}
-
-function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
-  const frio = (() => {
-    if (temp < 0) {
-      return { nivel: 'alto', descripcion: 'Helada - riesgo de daño en flores y frutos' };
-    } else if (temp < 5) {
-      return { nivel: 'medio', descripcion: 'Temperatura muy baja - riesgo de helada' };
-    }
-    return { nivel: 'bajo', descripcion: 'Temperatura adecuada para olivo' };
-  })();
-
-  const calor = (() => {
-    if (temp > 40) {
-      return { nivel: 'alto', descripcion: 'Calor extremo - cierre estomático' };
-    } else if (temp > 35) {
-      return { nivel: 'medio', descripcion: 'Temperatura alta - estrés térmico' };
-    }
-    return { nivel: 'bajo', descripcion: 'Temperatura normal para olivo' };
-  })();
-
-  const baja_humedad = (() => {
-    if (humedad < 20) {
-      return { nivel: 'alto', descripcion: 'Humedad muy baja - estrés hídrico severo' };
-    } else if (humedad < 35) {
-      return { nivel: 'medio', descripcion: 'Humedad baja - precaución' };
-    }
-    return { nivel: 'bajo', descripcion: 'Humedad adecuada' };
-  })();
-
-  const alta_humedad = (() => {
-    if (humedad > 85) {
-      return { nivel: 'alto', descripcion: 'Humedad muy alta - riesgo de enfermedades' };
-    } else if (humedad > 75) {
-      return { nivel: 'medio', descripcion: 'Humedad elevada - vigilancia' };
-    }
-    return { nivel: 'bajo', descripcion: 'Humedad normal' };
-  })();
-
-  const baja_lluvia = (() => {
-    if (lluvia < 0.5) {
-      return { nivel: 'alto', descripcion: 'Sequía severa' };
-    } else if (lluvia < 2) {
-      return { nivel: 'medio', descripcion: 'Lluvia baja - monitorear riego' };
-    }
-    return { nivel: 'bajo', descripcion: 'Precipitación adecuada' };
-  })();
-
-  const alta_lluvia = (() => {
-    if (lluvia > 20) {
-      return { nivel: 'alto', descripcion: 'Lluvia intensa - riesgo de inundación' };
-    } else if (lluvia > 10) {
-      return { nivel: 'medio', descripcion: 'Lluvia moderada - vigilancia' };
-    }
-    return { nivel: 'bajo', descripcion: 'Precipitación normal' };
-  })();
-
-  return { frio, calor, baja_humedad, alta_humedad, baja_lluvia, alta_lluvia };
-}
 
 // ============================================
 // Función para obtener contexto completo del clima (usa cache)
@@ -437,8 +332,8 @@ async function obtenerContextoAlerta(
       variedadNombre: VARIEDADES_INFO[variedad]?.nombre || variedad,
       fenologia: fenologia || 'No especificada', tipo,
       temp: 20, humedad: 50, lluvia: 0,
-      riesgos_olivar: calcularRiesgosOlivar(20, 50, 0),
-      riesgos_plaga: calcularRiesgosPlaga(20, 50, 0),
+      riesgos_olivar: callRiesgosOlivar(20, 50, 0),
+      riesgos_plaga: callRiesgosPlaga(20, 50, 0),
       faseFenologica: fenologia || 'No especificada'
     };
   }
@@ -447,8 +342,8 @@ async function obtenerContextoAlerta(
   const humedad = provinciaData.humedad ?? 50;
   const lluvia = provinciaData.lluvia ?? 0;
 
-  const riesgos_olivar = calcularRiesgosOlivar(temp, humedad, lluvia);
-  const riesgos_plaga = calcularRiesgosPlaga(temp, humedad, lluvia);
+  const riesgos_olivar = callRiesgosOlivar(temp, humedad, lluvia);
+  const riesgos_plaga = callRiesgosPlaga(temp, humedad, lluvia);
 
   const varInfo = VARIEDADES_INFO[variedad];
   const faseFenologica = fenologia || 'No especificada';

@@ -1,9 +1,10 @@
 import nodemailer from "nodemailer";
 import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
+import { calcularRiesgosOlivar } from "./riesgos";
 
 // Configuración de email
-const gmailUser = process.env.GMAIL_USER || "jdenriquezr@gmail.com";
+const gmailUser = process.env.GMAIL_USER;
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -13,7 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Datos de variedades y consejos (copiados de alertas.ts para evitar ciclos de importación)
+// Datos de variedades y consejos
 const VARIEDADES_INFO: Record<string, any> = {
   cornicabra: { nombre: "Cornicabra", clima: { frio: "muy-alta", calor: "muy-alta", sequia: "muy-alta", humedad_alta: "media" } },
   picual: { nombre: "Picual", clima: { frio: "alta", calor: "muy-alta", sequia: "media", humedad_alta: "baja" } },
@@ -41,13 +42,8 @@ const CONSEJOS: Record<string, string[]> = {
   condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
 };
 
-function calcularRiesgosOlivar(temp: number, humedad: number, lluvia: number) {
-  const frio = temp < 0 ? { nivel: 'alto', descripcion: 'Helada' } : temp < 5 ? { nivel: 'medio', descripcion: 'Temperatura baja' } : { nivel: 'bajo', descripcion: 'Temperatura adecuada' };
-  const calor = temp > 40 ? { nivel: 'alto', descripcion: 'Calor extremo' } : temp > 35 ? { nivel: 'medio', descripcion: 'Temperatura alta' } : { nivel: 'bajo', descripcion: 'Temperatura normal' };
-  const baja_humedad = humedad < 20 ? { nivel: 'alto', descripcion: 'Humedad muy baja' } : humedad < 35 ? { nivel: 'medio', descripcion: 'Humedad baja' } : { nivel: 'bajo', descripcion: 'Humedad adecuada' };
-  const alta_humedad = humedad > 85 ? { nivel: 'alto', descripcion: 'Humedad muy alta' } : humedad > 75 ? { nivel: 'medio', descripcion: 'Humedad elevada' } : { nivel: 'bajo', descripcion: 'Humedad normal' };
-  return { frio, calor, baja_humedad, alta_humedad };
-}
+// Helper wrapper
+const callRiesgosOlivar = (t: number, h: number, l: number) => calcularRiesgosOlivar({ temp: t, humedad: h, lluvia: l });
 
 export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: number; enviados: number }> {
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
@@ -127,7 +123,7 @@ export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: nu
     const icon = tipo === 'calor' ? '🔥' : tipo === 'helada' ? '❄️' : '💧';
     const titulo = tipo === 'calor' ? 'ALERTA DE CALOR EXTREMO' : tipo === 'helada' ? 'ALERTA DE HELADA' : 'ALERTA DE ESTRÉS HÍDRICO';
     const consejos = CONSEJOS[tipo] || [];
-    const riesgos = calcularRiesgosOlivar(temp, clima.humedad, clima.lluvia);
+    const riesgos = callRiesgosOlivar(temp, clima.humedad, clima.lluvia);
 
     const html = `
 <p>Hola <strong>${alerta.nombre}</strong>,</p>

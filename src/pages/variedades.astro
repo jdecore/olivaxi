@@ -1,86 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ComparadorVariedades from '../components/ComparadorVariedades.astro';
 
 const varieties = [
-  {
-    id: "cornicabra",
-    nombre: "Cornicabra",
-    origen: "Castilla-La Mancha",
-    etiqueta: "RÚSTICA",
-    categoria: ["alta-temp", "baja-temp", "baja-humedad", "baja-lluvia"],
-    descripcion: "La más resistente al frío y sequía. Tolera hasta -10°C y 40°C. Ideal para clima continental.",
-    notas_climaticas: "Tolera frío intenso (-10°C), calor extremo (40°C), y sequía severa. Sensible a humedad alta.",
-    clima: { frio: 95, calor: 90, sequia: 95, humedad: 40, productividad: 75 },
-    resistencia: { seca: "Muy alta", calor: "Muy alta", frio: "Muy alta", humedad: "Media" },
-    rango: { frio: "-10°C", calor: "40°C", humedad: "<80%" },
-    riesgos: "Vulnerable a enfermedades fúngicas con humedad persistente."
-  },
-  {
-    id: "picual",
-    nombre: "Picual",
-    origen: "Jaén, Andalucía",
-    etiqueta: "REINA",
-    categoria: ["alta-temp", "alta-produccion"],
-    descripcion: "50% del olivar español. Máxima productividad y resistente a mosca. Tolera hasta 40°C.",
-    notas_climaticas: "Tolera frío hasta -7°C y calor hasta 40°C. Sensible a humedad alta y repilo.",
-    clima: { frio: 80, calor: 85, sequia: 70, humedad: 35, productividad: 95 },
-    resistencia: { seca: "Buena", calor: "Muy alta", frio: "Alta", humedad: "Baja" },
-    rango: { frio: "-7°C", calor: "40°C", humedad: "<75%" },
-    riesgos: "Sensible a Xylella, repilo y antracnosis en ambientes húmedos."
-  },
-  {
-    id: "arbequina",
-    nombre: "Arbequina",
-    origen: "Lleida, Cataluña",
-    etiqueta: "SUPERINTENSIVA",
-    categoria: ["alta-produccion", "alta-humedad"],
-    descripcion: "Ideal para riego y plantaciones intensivas. Resistente a Prays y hongos. Sensible al frío intenso.",
-    notas_climaticas: "Tolera frío hasta -5°C, pero calor limitado a 35°C. Sensible a sequía y humedad alta.",
-    clima: { frio: 70, calor: 50, sequia: 40, humedad: 35, productividad: 90 },
-    resistencia: { seca: "Baja", calor: "Media", frio: "Muy alta", humedad: "Baja" },
-    rango: { frio: "-5°C", calor: "35°C", humedad: "<70%" },
-    riesgos: "Alta vulnerabilidad a hongos y estrés hídrico. Requiere manejo sanitario."
-  },
-  {
-    id: "hojiblanca",
-    nombre: "Hojiblanca",
-    origen: "Málaga, Andalucía",
-    etiqueta: "DOBLE APTITUD",
-    categoria: ["alta-temp"],
-    descripcion: "Aceite y mesa. Resistente al calor del sur. Tolera hasta 38°C con buena productividad.",
-    notas_climaticas: "Tolera calor hasta 38°C. Resfriamiento medio (-3°C). Sensible a frío intenso y humedad.",
-    clima: { frio: 55, calor: 80, sequia: 65, humedad: 50, productividad: 72 },
-    resistencia: { seca: "Media-alta", calor: "Alta", frio: "Media", humedad: "Media" },
-    rango: { frio: "-3°C", calor: "38°C", humedad: "<75%" },
-    riesgos: "Sensibilidad media a heladas y enfermedades fúngicas."
-  },
-  {
-    id: "manzanilla",
-    nombre: "Manzanilla",
-    origen: "Sevilla, Andalucía",
-    etiqueta: "MESA",
-    categoria: ["alta-humedad", "baja-lluvia"],
-    descripcion: "La variedad de mesa por excelencia. Gran calibre. Necesita agua y sensible a condiciones extremas.",
-    notas_climaticas: "Tolera calor hasta 38°C pero sensible a sequía (-30% productividad). Sensible a humedad.",
-    clima: { frio: 45, calor: 65, sequia: 35, humedad: 25, productividad: 70 },
-    resistencia: { seca: "Baja", calor: "Media-alta", frio: "Media", humedad: "Baja" },
-    rango: { frio: "-3°C", calor: "38°C", humedad: "<70%" },
-    riesgos: "Muy sensible a repilo, antracnosis y Xylella. Requiere clima seco."
-  },
-  {
-    id: "empeltre",
-    nombre: "Empeltre",
-    origen: "Aragón",
-    etiqueta: "CONTINENTAL",
-    categoria: ["baja-temp", "baja-humedad", "baja-lluvia"],
-    descripcion: "Tradicional del Valle del Ebro. Resistente a sequía y condiciones adversas. Tolera -5°C.",
-    notas_climaticas: "Tolera frío hasta -5°C y calor hasta 38°C. Muy resistente a sequía (secano).",
-    clima: { frio: 70, calor: 75, sequia: 85, humedad: 45, productividad: 65 },
-    resistencia: { seca: "Muy alta", calor: "Media-alta", frio: "Media", humedad: "Media" },
-    rango: { frio: "-5°C", calor: "38°C", humedad: "<75%" },
-    riesgos: "Media sensibilidad a hongos en ambientes húmedos persistentes."
-  }
+  { id: "cornicabra", nombre: "Cornicabra", origen: "Castilla-La Mancha", etiqueta: "RÚSTICA", categoria: ["alta-temp", "baja-temp", "baja-humedad", "baja-lluvia"], descripcion: "La más resistente al frío y sequía. Tolera hasta -10°C y 40°C. Ideal para clima continental.", riesgos: "Vulnerable a enfermedades fúngicas con humedad persistente.", rango: { frio: "-10°C", calor: "40°C", humedad: "<80%" }, resistencia: { seca: "Muy alta", calor: "Muy alta", frio: "Muy alta", humedad: "Media" }, clima: { frio: 95, calor: 90, sequia: 95, humedad: 40, productividad: 75 } },
+  { id: "picual", nombre: "Picual", origen: "Jaén, Andalucía", etiqueta: "REINA", categoria: ["alta-temp", "alta-produccion"], descripcion: "50% del olivar español. Máxima productividad y resistente a mosca. Tolera hasta 40°C.", riesgos: "Sensible a Xylella, repilo y antracnosis en ambientes húmedos.", rango: { frio: "-7°C", calor: "40°C", humedad: "<75%" }, resistencia: { seca: "Buena", calor: "Muy alta", frio: "Alta", humedad: "Baja" }, clima: { frio: 80, calor: 85, sequia: 70, humedad: 35, productividad: 95 } },
+  { id: "arbequina", nombre: "Arbequina", origen: "Lleida, Cataluña", etiqueta: "SUPERINTENSIVA", categoria: ["alta-produccion", "alta-humedad"], descripcion: "Ideal para riego y plantaciones intensivas. Resistente a Prays y hongos. Sensible al frío intenso.", riesgos: "Alta vulnerabilidad a hongos y estrés hídrico. Requiere manejo sanitario.", rango: { frio: "-5°C", calor: "35°C", humedad: "<70%" }, resistencia: { seca: "Baja", calor: "Media", frio: "Media", humedad: "Baja" }, clima: { frio: 70, calor: 50, sequia: 40, humedad: 35, productividad: 90 } },
+  { id: "hojiblanca", nombre: "Hojiblanca", origen: "Málaga, Andalucía", etiqueta: "DOBLE APTITUD", categoria: ["alta-temp"], descripcion: "Aceite y mesa. Resistente al calor del sur. Tolera hasta 38°C con buena productividad.", riesgos: "Sensibilidad media a heladas y enfermedades fúngicas.", rango: { frio: "-3°C", calor: "38°C", humedad: "<75%" }, resistencia: { seca: "Media-alta", calor: "Alta", frio: "Media", humedad: "Media" }, clima: { frio: 55, calor: 80, sequia: 65, humedad: 50, productividad: 72 } },
+  { id: "manzanilla", nombre: "Manzanilla", origen: "Sevilla, Andalucía", etiqueta: "MESA", categoria: ["alta-humedad", "baja-lluvia"], descripcion: "La variedad de mesa por excelencia. Gran calibre. Necesita agua y sensible a condiciones extremas.", riesgos: "Muy sensible a repilo, antracnosis y Xylella. Requiere clima seco.", rango: { frio: "-3°C", calor: "38°C", humedad: "<70%" }, resistencia: { seca: "Baja", calor: "Media-alta", frio: "Media", humedad: "Baja" }, clima: { frio: 45, calor: 65, sequia: 35, humedad: 25, productividad: 70 } },
+  { id: "empeltre", nombre: "Empeltre", origen: "Aragón", etiqueta: "CONTINENTAL", categoria: ["baja-temp", "baja-humedad", "baja-lluvia"], descripcion: "Tradicional del Valle del Ebro. Resistente a sequía y condiciones adversas. Tolera -5°C.", riesgos: "Media sensibilidad a hongos en ambientes húmedos persistentes.", rango: { frio: "-5°C", calor: "38°C", humedad: "<75%" }, resistencia: { seca: "Muy alta", calor: "Media-alta", frio: "Media", humedad: "Media" }, clima: { frio: 70, calor: 75, sequia: 85, humedad: 45, productividad: 65 } }
 ];
 ---
 
