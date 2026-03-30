@@ -48,14 +48,16 @@ export function calcularRiesgosPlaga({ temp, humedad, lluvia }: CondicionesClima
   })();
 
   const polilla = (() => {
-    const tempOptimo = temp >= 15 && temp <= 25;
-    const lluviaBaja = lluvia < 5;
-    const tempMedio = temp >= 10 && temp <= 30;
-    const tempBajo = temp < 8 || temp > 32;
+    const tempOptimo = temp >= 16 && temp <= 24;
+    const humedadOptima = humedad >= 40 && humedad <= 75;
+    const lluviaBaja = lluvia <= 2;
+    const tempMedio = temp >= 12 && temp <= 30;
+    const humedadMedia = humedad >= 25;
+    const lluviaMedia = lluvia < 8;
 
-    if (tempOptimo && lluviaBaja) {
+    if (tempOptimo && humedadOptima && lluviaBaja) {
       return { nivel: 'alto', descripcion: 'Condiciones favorables para polilla', consejo: 'Acción inmediata recomendada' };
-    } else if (tempMedio) {
+    } else if (tempMedio && humedadMedia && lluviaMedia) {
       return { nivel: 'medio', descripcion: 'Monitorear trampas de polilla', consejo: 'Monitoreo preventivo' };
     }
     return { nivel: 'bajo', descripcion: 'Riesgo bajo de polilla', consejo: 'Sin acción necesaria' };

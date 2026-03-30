@@ -66,9 +66,9 @@ class OlivaxiMapa extends HTMLElement {
         .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 10px; }
         .mapa-loading.hidden { display: none; }
         .spinner { width: 28px; height: 28px; border: 2px solid var(--color-border); border-top-color: var(--color-limon); border-radius: 50%; animation: spin .8s linear infinite; }
-        .mapa-legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 8px; font-size: 9px; z-index: 10; display: flex; gap: 8px; }
-        .provincia-marker { transition: transform 0.2s, background 0.3s, border 0.3s; }
-        .provincia-marker:hover { transform: scale(1.3) !important; }
+        .mapa-legend { position: absolute; bottom: 8px; left: 50%; margin-left: -100px; width: 200px; background: rgba(255,255,255,0.9); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 8px; font-size: 9px; z-index: 10; display: flex; gap: 8px; box-sizing: border-box; }
+        .provincia-marker { }
+        .provincia-marker:hover { transform: scale(1.3); }
         .provincia-marker.selected { border-color: #D4E849 !important; transform: scale(1.2); }
         @keyframes spin { to { transform: rotate(360deg); } }
       </style>
@@ -210,12 +210,11 @@ class OlivaxiMapa extends HTMLElement {
       const isSelected = d.provincia === this.provinciaSeleccionada;
       const borderWidth = isSelected ? '3px' : '2px';
       const borderColor = isSelected ? '#D4E849' : '#fff';
-      const scale = isSelected ? 'scale(1.2)' : 'scale(1)';
       
       const el = document.createElement('div');
       el.dataset.provincia = d.provincia;
       el.className = 'provincia-marker' + (isSelected ? ' selected' : '');
-      el.style.cssText = `width:16px;height:16px;background:${color};border:${borderWidth} solid ${borderColor};border-radius:50%;opacity:0.95;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4);transform:${scale}`;
+      el.style.cssText = `width:16px;height:16px;background:${color};border:${borderWidth} solid ${borderColor};border-radius:50%;opacity:0.95;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4)`;
       
       const val = this.filtro === 'temperatura' ? d.temperatura + '°C' : 
                   this.filtro === 'humedad' ? d.humedad + '%' : 
