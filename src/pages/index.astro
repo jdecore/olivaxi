@@ -92,25 +92,20 @@ import MapaCalor from '../components/MapaCalor.astro';
 .consejos-panel .consejo{font-size:9px;color:var(--color-muted);margin-bottom:2px}
 @media(max-width:900px){.bento-grid{grid-template-columns:1fr}.mapa-card{height:320px}.sidebar-panels{min-height:320px}}
 @media(max-width:600px){.bento-grid{gap:6px;padding:0 .5rem}.mapa-card{height:260px}.sidebar-panels{min-height:260px}.provincias-grid,.variedades-grid{gap:4px}}
-.mi-olivar-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
-.mi-olivar-panel.visible{display:block}
-.mi-olivar-card{background:var(--color-white-surface);border:2px solid var(--color-limon);border-radius:8px;padding:16px;position:relative}
-.mi-olivar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.mi-olivar-title{font-size:.9rem;font-weight:700;color:var(--color-aceituna);display:flex;align-items:center;gap:8px}
-.mi-olivar-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--color-muted);padding:4px}
-.mi-olivar-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.mi-olivar-stat{padding:10px;background:rgba(212,232,73,.1);border-radius:6px;text-align:center}
-.mi-olivar-stat .icon{font-size:1.2rem}
-.mi-olivar-stat .value{font-size:1.1rem;font-weight:700;color:var(--color-aceituna)}
-.mi-olivar-stat .label{font-size:.7rem;color:var(--color-muted)}
-.mi-olivar-alerts{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
-.mi-olivar-alert{padding:4px 10px;border-radius:12px;font-size:.75rem;font-weight:600}
-.mi-olivar-alert.alto{background:rgba(239,68,68,.15);color:#dc2626}
-.mi-olivar-alert.medio{background:rgba(245,158,11,.15);color:#b45309}
-.mi-olivar-alert.bajo{background:rgba(34,197,94,.15);color:#15803d}
-.mi-olivar-actions{display:flex;gap:8px;margin-top:12px}
-.mi-olivar-btn{flex:1;padding:8px;border:1.5px solid var(--color-border);background:var(--color-white-surface);border-radius:6px;font-size:.8rem;font-weight:600;color:var(--color-aceituna);text-decoration:none;text-align:center}
-.mi-olivar-btn:hover{background:var(--color-limon)}
+.suelo-panel{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
+.suelo-panel.visible{display:block}
+.suelo-card{background:var(--color-white-surface);border:2px solid var(--color-limon);border-radius:8px;padding:16px}
+.suelo-header{margin-bottom:12px}
+.suelo-title{font-size:.95rem;font-weight:700;color:var(--color-aceituna);display:flex;align-items:center;gap:8px}
+.suelo-content{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.suelo-stat{padding:12px;background:rgba(212,232,73,.1);border-radius:6px;text-align:center}
+.suelo-stat .icon{font-size:1.3rem;margin-bottom:4px}
+.suelo-stat .value{font-size:1rem;font-weight:700;color:var(--color-aceituna)}
+.suelo-stat .value.bajo{color:#dc2626}
+.suelo-stat .label{font-size:.7rem;color:var(--color-muted);margin-top:2px}
+.suelo-stat .advice{font-size:.65rem;color:var(--color-muted);margin-top:4px;font-style:italic}
+.suelo-link{display:block;text-align:center;padding:10px;margin-top:12px;background:var(--color-limon);border-radius:6px;font-size:.85rem;font-weight:600;color:var(--color-aceituna);text-decoration:none}
+.suelo-link:hover{background:#c4d73f}
 .narrative-section{display:none;margin:0 auto 1rem;padding:0 1rem;max-width:1200px}
 .narrative-section.visible{display:block}
 .narrative-card{background:var(--color-white-surface);border:2px solid var(--color-border);border-radius:8px;padding:20px}
@@ -122,6 +117,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 .narrative-item .narrative-sub{font-size:.8rem;color:var(--color-muted)}
 .narrative-item.positivo .narrative-value{color:#dc2626}
 .narrative-item.negativo .narrative-value{color:#15803d}
+.narrative-conclusion{margin-top:16px;padding:12px 16px;background:rgba(212,232,73,.2);border-left:4px solid var(--color-limon);border-radius:4px;font-size:.9rem;font-weight:600;color:var(--color-aceituna)}
 .riesgo-badge{position:absolute;top:10px;right:10px;z-index:10;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--color-white-surface);border:2px solid;display:flex;align-items:center;gap:6px;cursor:pointer;transition:transform .15s ease}
 .riesgo-badge:hover{transform:scale(1.05)}
 .riesgo-badge.alto{border-color:#ef4444;color:#dc2626}
@@ -225,19 +221,13 @@ import MapaCalor from '../components/MapaCalor.astro';
 </div>
 </div>
 
-<div class="mi-olivar-panel" id="mi-olivar-panel">
-<div class="mi-olivar-card">
-<div class="mi-olivar-header">
-<span class="mi-olivar-title">🌿 Mi Olivar</span>
-<button class="mi-olivar-close" id="mi-olivar-close">×</button>
+<div class="suelo-panel" id="suelo-panel">
+<div class="suelo-card">
+<div class="suelo-header">
+<span class="suelo-title">🌱 Estado del suelo hoy</span>
 </div>
-<div class="mi-olivar-content" id="mi-olivar-content"></div>
-<div class="mi-olivar-alerts" id="mi-olivar-alerts"></div>
-<div class="mi-olivar-actions">
-<a href="/agua-suelos" class="mi-olivar-btn">💧 Riego</a>
-<a href="/consejero" class="mi-olivar-btn">💬 Asesor IA</a>
-<a href="/alertas" class="mi-olivar-btn">🔔 Alertas</a>
-</div>
+<div class="suelo-content" id="suelo-content"></div>
+<a href="/agua-suelos" class="suelo-link">Ver gestión completa del suelo →</a>
 </div>
 </div>
 
@@ -245,6 +235,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 <div class="narrative-card">
 <div class="narrative-title">📊 Cambio Climático - Tendencias en tu zona</div>
 <div class="narrative-content" id="narrative-content"></div>
+<div class="narrative-conclusion" id="narrative-conclusion"></div>
 </div>
 </div>
 
@@ -256,10 +247,8 @@ const $ = (id) => document.getElementById(id);
 const PROVINCIAS_GRID = $('provincias-grid');
 const VARIEDADES_GRID = $('variedades-grid');
 const ALERTAS_LIST = $('alertas-list');
-const MI_OLIVAR_PANEL = $('mi-olivar-panel');
-const MI_OLIVAR_CONTENT = $('mi-olivar-content');
-const MI_OLIVAR_ALERTS = $('mi-olivar-alerts');
-const MI_OLIVAR_CLOSE = $('mi-olivar-close');
+const SUELO_PANEL = $('suelo-panel');
+const SUELO_CONTENT = $('suelo-content');
 const NARRATIVE_SECTION = $('narrative-section');
 const NARRATIVE_CONTENT = $('narrative-content');
 const MAPA_CARD = $('mapa-card-wrapper');
@@ -498,16 +487,46 @@ function updateRiesgoBadge(d) {
   MAPA_CARD.className = 'mapa-card riesgo-' + nivel;
 }
 
-// --- Render: Mi Olivar panel ---
-function renderMiOlivarPanel(d) {
-  if (!MI_OLIVAR_PANEL || !d) return;
-  MI_OLIVAR_PANEL.classList.add('visible');
-  const eti = d.suelo?.evapotranspiracion || 0;
-  const kc = 0.7;
-  const riegoDiario = Math.round(eti * kc * 100) / 100;
-  MI_OLIVAR_CONTENT.innerHTML = `<div class="mi-olivar-stat"><div class="icon">🌡️</div><div class="value">${d.clima.temperatura}°C</div><div class="label">Temp. aire</div></div><div class="mi-olivar-stat"><div class="icon">🪨</div><div class="value">${d.suelo.temperatura}°C</div><div class="label">Temp. suelo</div></div><div class="mi-olivar-stat"><div class="icon">💧</div><div class="value">${d.suelo.humedad}%</div><div class="label">Humedad</div></div><div class="mi-olivar-stat"><div class="icon">🚿</div><div class="value">${riegoDiario} L/ha</div><div class="label">Riego diario</div></div>`;
-  const alertsHtml = (d.riesgosActivos || []).slice(0, 4).map(r => `<span class="mi-olivar-alert ${r.nivel}">${r.icono} ${r.titulo}</span>`).join('');
-  MI_OLIVAR_ALERTS.innerHTML = alertsHtml || '<span class="mi-olivar-alert bajo">✅ Sin riesgos activos</span>';
+// --- Render: Estado del suelo hoy ---
+function renderSueloPanel(d) {
+  if (!SUELO_PANEL || !d) return;
+  SUELO_PANEL.classList.add('visible');
+  
+  const tipoSuelo = d.provinciaInfo?.tipoSuelo || 'arcilloso';
+  const humedad = d.suelo?.humedad || 0;
+  const eto = d.suelo?.evapotranspiracion || 0;
+  
+  const soilAdvice = {
+    arenoso: 'Riego más frecuente necesario',
+    arcilloso: 'Riego menos frecuente, mayor cantidad',
+    limoso: 'Riego moderado uniforme',
+    calcáreo: 'Controla el pH del agua'
+  };
+  
+  const humedadClass = humedad < 30 ? 'bajo' : '';
+  const humedadAdvice = humedad < 30 ? '🔴 Humedad baja' : (humedad > 60 ? '💧 Humedad alta' : '✅ Normal');
+  const etoAdvice = eto < 2 ? 'Riego mínimo hoy' : (eto < 4 ? 'Riego moderado' : '🔥 Riego abundante necesario');
+  
+  SUELO_CONTENT.innerHTML = `
+    <div class="suelo-stat">
+      <div class="icon">🪨</div>
+      <div class="value">${tipoSuelo}</div>
+      <div class="label">Tipo de suelo</div>
+      <div class="advice">${soilAdvice[tipoSuelo] || 'Riego regular'}</div>
+    </div>
+    <div class="suelo-stat">
+      <div class="icon">💧</div>
+      <div class="value ${humedadClass}">${humedad}%</div>
+      <div class="label">Humedad actual</div>
+      <div class="advice">${humedadAdvice}</div>
+    </div>
+    <div class="suelo-stat">
+      <div class="icon">📈</div>
+      <div class="value">${eto.toFixed(1)}mm</div>
+      <div class="label">ETo (evapotranspiración)</div>
+      <div class="advice">${etoAdvice}</div>
+    </div>
+  `;
 }
 
 // --- Render: Narrative section ---
@@ -517,12 +536,37 @@ function renderNarrativeSection(d) {
   const comp = d.comparacionHistorica;
   const tempClass = comp.variacion > 0 ? 'positivo' : comp.variacion < 0 ? 'negativo' : '';
   NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Temperatura actual vs media</div><div class="narrative-value">${comp.temperaturaActual}°C</div><div class="narrative-sub">${comp.mensaje}</div></div><div class="narrative-item ${comp.riesgoCalor ? 'positivo' : ''}"><div class="narrative-label">Riesgo de calor</div><div class="narrative-value">${comp.riesgoCalor ? '🔥 Alto' : '✅ Normal'}</div><div class="narrative-sub">${comp.riesgoCalor ? 'Protege del estrés térmico' : 'Condiciones normales'}</div></div><div class="narrative-item ${comp.deficitLluvia ? 'positivo' : ''}"><div class="narrative-label">Precipitación</div><div class="narrative-value">${comp.precipitacionActual}mm</div><div class="narrative-sub">${comp.deficitLluvia ? '⚠️ Déficit' : 'Normal'}</div></div>`;
+  
+  // Generar conclusión accionable
+  const conclusionEl = $('narrative-conclusion');
+  if (!conclusionEl) return;
+  const esFrio = comp.variacion < 0;
+  const esCalor = comp.variacion > 0 || comp.riesgoCalor;
+  const tieneDeficit = comp.deficitLluvia;
+  
+  let conclusion = '';
+  if (esFrio && tieneDeficit) {
+    conclusion = '🌡️ Tu zona está más fría de lo normal con déficit de lluvia. Monitoriza el riego esta semana.';
+  } else if (esCalor && tieneDeficit) {
+    conclusion = '🔥 Alerta: temperaturas elevadas y sin lluvia. Riega al amanecer para evitar estrés hídrico.';
+  } else if (esCalor && comp.riesgoCalor) {
+    conclusion = '⚠️ Riesgo de calor extremo. Protege el olivar con riego abundante.';
+  } else if (!esFrio && !esCalor && !tieneDeficit) {
+    conclusion = '✅ Condiciones climáticas favorables. Ideal para tareas de mantenimiento.';
+  } else if (esFrio) {
+    conclusion = '🌨️ Temperaturas por debajo de lo normal. Consulta las previsión de heladas.';
+  } else if (tieneDeficit) {
+    conclusion = '💧 Déficit de lluvia detectado. Aumenta la frecuencia de riego.';
+  } else {
+    conclusion = '📊 Situación climática estable. Continúa con el monitoreo habitual.';
+  }
+  conclusionEl.textContent = conclusion;
 }
 
 // --- Render: Dashboard completo ---
 function renderDashboard(d) {
   dashboardData = d;
-  renderMiOlivarPanel(d);
+  renderSueloPanel(d);
   renderNarrativeSection(d);
   updateRiesgoBadge(d);
 }
@@ -594,13 +638,6 @@ OlivaxiEcosistema.onChange((state) => {
     renderDashboard(state.dashboardData);
   }
 });
-
-// --- Cerrar Mi Olivar ---
-if (MI_OLIVAR_CLOSE) {
-  MI_OLIVAR_CLOSE.addEventListener('click', () => {
-    MI_OLIVAR_PANEL.classList.remove('visible');
-  });
-}
 
 // --- Init ---
 initCarousel();
