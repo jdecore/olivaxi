@@ -246,24 +246,8 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .provincia-info-panel.show { display: block; }
 
-  .provincia-info-panel .metrics-strip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    color: var(--color-aceituna);
-  }
-
-  .provincia-info-panel .metrics-strip .prov-name {
-    font-weight: 700;
-  }
-
   .provincia-info-panel .riesgos-section {
-    border-top: 1px solid var(--color-border);
-    padding-top: 0.75rem;
+    padding-top: 0.25rem;
   }
 
   .provincia-info-panel .riesgos-title {
@@ -302,15 +286,6 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     background: #faeeda;
     color: #92400e;
     border: 0.5px solid #fac775;
-  }
-
-  .provincia-info-panel .consejos-box {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(212, 232, 73, 0.15);
-    border-radius: 8px;
-    font-size: 0.8rem;
-    color: var(--color-aceituna);
   }
 
   .alertas-info {
@@ -532,30 +507,6 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
     clearNode(provinciaInfoPanel);
 
-    // Strip de 3 métricas clave
-    const temp = Math.round(d.suelo?.temperatura || d.clima?.temperatura || 0);
-    let humedadSuelo = d.suelo?.humedad || 0;
-    if (humedadSuelo <= 1) humedadSuelo = Math.round(humedadSuelo * 100);
-    const eto = (d.suelo?.evapotranspiracion || 0).toFixed(1);
-
-    const metricsStrip = document.createElement('div');
-    metricsStrip.className = 'metrics-strip';
-    const metricProv = document.createElement('span');
-    metricProv.className = 'prov-name';
-    metricProv.textContent = provincia;
-    const metricTemp = document.createElement('span');
-    metricTemp.textContent = `${temp}°C`;
-    const metricSep1 = document.createElement('span');
-    metricSep1.textContent = '·';
-    const metricSuelo = document.createElement('span');
-    metricSuelo.textContent = `Suelo ${humedadSuelo}% humedad`;
-    const metricSep2 = document.createElement('span');
-    metricSep2.textContent = '·';
-    const metricEto = document.createElement('span');
-    metricEto.textContent = `ETo ${eto}mm`;
-    metricsStrip.append(metricProv, metricTemp, metricSep1, metricSuelo, metricSep2, metricEto);
-    provinciaInfoPanel.appendChild(metricsStrip);
-
     // Riesgos activos (solo MEDIO y ALTO)
     const riesgosFiltrados = (d.riesgosActivos || []).filter(r => r.nivel === 'medio' || r.nivel === 'alto');
     
@@ -565,7 +516,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       
       const riesgosTitle = document.createElement('div');
       riesgosTitle.className = 'riesgos-title';
-      riesgosTitle.textContent = 'Riesgos activos:';
+      riesgosTitle.textContent = 'Riesgos posibles:';
       riesgosSection.appendChild(riesgosTitle);
 
       const riesgosList = document.createElement('div');
@@ -578,14 +529,11 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       });
       riesgosSection.appendChild(riesgosList);
       provinciaInfoPanel.appendChild(riesgosSection);
-    }
-
-    // Consejos
-    if (d.consejos?.length) {
-      const consejosBox = document.createElement('div');
-      consejosBox.className = 'consejos-box';
-      consejosBox.textContent = `💡 ${d.consejos[0]}`;
-      provinciaInfoPanel.appendChild(consejosBox);
+    } else {
+      const noRisk = document.createElement('div');
+      noRisk.className = 'riesgo-badge bajo';
+      noRisk.textContent = '✅ Sin riesgos posibles por ahora';
+      provinciaInfoPanel.appendChild(noRisk);
     }
 
     provinciaInfoPanel.classList.add('show');
