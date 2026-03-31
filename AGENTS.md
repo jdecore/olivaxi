@@ -25,6 +25,7 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 | **SQLite (bun:sqlite)** | Base de datos embebida |
 | **Open-Meteo API** | API gratuita de datos climáticos |
 | **Groq/Gemini/OpenRouter** | LLMs con rotación automática |
+| **Cerebras/Gemini (Alertas)** | Rotación LLM para generación de emails de alertas |
 
 ### Frontend
 
@@ -34,6 +35,7 @@ Proyecto Astro 6 para monitoreo climático de olivares españoles. Combina datos
 | **SolidJS** | Solo framework UI (sin React) |
 | **MapLibre GL** | Mapa open-source (optimizado con CDN) |
 | **CartoDB** | Tiles de mapas gratuitos |
+| **opncode + MiniMax M2.5** | Asistencia de desarrollo (modelo open source de MiniMax, feb-2026) |
 
 ---
 
@@ -267,86 +269,51 @@ PUBLIC_API_URL=http://localhost:3000
 
 ---
 
-## 📝 Notas para el siguiente agente
+## 📝 Notas para el siguiente agente (estado real actual)
 
-### ✅ Completado (2026-03-30) - TODO IMPLEMENTADO
+### ✅ Completado (2026-03-31)
 
-**Mejoras implementadas (todas las sugerencias):**
+#### Frontend / Astro
+1. Render más declarativo y mantenible en páginas clave (reducción fuerte de `innerHTML` y composición por nodos).
+2. `consejero.astro` ajustado para que el chat entre en una sola pantalla al cargar.
+3. `alertas.astro` con banner superior de confirmación visible y estados de verificación más claros.
+4. Animaciones de KPIs en `agua-suelos.astro` suavizadas (skeleton + transición más limpia).
+5. Tipografía de títulos principales unificada con la fuente usada en "Encuentra la variedad ideal...".
+6. Mejoras visuales del mensaje inicial del chat sin afectar rapidez/performance.
 
-1. **index.astro**: Hero contextual con datos del suelo (temp suelo, humedad suelo)
-2. **variedades.astro**: Muestra detalle[] del riesgo (por qué cada variedad tiene riesgo)
-3. **plagas.astro**: Condiciones climáticas por plaga + consejos según nivel (urgente/vigilar/ok)
-4. **agua-suelos.astro**: Recomendación de riego (ETo × Kc = L/ha/día) + deficit
-5. **counselor.astro**: Prompt incluye riesgos activos + datos del suelo + contexto RAIF
+#### Resiliencia de datos
+1. `src/lib/ecosistema.ts` endurecido con retry + timeout + fallback local + stale-while-revalidate.
+2. Objetivo: que frontend reciba datos incluso con fallos temporales de API externa.
 
-### 📊 Datos usados al máximo
+#### Backend de alertas / email
+1. Validación de configuración email corregida (`ready/disabled/invalid`), evitando estados ambiguos.
+2. Cron de alertas endurecido para requerir configuración completa de Gmail.
+3. Envío inmediato tras confirmar alerta mejorado: siempre se envía email (riesgo activo o "monitoreo iniciado").
+4. Fallback climático por provincia en backend para no degradar a ceros cuando falla Open-Meteo.
+5. Corrección de URL de verificación: ahora prioriza `origin`/`x-forwarded-host`/`host` antes de fallback local.
 
-| Página | Datos usados |
-|--------|-------------|
-| index.astro | clima + suelo + RAIF |
-| alertas.astro | clima + suelo + provinciaInfo + RAIF + riesgos + consejos |
-| variedades.astro | riesgos_variedad + detalle[] |
-| plagas.astro | clima + RAIF + consejos por nivel |
-| agua-suelos.astro | suelo + pluviometria + ETo + recomendación riego + déficit vs media anual |
-| counselor.astro | clima + suelo + riesgos activos + RAIF |
+#### Documentación
+1. `README.md` reescrito con formato visual (emojis), demo pública, GIF y 3 capturas.
+2. Añadido stack y notas de despliegue CubePath/Docploy.
+3. Añadido uso de rotación LLM en chat y alertas.
 
-### 🎯 Mejoras Adicionales Posibles (Futura Iteración)
+### 🔁 Rotación IA confirmada en código
 
-| Página | Idea | Complejidad |
-|--------|------|-------------|
-| **index** | Notificación push cuando hay riesgo ALTO | Alta |
-| **variedades** | "Tu variedad vs predominante" - comparar riesgos | Media |
-| **plagas** | Ranking de riesgo provincial (ordenar por nivel) | Media |
-| **agua-suelos** | Histórico de evapotranspiración (últimos 7 días) | Alta |
-| **Ecosistema** | Guardar todo el estado en localStorage | Baja |
-| **Dashboard** | Añadir más KPIs y gráficos visuales | Media |
+- **Chat (`/api/chat`)**: `Groq` → `Gemini` → `OpenRouter` (con fallback/reintentos).
+- **Alertas (emails LLM)**: `GeminiAlertas` → `Cerebras1` → `Cerebras2`.
+- **Asistencia de desarrollo usada**: **MiniMax M2.5** (open source, MiniMax, feb-2026) vía opncode.
+
+### ⚠️ Punto operativo pendiente en producción
+
+Tras cambios backend de alertas, confirmar despliegue/reinicio del contenedor API para que:
+1. links de verificación salgan con host público correcto,
+2. envíos inmediatos y periódicos salgan con la configuración Gmail actual,
+3. se vean logs de confirmación y cron en runtime real.
 
 ### Legacy notes
-
-1. **NO usar ViewTransitions/ClientRouter** - Obsoleto en Astro 6
-2. **Para allowedHosts usar CLI flag** - Solo funciona con `--allowedHosts`
-3. **SolidJS funciona bien** - Solo instalar en package.json
-4. **Ecosistema compartido** - Evento olivaxi-state-change entre páginas
-5. **Build muy ligero** - 264KB, ideal para VPS pequeños
-
----
-
-## 📝 Últimas Mejoras Implementadas (2026-03-30)
-
-### 🌿 Variedades (variedades.astro)
-- Imágenes optimizadas con Astro (AVIF, ~40% reducción)
-- Placeholder visual cuando no hay imagen (inicial de la variedad)
-- Botón "Ver detalles" corregido (toggle funciona)
-- Selector de provincia eliminado del header
-- Contenedor de datos en vivo aumentado 10%
-
-### 💧 Agua y Suelos (agua-suelos.astro)
-- 3 secciones separadas (Agua, Suelo, Conservación)
-- Carrusel con flechas en cada sección
-- Selector de área al hacer clic en el título (cambio de color)
-- Animaciones de carga mejoradas (skeleton + entrada suave)
-
-### 🦠 Plagas (plagas.astro)
-- Toggle de expand/collapse corregido (mostrar tratamiento al hacer clic)
-
-### 💬 Chat Consejero (ChatConsejero.jsx)
-- Fondo beige uniforme (#f5f0e8)
-- Mensaje de bienvenida dinámico con datos de provincia
-- Avatar y mensaje según modo activo
-- Skills pills movidos arriba, se ocultan al seleccionar modo
-- Input con autofocus
-- Context strip siempre visible con colores según riesgo
-- Quick questions buttons
-- Micro-cambios visuales: borde según modo, avatar según modo, intro según modo
-
-### 🔔 Alertas (alertas.astro)
-- Hero sin fondo negro (beige)
-- Panel de datos simplificado: strip 3 métricas + riesgos activos (solo MEDIO/ALTO)
-- Formulario: labels en minúsculas, borde fino, botón verde #3b6d11
-
-### 🖼️ Imágenes
-- Todas las imágenes de variedades en `src/assets/variedades/`
-- Astro optimiza automáticamente a AVIF con cache
+1. **NO usar ViewTransitions/ClientRouter** - obsoleto en Astro 6.
+2. **allowedHosts** debe pasar por CLI flag (`--allowedHosts`).
+3. **Ecosistema compartido** mantiene evento `olivaxi-state-change` entre páginas.
 
 ## 🤖 Predicción ML de Mosca (2026-03-31)
 
