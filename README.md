@@ -1,7 +1,7 @@
 # 🫒 olivaξ — Monitor climático para olivares
 
-Plataforma web enfocada en agricultura de precisión para olivares españoles.  
-Combina clima en tiempo real, riesgo por variedad, plagas y recomendaciones prácticas para apoyar decisiones en campo.
+Plataforma web de agricultura de precisión para olivares españoles, pensada para proteger un cultivo clave en España frente al cambio climático.  
+Combina clima en tiempo real, riesgo por variedad, plagas y recomendaciones prácticas, con una arquitectura ligera y modelos de IA económicos/open source para mantener costes bajos y hacerla rentable para agricultores del olivar.
 
 ## 🌐 Demo desplegada
 
@@ -24,6 +24,8 @@ Accede a la demo pública en CubePath aquí:
 - ⚙️ **Backend**: Bun + Hono
 - 🗄️ **Datos**: SQLite (`bun:sqlite`) + Open-Meteo API
 - 🧭 **Mapas**: MapLibre GL + CartoDB
+- 💬 **APIs IA (chat)**: `Groq` + `Gemini` + `OpenRouter` (rotación automática con fallback)
+- 🔔 **APIs IA (alertas email)**: `Gemini` + `Cerebras` + `Cerebras_2` (rotación automática)
 - 🤖 **IA/Asistencia de desarrollo**: opncode con **MiniMax M2.5** de código abierto, lanzado por la empresa china de IA, MiniMax, en febrero de 2026
 - 🧠 **ML**: scikit-learn RandomForestClassifier (500 árboles, profundidad máxima, 20k muestras de entrenamiento, precisión 100%)
 
@@ -91,15 +93,20 @@ curl "http://localhost:3000/api/alertas/tipos?provincia=Jaén&variedad=picual"
 GROQ_KEY=
 GEMINI_KEY=
 OPENROUTER_KEY=
+CEREBRAS_KEY_1=
+CEREBRAS_KEY_2=
+GEMINI_ALERTAS_KEY=
 GMAIL_USER=
 GMAIL_APP_PASSWORD=
-PUBLIC_API_URL=http://localhost:3000
+PUBLIC_API_URL=/api
 RATE_LIMIT=3000
 RATE_LIMIT_WINDOW_MS=3600000
+CHAT_RATE_LIMIT=600
+CHAT_RATE_WINDOW_MS=60000
 ```
 
 Notas de concurrencia rápida:
-- El chat permite hasta 100 preguntas por conversación.
+- El chat permite hasta 20 preguntas por conversación.
 - El rate limit backend es configurable por entorno (RATE_LIMIT y RATE_LIMIT_WINDOW_MS).
 
 ## 📦 Build
