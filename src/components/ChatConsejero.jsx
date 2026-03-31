@@ -471,17 +471,42 @@ export default function ChatConsejero() {
         .limit-btn { background: #3b6d11; border: none; border-radius: 6px; padding: 8px 16px; color: #eaf3de; font-size: 13px; cursor: pointer; margin-top: 10px; }
 
         /* Welcome message */
-        .welcome-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; margin-bottom: 12px; }
-        .welcome-avatar { width: 32px; height: 32px; background: #3b6d11; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #eaf3de; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+        .welcome-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; margin-bottom: 12px; animation: welcomeRowIn .42s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: left top; }
+        .welcome-avatar { width: 32px; height: 32px; background: #3b6d11; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #eaf3de; font-size: 16px; font-weight: 700; flex-shrink: 0; animation: welcomeAvatarPop .55s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .welcome-content { flex: 1; }
-        .welcome-bubble { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 12px 12px 12px 2px; padding: 14px 16px; font-size: 14px; line-height: 1.5; color: #1C1C1C; margin-bottom: 10px; }
+        .welcome-bubble { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 12px 12px 12px 2px; padding: 14px 16px; font-size: 14px; line-height: 1.5; color: #1C1C1C; margin-bottom: 10px; animation: welcomeBubbleIn .52s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: .05s; }
         .welcome-bubble p { margin: 0 0 8px 0; }
         .welcome-bubble p:last-child { margin-bottom: 0; }
+        .welcome-bubble p { opacity: 0; transform: translateY(4px); animation: welcomeLineIn .34s ease-out forwards; }
+        .welcome-bubble p:nth-child(1) { animation-delay: .16s; }
+        .welcome-bubble p:nth-child(2) { animation-delay: .24s; }
+        .welcome-bubble p:nth-child(3) { animation-delay: .32s; }
+        .welcome-bubble p:nth-child(4) { animation-delay: .40s; }
         
         /* Quick questions */
-        .quick-questions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .quick-questions { display: flex; flex-wrap: wrap; gap: 8px; opacity: 0; transform: translateY(6px); animation: welcomeActionsIn .35s ease-out .46s forwards; }
         .quick-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #3b6d11; background: transparent; color: #3b6d11; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
         .quick-btn:hover { background: #3b6d11; color: #eaf3de; }
+
+        @keyframes welcomeRowIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes welcomeAvatarPop {
+          0% { opacity: 0; transform: scale(0.82); }
+          65% { opacity: 1; transform: scale(1.06); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes welcomeBubbleIn {
+          from { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @keyframes welcomeLineIn {
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes welcomeActionsIn {
+          to { opacity: 1; transform: translateY(0); }
+        }
 
         @media (max-width: 640px) {
           .context-strip { font-size: 12px; padding: 8px 12px; flex-wrap: wrap; }

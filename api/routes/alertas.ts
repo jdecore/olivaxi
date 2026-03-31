@@ -66,13 +66,19 @@ function generateVerificationToken(): string {
   return crypto.randomUUID() + '-' + Date.now();
 }
 
-const gmailUser = process.env.GMAIL_USER || "";
+const getGmailUser = () => (process.env.GMAIL_USER || "").trim();
 const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
-
-const transporter = nodemailer.createTransport({
+const getEmailConfigState = (): "ready" | "disabled" | "invalid" => {
+  const user = getGmailUser();
+  const pass = getGmailPass();
+  if (!user && !pass) return "disabled";
+  if (user && pass) return "ready";
+  return "invalid";
+};
+const getTransporter = () => nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: gmailUser,
+    user: getGmailUser(),
     pass: getGmailPass(),
   },
 });
@@ -399,8 +405,8 @@ async function enviarAlertaInmediata(alerta: any, ip: string): Promise<boolean> 
     ? `${topRisk?.icono || "🚨"} ALERTA URGENTE - ${alerta.provincia}: ${topRisk?.titulo || tipo}`
     : `${topRisk?.icono || "🚨"} ALERTA INMEDIATA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
 
-  await transporter.sendMail({
-    from: `olivaξ <${gmailUser}>`,
+  await getTransporter().sendMail({
+    from: `olivaξ <${getGmailUser()}>`,
     to: alerta.email,
     subject,
     html: emailHtml,
@@ -649,8 +655,8 @@ alertas.post("/verify", async (c) => {
   logAudit(ip, 'VERIFY_SUCCESS', true, `Alerta creada para ${email}`);
   
   // Enviar email de confirmación
-  const gmailPass = getGmailPass();
-  if (gmailPass) {
+  const emailConfigState = getEmailConfigState();
+  if (emailConfigState === "ready") {
     try {
       const varInfo = VARIEDADES_INFO[variedad];
       const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
@@ -659,8 +665,8 @@ ${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
 <p>Te avisaremos cuando las condiciones climáticas afecten a tu cultivo de olivo.</p>
 <p>🫒 Equipo olivaξ</p>`;
       
-      await transporter.sendMail({
-        from: `olivaξ <${gmailUser}>`,
+      await getTransporter().sendMail({
+        from: `olivaξ <${getGmailUser()}>`,
         to: email,
         subject: `✅ Alerta confirmada - ${provincia}`,
         html: emailHtml,
@@ -672,7 +678,7 @@ ${varInfo ? `<p>Variedad: <strong>${varInfo.nombre}</strong></p>` : ''}
   }
 
   // Disparo inmediato de evaluación de riesgo tras confirmar.
-  if (gmailPass) {
+  if (emailConfigState === "ready") {
     try {
       const alertaCreada = db.query(
         "SELECT * FROM alertas WHERE email = ? AND provincia = ? AND created_at = ? ORDER BY id DESC LIMIT 1"
@@ -771,8 +777,8 @@ alertas.post("/", async (c) => {
   logAudit(ip, 'ALERTA_VERIFY_SENT', true, `Token enviado a ${email}`);
 
   // Enviar email de verificación
-  const gmailPass = getGmailPass();
-  if (gmailPass) {
+  const emailConfigState = getEmailConfigState();
+  if (emailConfigState === "ready") {
     try {
       const verifyUrl = `${getFrontendBaseUrl()}/alertas?verify=${verifyToken}`;
       const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
@@ -784,8 +790,8 @@ alertas.post("/", async (c) => {
 <p style="color: #666; font-size: 12px;">Este enlace expira en 24 horas.</p>
 <p>🫒 Equipo olivaξ</p>`;
       
-      await transporter.sendMail({
-        from: `olivaξ <${gmailUser}>`,
+      await getTransporter().sendMail({
+        from: `olivaξ <${getGmailUser()}>`,
         to: email,
         subject: `Confirma tu alerta - ${provincia}`,
         html: emailHtml,
@@ -794,7 +800,7 @@ alertas.post("/", async (c) => {
       logAudit(ip, 'ALERTA_VERIFY_EMAIL_FAIL', false, String(e));
       return c.json({ error: "Error al enviar email de verificación" }, 500);
     }
-  } else {
+  } else if (emailConfigState === "disabled") {
     // Sin email, crear directamente (modo desarrollo)
     const insert = db.query(
       "INSERT INTO alertas (nombre, email, provincia, variedad, tipo, fenologia, activa, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)"
@@ -802,6 +808,9 @@ alertas.post("/", async (c) => {
     insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, Date.now());
     logAudit(ip, 'ALERTA_CREATED_DEV', true);
     return c.json({ ok: true, message: "Alerta creada (modo desarrollo)" });
+  } else {
+    logAudit(ip, 'ALERTA_VERIFY_EMAIL_CONFIG_INVALID', false, 'GMAIL_USER o GMAIL_APP_PASSWORD incompletos');
+    return c.json({ error: "Configuración de email incompleta. Revisa GMAIL_USER y GMAIL_APP_PASSWORD" }, 500);
   }
 
   return c.json({ ok: true, message: "Revisa tu email para confirmar la alerta" });
@@ -834,8 +843,8 @@ alertas.post("/check", async (c) => {
     return c.json({ error: "No autorizado" }, 401);
   }
   
-  const gmailPass = getGmailPass();
-  if (!gmailPass) return c.json({ error: "Sin Gmail config" }, 500);
+  const emailConfigState = getEmailConfigState();
+  if (emailConfigState !== "ready") return c.json({ error: "Sin Gmail config completa" }, 500);
 
   logAudit(ip, 'CHECK_START', true);
   
@@ -924,8 +933,8 @@ alertas.post("/check", async (c) => {
         : `${topRisk?.icono || "🚨"} ALERTA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
 
       try {
-        await transporter.sendMail({
-          from: `olivaξ <${gmailUser}>`,
+        await getTransporter().sendMail({
+          from: `olivaξ <${getGmailUser()}>`,
           to: alerta.email,
           subject: emailSubject,
           html: emailHtml,
