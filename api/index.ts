@@ -25,8 +25,16 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 const rateLimitMiddleware = async (c: any, next: () => Promise<void>) => {
-  const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown';
-  
+  const forwardedFor = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.header('cf-connecting-ip') || '';
+  const ip = forwardedFor.split(',')[0]?.trim();
+
+  // En algunos despliegues (proxy mal configurado) no llega IP real.
+  // Evitamos bloquear a todos los usuarios bajo la misma clave "unknown".
+  if (!ip) {
+    await next();
+    return;
+  }
+
   let record = rateLimitMap.get(ip);
   if (!record || Date.now() > record.resetTime) {
     record = { count: 0, resetTime: Date.now() + RATE_LIMIT_WINDOW };
