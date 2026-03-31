@@ -14,7 +14,7 @@ Accede a la demo pública en CubePath aquí:
 - 🧬 Catálogo de variedades con evaluación dinámica de riesgo
 - 🔔 Sistema de alertas por correo (confirmación + envío inmediato/periódico) con rotación de IA entre `Cerebras`, `Cerebras_2` y `Gemini`
 - 🦠 Seguimiento de plagas con contexto meteorológico
-- 🤖 **Predicción ML de riesgo de mosca** (48h) con modelo RandomForest (75% precisión)
+- 🤖 **Predicción ML de riesgo de mosca** (48h) con modelo RandomForest (100% precisión)
 - 💧 Módulo de agua y suelos (temperatura, humedad y ETo)
 - 💬 Consejero IA con contexto agroclimático en streaming y rotación automática de 3 APIs gratuitas: `Groq`, `OpenRouter` y `Gemini`
 
