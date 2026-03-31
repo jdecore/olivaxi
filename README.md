@@ -12,10 +12,10 @@ Accede a la demo pública en CubePath aquí:
 
 - 🗺️ Mapa de calor con riesgo climático por provincia
 - 🧬 Catálogo de variedades con evaluación dinámica de riesgo
-- 🔔 Sistema de alertas por correo (confirmación + envío inmediato/periódico)
+- 🔔 Sistema de alertas por correo (confirmación + envío inmediato/periódico) con rotación de IA entre `Cerebras`, `Cerebras_2` y `Gemini`
 - 🦠 Seguimiento de plagas con contexto meteorológico
 - 💧 Módulo de agua y suelos (temperatura, humedad y ETo)
-- 💬 Consejero IA con contexto agroclimático en streaming
+- 💬 Consejero IA con contexto agroclimático en streaming y rotación automática de 3 APIs gratuitas: `Groq`, `OpenRouter` y `Gemini`
 
 ## 🧰 Stack tecnológico
 
