@@ -40,7 +40,7 @@ const {
     if (current) select.value = current;
 
     // Escuchar cambios del ecosistema (mapa, chat, otras páginas)
-    OlivaxiEcosistema.onChange((state) => {
+    const offEcosistema = OlivaxiEcosistema.onChange((state) => {
       if (state.provincia !== select.value) {
         select.value = state.provincia;
       }
@@ -50,5 +50,6 @@ const {
     select.addEventListener('change', () => {
       OlivaxiEcosistema.setProvincia(select.value);
     });
+    window.addEventListener('beforeunload', offEcosistema);
   }
 </script>

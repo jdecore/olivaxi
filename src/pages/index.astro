@@ -559,7 +559,8 @@ function renderNarrativeSection(d) {
   const tempClass = (riesgoGlobal === 'alto' || riesgoGlobal === 'crítico') ? 'positivo' : '';
   const deficitRiego = d.sueloAnalitica?.deficitRiego || 0;
   const necesidadRiego = d.sueloAnalitica?.necesidadRiego || 0;
-  const plagasAltas = ['mosca', 'polilla', 'repilo', 'xylella'].filter(k => d.plagas?.[k]?.nivel === 'alto').length;
+  const todasPlagas = ['mosca', 'polilla', 'repilo', 'xylella', 'tuberculosis', 'barrenillo', 'cochinilla', 'phytophthora', 'lepra', 'verticillium'];
+  const plagasAltas = todasPlagas.filter(k => d.plagas?.[k]?.nivel === 'alto').length;
   const hongosActivos = riesgosActivos.filter(r => r.categoria === 'hongos').length;
   const resumenRiesgo = top ? `${top.icono} ${top.titulo}` : '✅ Sin riesgo activo';
   const aguaTexto = deficitRiego > 0 ? `Déficit ${deficitRiego.toFixed(1)} mm/día` : 'Balance hídrico estable';
@@ -703,7 +704,7 @@ let lastProvincia = OlivaxiEcosistema.provincia;
 let lastVariedad = OlivaxiEcosistema.variedad;
 let lastDashboardRef = OlivaxiEcosistema.dashboardData;
 
-OlivaxiEcosistema.onChange((state) => {
+const offEcosistema = OlivaxiEcosistema.onChange((state) => {
   const provinciaChanged = state.provincia !== lastProvincia;
   const variedadChanged = state.variedad !== lastVariedad;
   const dashboardChanged = state.dashboardData !== lastDashboardRef;
@@ -728,6 +729,7 @@ OlivaxiEcosistema.onChange((state) => {
   lastVariedad = state.variedad;
   lastDashboardRef = state.dashboardData;
 });
+window.addEventListener('beforeunload', offEcosistema);
 
 // --- Init ---
 initCarousel();

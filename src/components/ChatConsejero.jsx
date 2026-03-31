@@ -1,4 +1,4 @@
-import { createSignal, onMount, For, Show } from 'solid-js';
+import { createSignal, onMount, onCleanup, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
 import OlivaxiEcosistema, { PROVINCIAS } from '../lib/ecosistema';
 
@@ -21,7 +21,10 @@ const SKILL_PROMPTS = {
   fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: brotación, floración, cuaje, endurecimiento del hueso, envero, recolección.',
 };
 
-const formatText = (text) => String(text || '');
+const formatText = (text) => {
+  if (!text) return '';
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+};
 
 export default function ChatConsejero() {
   const [messages, setMessages] = createSignal([]);
@@ -31,15 +34,50 @@ export default function ChatConsejero() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
   const [activeSkill, setActiveSkill] = createSignal(null);
-  const [showLoading, setShowLoading] = createSignal(true);
   const [titleText, setTitleText] = createSignal('');
+  const [showContext, setShowContext] = createSignal(false);
+  const [showLoading, setShowLoading] = createSignal(false);
+  const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
-  const [showContext, setShowContext] = createSignal(false);
   
   let messagesEndRef;
 
-  const getSkillColor = (skillId) => SKILLS.find(s => s.id === skillId)?.color || '#f5efe8';
+  const getContextStrip = () => {
+    const clima = climaActual();
+    const prov = provincia();
+    if (!prov) {
+      return { text: '📍 Selecciona tu provincia para personalizar el consejo', level: 'none', html: null };
+    }
+    
+    const temp = clima?.temperatura ?? '—';
+    const tipoSuelo = clima?.tipoSuelo ? `${clima.tipoSuelo}` : '';
+    const riesgos = clima?.riesgosActivos || [];
+    const riesgoNivel = clima?.riesgo || 'bajo';
+    
+    let pest = '';
+    if (clima?.plagas) {
+      const entries = Object.entries(clima.plagas);
+      const alta = entries.find(([k, v]) => v?.nivel === 'alto');
+      if (alta) pest = `· ${alta[0]} activa`;
+      else {
+        const media = entries.find(([k, v]) => v?.nivel === 'medio');
+        if (media) pest = `· ${media[0]} media`;
+      }
+    }
+    
+    let sueloInfo = '';
+    if (clima?.suelo_humedad !== undefined) {
+      const hum = clima.suelo_humedad <= 1 ? Math.round(clima.suelo_humedad * 100) : clima.suelo_humedad;
+      if (hum < 30) sueloInfo = '· Suelo seco';
+      else if (hum > 70) sueloInfo = '· Suelo húmedo';
+    }
+    
+    const parts = [`${prov}`, `${temp}°C`, pest, sueloInfo].filter(p => p);
+    const text = parts.join(' · ');
+    
+    return { text, level: riesgoNivel, html: text };
+  };
 
   const toChatClima = (d) => d?.ok ? ({
     provincia: d.provincia,
@@ -62,7 +100,6 @@ export default function ChatConsejero() {
   }) : null;
 
   const initChat = async () => {
-    setTimeout(() => setShowLoading(false), 1500);
     const savedProv = OlivaxiEcosistema.provincia;
     const savedVar = OlivaxiEcosistema.variedad;
     if (savedProv) {
@@ -71,7 +108,9 @@ export default function ChatConsejero() {
         const d = await OlivaxiEcosistema.fetchDashboard();
         const provData = toChatClima(d);
         if (provData) setClimaActual(provData);
-      } catch {}
+      } catch (e) {
+        console.warn('[ChatConsejero] initChat dashboard error:', e);
+      }
     }
     if (savedVar) setVariedad(savedVar);
   };
@@ -83,7 +122,9 @@ export default function ChatConsejero() {
       const d = await OlivaxiEcosistema.fetchDashboard();
       const provData = toChatClima(d);
       if (provData) setClimaActual(provData);
-    } catch {}
+    } catch (e) {
+      console.warn('[ChatConsejero] seleccionarProvincia error:', e);
+    }
   };
 
   const scrollToBottom = () => {
@@ -94,12 +135,14 @@ export default function ChatConsejero() {
 
   onMount(() => {
     initChat();
-    document.addEventListener('click', (e) => {
+    const handleDocClick = (e) => {
+      if (!e.target.closest('.prov-dropdown-wrap')) setShowProvinceDropdown(false);
       if (!e.target.closest('.mode-pill-inline')) setShowModeDropdown(false);
       if (!e.target.closest('.clean-btn-wrapper')) setShowCleanMenu(false);
-    });
+    };
+    document.addEventListener('click', handleDocClick);
     // Escuchar cambios de estado (provincia y variedad) desde cualquier página
-    OlivaxiEcosistema.onChange((state) => {
+    const offEcosistema = OlivaxiEcosistema.onChange((state) => {
       if (state.provincia && state.provincia !== provincia()) seleccionarProvincia(state.provincia);
       if (state.variedad && state.variedad !== variedad()) setVariedad(state.variedad);
     });
@@ -122,6 +165,10 @@ export default function ChatConsejero() {
       window.history.replaceState({}, "", window.location.pathname);
       setTimeout(sendAutoQuestion, 250);
     }
+    onCleanup(() => {
+      document.removeEventListener('click', handleDocClick);
+      offEcosistema();
+    });
   });
 
   const handleProvinciaInput = async (text) => {
@@ -141,12 +188,19 @@ export default function ChatConsejero() {
     try {
       const hist = localStorage.getItem('olivaxi_chat_historial');
       return hist ? JSON.parse(hist) : [];
-    } catch { return []; }
+    } catch (e) {
+      console.warn('[ChatConsejero] historial inválido:', e);
+      return [];
+    }
   };
 
   const saveHistorial = (msgs) => {
       const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.text).slice(-3);
-    try { localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs)); } catch {}
+    try {
+      localStorage.setItem('olivaxi_chat_historial', JSON.stringify(userMsgs));
+    } catch (e) {
+      console.warn('[ChatConsejero] no se pudo guardar historial:', e);
+    }
   };
 
   // getClimaData now uses the ecosistema shared cache
@@ -216,7 +270,9 @@ export default function ChatConsejero() {
                 scrollToBottom();
               }
               if (json.error) throw new Error(json.error);
-            } catch {}
+            } catch (e) {
+              console.warn('[ChatConsejero] SSE chunk inválido:', e);
+            }
           }
         }
       }
@@ -230,21 +286,18 @@ export default function ChatConsejero() {
   const selectSkill = (skillId) => {
     const nextSkill = activeSkill() === skillId ? null : skillId;
     setActiveSkill(nextSkill);
-    if (nextSkill) {
-      const skill = SKILLS.find(s => s.id === nextSkill);
-      if (skill) setTitleText(`En qué te puedo ayudar... ${skill.condition}`);
-    } else {
-      setTitleText('');
-    }
   };
 
   const nuevoChat = () => {
     setMessages([]);
     setInput('');
     setActiveSkill(null);
-    setTitleText('');
     setIsLoading(false);
-    try { localStorage.removeItem('olivaxi_chat_historial'); } catch {}
+    try {
+      localStorage.removeItem('olivaxi_chat_historial');
+    } catch (e) {
+      console.warn('[ChatConsejero] no se pudo limpiar historial:', e);
+    }
   };
 
   const descargarChat = () => {
@@ -258,247 +311,158 @@ export default function ChatConsejero() {
     URL.revokeObjectURL(url);
   };
 
+  const contextStrip = () => getContextStrip();
+
   return (
-    <div class="chat-container" style={{ background: activeSkill() ? getSkillColor(activeSkill()) : '#f5efe8' }}>
+    <div class="chat-container" style={{ background: '#f5f0e8' }}>
       <style>{`
-        .chat-container { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #f5efe8; padding: 16px 24px; box-sizing: border-box; overflow: hidden; }
-        .chat-hero { text-align: center; margin-bottom: 18px; flex-shrink: 0; width: 100%; max-width: 1200px; }
-        .chat-hero h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 50px; color: #000; margin: 0; }
-        .title-typewriter { font-family: 'Playfair Display', Georgia, serif; font-weight: 800; font-size: 40px; color: #000; min-height: 50px; }
-        .chat-with-input { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-        .input-area { flex-shrink: 0; padding: 20px 24px; background: inherit; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 1200px; box-sizing: border-box; min-height: 110px; }
-        .mode-pill-inline { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
-        .mode-pill-button { padding: 10px 18px; font-size: 14px; border: 2px solid #1C1C1C; border-radius: 24px; background: #D4E849; color: #1C1C1C; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .mode-pill-inline.expanded .mode-pill-button { background: #1C1C1C; color: #D4E849; }
-        .mode-pill-dropdown { position: absolute; bottom: 100%; left: 0; margin-bottom: 8px; background: #fff; border: 2px solid #1C1C1C; border-radius: 12px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); display: none; min-width: 240px; z-index: 100; overflow: hidden; }
-        .mode-pill-dropdown.show { display: block; }
-        .mode-option { padding: 12px 16px; font-size: 14px; color: #1C1C1C; cursor: pointer; border-bottom: 1px solid #eee; }
-        .mode-option:last-child { border-bottom: none; }
-        .mode-option:hover { background: #D4E849; }
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 1200px; padding: 0 24px; box-sizing: border-box; min-height: 0; background: inherit; scroll-behavior: smooth; }
-        .province-select-card { max-width: 280px; margin: 0 auto 4px; background: #fff; border-radius: 10px; padding: 8px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
-        .province-dropdown { width: 100%; padding: 8px 12px; font-size: 14px; border: 1px solid #e0e0e0; border-radius: 12px; background: #fff; color: #333; cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
-        .skills-card { max-width: 950px; margin: 0 auto 4px; background: #fff; border-radius: 10px; padding: 16px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); flex-shrink: 0; min-height: 100px; }
-        .skills-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-        .skill-btn { padding: 8px 16px; border-radius: 20px; border: 2px solid #1C1C1C; background: #D4E849; color: #1C1C1C; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .msg-row { display: flex; align-items: flex-start; gap: 6px; width: 100%; }
+        .chat-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #f5f0e8; padding: 0; box-sizing: border-box; overflow: hidden; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; max-width: 900px; margin: 0 auto; width: 100%; padding: 12px 16px; }
+        
+        /* Context Strip */
+        .context-strip { padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
+        .context-strip.high { background: #fcebeb; border: 1.5px solid #f09595; color: #991b1b; }
+        .context-strip.medium { background: #faeeda; border: 1.5px solid #fac775; color: #92400e; }
+        .context-strip.none { background: #f5f0e8; border: 0.5px solid #ccc; color: #666; }
+        .context-strip-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .prov-change-btn { background: transparent; border: none; color: inherit; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 4px 8px; white-space: nowrap; }
+        .prov-change-btn:hover { opacity: 0.8; }
+        
+        /* Province Dropdown inline */
+        .prov-dropdown-wrap { position: relative; }
+        .prov-dropdown-inline { position: absolute; top: 100%; left: 0; margin-top: 6px; background: #fff; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); display: none; z-index: 50; max-height: 250px; overflow-y: auto; }
+        .prov-dropdown-inline.show { display: block; }
+        .prov-option { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .prov-option:hover { background: #eaf3de; }
+        .prov-option:last-child { border-bottom: none; }
+
+        /* Skills Pills */
+        .skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
+        .skill-pill { padding: 8px 16px; border-radius: 20px; border: 0.5px solid #ccc; background: #f5f0e8; color: #666; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+        .skill-pill:hover { border-color: #3b6d11; color: #3b6d11; }
+        .skill-pill.active { background: #3b6d11; border-color: #3b6d11; color: #eaf3de; }
+
+        /* Messages */
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 8px 0; min-height: 0; scroll-behavior: smooth; }
+        .msg-row { display: flex; align-items: flex-start; gap: 8px; width: 100%; }
         .msg-row.user { justify-content: flex-end; }
         .msg-row.bot { justify-content: flex-start; }
-        .msg-bubble { padding: 12px 20px; max-width: 95%; font-size: 15px; line-height: 1.5; }
-        .msg-bubble.bot { background: #fff; border-radius: 4px 16px 16px 16px; color: #1C1C1C; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .msg-bubble.user { background: #1C1C1C; color: #F7F4EE; border-radius: 16px 4px 16px 16px; width: fit-content; word-break: break-word; }
-        .typing-dots { display: flex; gap: 6px; padding: 4px 0; }
-        .typing-dots span { width: 8px; height: 8px; background: #999; border-radius: 50%; animation: bounce 1.2s ease-in-out infinite; }
-        .typing-dots .dot2 { animation-delay: 0.2s; }
-        .typing-dots .dot3 { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        @media (max-width: 640px) {
-          .chat-container { padding: 8px 12px; }
-          .chat-hero { margin-bottom: 8px; }
-          .chat-hero h1 { font-size: 20px; line-height: 1.2; }
-          .title-typewriter { font-size: 18px; min-height: 24px; }
-          .skills-card { padding: 10px 8px; min-height: 70px; }
-          .skill-btn { padding: 10px 12px; font-size: 12px; min-height: 44px; }
-          .input-area { padding: 12px; min-height: 80px; }
-          .chat-input-wrapper { padding: 6px 10px; min-height: 50px; }
-          .chat-input { height: 28px; font-size: 14px; }
-          .mode-pill-button { padding: 8px 12px; font-size: 12px; }
-          .clean-btn { padding: 10px 14px; min-width: 44px; min-height: 44px; }
-          .msg-bubble { padding: 10px 14px; font-size: 14px; }
-        }
-        .limit-message { background: #fff; border-radius: 12px; padding: 16px 20px; text-align: center; color: #666; font-weight: 500; max-width: 700px; margin: 0 auto; }
-        .limit-btn { background: #1C1C1C; border: none; border-radius: 8px; padding: 10px 20px; color: #F7F4EE; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 12px auto 0; }
-        .chat-input-wrapper { max-width: 100%; width: 100%; margin: 0; padding: 8px 16px; background: #fff; border-radius: 16px; border: 2px solid #1C1C1C; box-shadow: 0 2px 8px rgba(0,0,0,0.08); box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 70px; }
-        .input-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-        .clean-btn { background: #f5efe8; border: 2px solid #1C1C1C; border-radius: 12px; padding: 8px 12px; font-size: 18px; cursor: pointer; flex-shrink: 0; }
-        .clean-menu { position: absolute; bottom: 100%; right: 0; margin-bottom: 8px; background: #fff; border: 2px solid #1C1C1C; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; min-width: 180px; z-index: 100; overflow: hidden; }
-        .clean-menu.show { display: block; }
-        .clean-option { padding: 10px 14px; font-size: 13px; color: #1C1C1C; cursor: pointer; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
-        .clean-option:hover { background: #D4E849; }
-        .clean-btn-wrapper { position: relative; display: inline-flex; }
-        .chat-input { flex: 1; height: 36px; border: none; background: transparent; font-size: 16px; color: #1C1C1C; outline: none; padding: 0; }
+        .msg-bubble { padding: 12px 16px; max-width: 85%; font-size: 14px; line-height: 1.5; word-break: break-word; }
+        .msg-bubble.user { background: #3b6d11; color: #eaf3de; border-radius: 12px 12px 2px 12px; }
+        .msg-bubble.bot { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 12px 12px 12px 2px; color: #1C1C1C; }
+        .typing-dots { display: flex; gap: 5px; padding: 8px 0; }
+        .typing-dots span { width: 6px; height: 6px; background: #999; border-radius: 50%; animation: bounce 1s ease-in-out infinite; }
+        .typing-dots .dot2 { animation-delay: 0.15s; }
+        .typing-dots .dot3 { animation-delay: 0.3s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Input Area */
+        .input-row { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 12px; background: #fff; border-radius: 12px; border: 1px solid #ddd; }
+        .input-row:focus-within { border-color: #3b6d11; box-shadow: 0 0 0 2px rgba(59,109,17,0.1); }
+        .mode-select { padding: 10px 12px; border: none; background: #f5f0e8; border-radius: 8px; font-size: 13px; font-weight: 500; color: #1C1C1C; cursor: pointer; min-width: 110px; }
+        .chat-input { flex: 1; border: none; background: transparent; font-size: 15px; color: #1C1C1C; outline: none; padding: 8px; }
         .chat-input::placeholder { color: #999; }
         .chat-input:disabled { opacity: 0.6; }
-        .context-panel { background: #f5efe8; border: 2px solid #1C1C1C; border-radius: 12px; padding: 12px; margin: 0 auto 8px; max-width: 700px; }
-        .context-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; font-weight: 600; color: #1C1C1C; }
-        .context-toggle { font-size: 12px; }
-        .context-content { margin-top: 10px; font-size: 12px; line-height: 1.6; display: none; }
-        .context-content.show { display: block; }
-        .context-item { display: flex; gap: 8px; margin-bottom: 6px; }
-        .context-label { font-weight: 600; color: #4a4a40; min-width: 80px; }
-        .context-value { color: #1C1C1C; }
-        .loading-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F7F4EE; z-index: 100; }
-        .loading-olive { font-size: 4rem; margin-bottom: 1rem; animation: float 2s ease-in-out infinite; }
-        .loading-text { font-size: 1.5rem; font-weight: 600; color: #1C1C1C; }
-        .loading-subtext { font-size: 0.875rem; color: #4a4a40; margin-top: 0.5rem; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .clean-btn { background: #f5f0e8; border: none; border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; }
+        
+        /* Limit message */
+        .limit-message { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px; text-align: center; color: #666; font-size: 13px; }
+        .limit-btn { background: #3b6d11; border: none; border-radius: 6px; padding: 8px 16px; color: #eaf3de; font-size: 13px; cursor: pointer; margin-top: 10px; }
+
+        @media (max-width: 640px) {
+          .context-strip { font-size: 12px; padding: 8px 12px; flex-wrap: wrap; }
+          .skills-row { gap: 6px; }
+          .skill-pill { padding: 6px 12px; font-size: 12px; }
+          .msg-bubble { max-width: 90%; padding: 10px 12px; font-size: 13px; }
+          .input-row { padding: 8px; gap: 8px; }
+          .mode-select { min-width: 90px; font-size: 12px; padding: 8px; }
+        }
       `}</style>
 
-      <Show when={showLoading()}>
-        <div class="loading-screen">
-          <div class="loading-olive">🌿</div>
-          <div class="loading-text">Hola, soy Olivaxi</div>
-          <div class="loading-subtext">Cargando tu asesor agrícola...</div>
-        </div>
-      </Show>
-
-      <Show when={!showLoading()}>
-        <div class="chat-hero">
-          <Show when={!activeSkill()} fallback={<div class="title-typewriter">{titleText()}</div>}>
-            <h1>¿Qué modo quieres usar?</h1>
-          </Show>
-        </div>
-
-        <Show when={!provincia()}>
-          <div class="province-select-card">
-            <select class="province-dropdown" value="" onChange={(e) => seleccionarProvincia(e.target.value)}>
-              <option value="" disabled>Selecciona tu provincia</option>
-              <For each={PROVINCIAS}>{(prov) => <option value={prov}>{prov}</option>}</For>
-            </select>
-          </div>
-        </Show>
-
-        <Show when={provincia() && !activeSkill()}>
-          <div class="skills-card">
-            <div class="skills-grid">
-              <For each={SKILLS}>{(skill) => (
-                <button class="skill-btn" onClick={() => selectSkill(skill.id)}>{skill.label}</button>
+      <div class="chat-main">
+        {/* Context Strip */}
+        <div class={`context-strip ${contextStrip().level}`}>
+          <span class="context-strip-text">{contextStrip().text}</span>
+          <div class="prov-dropdown-wrap">
+            <button class="prov-change-btn" onClick={() => setShowProvinceDropdown(!showProvinceDropdown())}>
+              {provincia() ? 'Cambiar ▾' : 'Elegir ▾'}
+            </button>
+            <div class={`prov-dropdown-inline ${showProvinceDropdown() ? 'show' : ''}`}>
+              <For each={PROVINCIAS}>{(prov) => (
+                <div class="prov-option" onClick={() => { seleccionarProvincia(prov); setShowProvinceDropdown(false); }}>
+                  {prov}
+                </div>
               )}</For>
             </div>
           </div>
-          <div class="context-panel">
-            <div class="context-header" onClick={() => setShowContext(!showContext())}>
-              <span>📋 Tu contexto actual</span>
-              <span class="context-toggle">{showContext() ? '▲ Ocultar' : '▼ Ver'}</span>
-            </div>
-            <div class={`context-content ${showContext() ? 'show' : ''}`}>
-              <div class="context-item"><span class="context-label">📍 Provincia:</span><span class="context-value">{provincia()}</span></div>
-              {variedad() && <div class="context-item"><span class="context-label">🫒 Variedad:</span><span class="context-value">{variedad()}</span></div>}
-              {climaActual() && <>
-                <div class="context-item"><span class="context-label">🌡️ Clima:</span><span class="context-value">{climaActual().temperatura}°C, {climaActual().humedad}% humedad, {climaActual().lluvia}mm lluvia ({climaActual().estado || 'actual'})</span></div>
-                {(climaActual().suelo_temp !== undefined || climaActual().suelo_humedad !== undefined) && (
-                  <div class="context-item">
-                    <span class="context-label">🌱 Suelo:</span>
-                    <span class="context-value">
-                      {climaActual().suelo_temp ?? '-'}°C, {climaActual().suelo_humedad ?? '-'}% humedad
-                      {climaActual().tipoSuelo ? ` · ${climaActual().tipoSuelo}` : ''}
-                    </span>
-                  </div>
-                )}
-                {climaActual().evapotranspiracion !== undefined && <div class="context-item"><span class="context-label">💧 ETo:</span><span class="context-value">{climaActual().evapotranspiracion} mm/día</span></div>}
-                {(climaActual().necesidadRiego || climaActual().deficitRiego !== undefined) && (
-                  <div class="context-item">
-                    <span class="context-label">🚿 Riego:</span>
-                    <span class="context-value">
-                      {climaActual().necesidadRiego || 'Sin dato'}
-                      {climaActual().deficitRiego !== undefined ? ` · déficit ${climaActual().deficitRiego} mm` : ''}
-                    </span>
-                  </div>
-                )}
-                {(climaActual().pluviometriaAnual || climaActual().altitud) && (
-                  <div class="context-item">
-                    <span class="context-label">🏞️ Zona:</span>
-                    <span class="context-value">
-                      {climaActual().pluviometriaAnual ? `${climaActual().pluviometriaAnual} mm/año` : ''}
-                      {climaActual().pluviometriaAnual && climaActual().altitud ? ' · ' : ''}
-                      {climaActual().altitud ? `${climaActual().altitud} m` : ''}
-                      {climaActual().variedadPredominante ? ` · predomina ${climaActual().variedadPredominante}` : ''}
-                    </span>
-                  </div>
-                )}
-                <div class="context-item">
-                  <span class="context-label">⚠️ Riesgo:</span>
-                  <span class="context-value">
-                    {(climaActual().riesgo || 'bajo').toUpperCase()}
-                    {Array.isArray(climaActual().riesgosActivos) && climaActual().riesgosActivos.length
-                      ? ` · ${climaActual().riesgosActivos.slice(0, 3).map(r => r?.titulo || r?.tipo).filter(Boolean).join(', ')}`
-                      : ' · Sin alertas activas'}
-                  </span>
-                </div>
-                {!!climaActual().plagas && (
-                  <div class="context-item">
-                    <span class="context-label">🦠 Sanidad:</span>
-                    <span class="context-value">
-                      {Object.entries(climaActual().plagas)
-                        .map(([k, v]) => `${k}:${v?.nivel || 'bajo'}`)
-                        .join(' · ') || 'Sin dato'}
-                    </span>
-                  </div>
-                )}
-              </>}
-            </div>
-          </div>
-        </Show>
+        </div>
 
-        <Show when={provincia() && activeSkill()}>
-          <div class="chat-with-input">
-            <div class="chat-messages">
-              <For each={messages()}>{(msg) => (
-                <div class="msg-row">
-                  <Show when={msg.role === 'bot'} fallback={<div class="msg-bubble user">{msg.text}</div>}>
-                    <div class="msg-bubble bot">
-                      <Show when={msg.isWaiting}>
-                        <div class="typing-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
-                      </Show>
-                      <Show when={!msg.isWaiting}>
-                        <span style={{ 'white-space': 'pre-wrap' }}>{formatText(msg.text)}</span>
-                      </Show>
-                    </div>
+        {/* Skills Pills */}
+        <div class="skills-row">
+          <For each={SKILLS}>{(skill) => (
+            <button 
+              class={`skill-pill ${activeSkill() === skill.id ? 'active' : ''}`}
+              onClick={() => selectSkill(skill.id)}
+            >
+              {skill.label}
+            </button>
+          )}</For>
+        </div>
+
+        {/* Messages */}
+        <div class="chat-messages">
+          <For each={messages()}>{(msg) => (
+            <div class="msg-row">
+              <Show when={msg.role === 'bot'} fallback={<div class="msg-bubble user">{msg.text}</div>}>
+                <div class="msg-bubble bot">
+                  <Show when={msg.isWaiting}>
+                    <div class="typing-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
+                  </Show>
+                  <Show when={!msg.isWaiting}>
+                    <span style={{ 'white-space': 'pre-wrap' }} innerHTML={formatText(msg.text)}></span>
                   </Show>
                 </div>
-              )}</For>
-              
-              <Show when={isAtLimit() && !isLoading()}>
-                <div class="limit-message">
-                  <span>Llegaste al límite de memoria 🧹</span>
-                  <button class="limit-btn" onClick={() => { setMessages([]); setIsLoading(false); }}>🤖🧹 Limpiar chat</button>
-                </div>
               </Show>
-              
-              <div ref={messagesEndRef}></div>
             </div>
+          )}</For>
+          
+          <Show when={isAtLimit() && !isLoading()}>
+            <div class="limit-message">
+              <span>Llegaste al límite de memoria</span>
+              <button class="limit-btn" onClick={() => { setMessages([]); setIsLoading(false); }}>🧹 Nuevo chat</button>
+            </div>
+          </Show>
+          
+          <div ref={messagesEndRef}></div>
+        </div>
 
-            <div class="input-area">
-              <div class="chat-input-wrapper">
-                <div class="input-left">
-                  <div class={`mode-pill-inline ${showModeDropdown() ? 'expanded' : ''}`}>
-                    <button class="mode-pill-button" onClick={() => setShowModeDropdown(!showModeDropdown())}>
-                      {showModeDropdown() ? '🎯 Elegir modo' : (activeSkill() ? SKILLS.find(s => s.id === activeSkill())?.label : '🎯 Elegir')}
-                    </button>
-                    <div class={`mode-pill-dropdown ${showModeDropdown() ? 'show' : ''}`}>
-                      <For each={SKILLS}>{(skill) => (
-                        <div class="mode-option" onClick={() => { selectSkill(skill.id); setShowModeDropdown(false); }}>
-                          {skill.label} - {skill.condition}
-                        </div>
-                      )}</For>
-                    </div>
-                  </div>
-                  <input 
-                    class="chat-input" 
-                    type="text" 
-                    value={input()} 
-                    onInput={(e) => setInput(e.target.value)} 
-                    onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
-                    placeholder={isLoading() ? "Escribiendo..." : "Escribe tu mensaje..."}
-                    disabled={isLoading() || isAtLimit()} 
-                  />
-                </div>
-                <div class="clean-btn-wrapper">
-                  <button class="clean-btn" onClick={() => isAtLimit() ? setShowCleanMenu(!showCleanMenu()) : setShowCleanMenu(true)}>
-                    {isAtLimit() ? '🧹' : '💾'}
-                  </button>
-                  <div class={`clean-menu ${showCleanMenu() ? 'show' : ''}`}>
-                    <div class="clean-option" onClick={() => { descargarChat(); setShowCleanMenu(false); }}>📥 Descargar chat</div>
-                    <Show when={isAtLimit()}>
-                      <div class="clean-option" onClick={() => { nuevoChat(); setShowCleanMenu(false); }}>✨ Nuevo chat</div>
-                    </Show>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Show>
-      </Show>
+        {/* Input */}
+        <div class="input-row">
+          <select 
+            class="mode-select" 
+            value={activeSkill() || ''}
+            onChange={(e) => selectSkill(e.target.value)}
+          >
+            <option value="">🎯 Elegir modo</option>
+            <For each={SKILLS}>{(skill) => (
+              <option value={skill.id}>{skill.label}</option>
+            )}</For>
+          </select>
+          <input 
+            class="chat-input" 
+            type="text" 
+            value={input()} 
+            onInput={(e) => setInput(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
+            placeholder={isLoading() ? "Escribiendo..." : "Escribe tu pregunta..."}
+            disabled={isLoading() || isAtLimit()} 
+            autofocus
+          />
+          <button class="clean-btn" onClick={() => isAtLimit() ? (setMessages([]), setIsLoading(false)) : descargarChat()}>
+            {isAtLimit() ? '🧹' : '💾'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

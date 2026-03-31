@@ -115,7 +115,8 @@ class OlivaxiMapa extends HTMLElement {
         loading.querySelector('p').textContent = 'Error de datos';
         return;
       }
-      loading.querySelector('p').textContent = 'Datos cargados';
+      loading.querySelector('p').textContent = 'Datos recuperados';
+      await new Promise(r => setTimeout(r, 300));
     }
 
     // Restaurar provincia seleccionada desde ecosistema
@@ -151,7 +152,7 @@ class OlivaxiMapa extends HTMLElement {
     });
 
     // Escuchar cambios de variedad desde el ecosistema
-    Ecosistema.onChange((state) => {
+    this._offEcosistema = Ecosistema.onChange((state) => {
       let needsFullRender = false;
       if (state.variedad !== this.variedad) {
         this.variedad = state.variedad;
@@ -183,6 +184,13 @@ class OlivaxiMapa extends HTMLElement {
         this.flyToProvince(datos.lat, datos.lon);
       }
     });
+  }
+
+  disconnectedCallback() {
+    if (typeof this._offEcosistema === 'function') {
+      this._offEcosistema();
+      this._offEcosistema = null;
+    }
   }
 
   getColor(valor, tipo) {

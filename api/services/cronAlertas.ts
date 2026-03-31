@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import db from "../db/sqlite";
 import { calcularRiesgosOlivar } from "./riesgos";
 import { getClimaData, getClimaByProvincia, getRiesgosActivos } from "../routes/clima";
+import { VARIEDADES_INFO, CONSEJOS, normalizarTipoAlertaCompartido, activarPorTipoCompartido } from "../data/shared";
 
 // Configuración de email
 const gmailUser = process.env.GMAIL_USER;
@@ -15,51 +16,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Datos de variedades y consejos
-const VARIEDADES_INFO: Record<string, any> = {
-  cornicabra: { nombre: "Cornicabra", clima: { frio: "muy-alta", calor: "muy-alta", sequia: "muy-alta", humedad_alta: "media" } },
-  picual: { nombre: "Picual", clima: { frio: "alta", calor: "muy-alta", sequia: "media", humedad_alta: "baja" } },
-  arbequina: { nombre: "Arbequina", clima: { frio: "muy-alta", calor: "media", sequia: "baja", humedad_alta: "baja" } },
-  hojiblanca: { nombre: "Hojiblanca", clima: { frio: "media", calor: "alta", sequia: "media-alta", humedad_alta: "media" } },
-  manzanilla: { nombre: "Manzanilla", clima: { frio: "media", calor: "media-alta", sequia: "baja", humedad_alta: "baja" } },
-  empeltre: { nombre: "Empeltre", clima: { frio: "alta", calor: "media-alta", sequia: "muy-alta", humedad_alta: "media" } }
-};
-
-const CONSEJOS: Record<string, string[]> = {
-  ola_calor: ['💧 Riega antes del amanecer', '🌿 Evita fertilizar', '🛡️ Acolcha el suelo con paja', '🌳 No podes en días calurosos'],
-  calor_critico: ['💧 Aumenta riego', '🌿 Aplica mulch', '🛡️ Protege del sol directo', '🌳 Evita poda'],
-  helada: ['🧣 Protege árboles jóvenes con manta', '💧 No riegues antes de helada', '🌳 Evita poda ahora', '🔥 Considera heaters si es viable'],
-  helada_critica: ['🧣 Protege con manta térmica', '💧 No riegues', '🌳 Evita podar', '🔥 Calefacción si es viable'],
-  estres_hidrico: ['💦 Aplica riego profundo', '🪵 Usa mulch para retener humedad', '✂️ Reduce poda', '🌿 Aplica compost'],
-  sequia_severa: ['💧 Aumenta riego significativamente', '🪵 Aplica mulch espeso', '🌳 Reduce frutos si es necesario', '💦 Considera riego de emergencia'],
-  sequia_extrema: ['💥 Solicita permiso para emergencia', '🛡️ Protege árboles centenarios', '📞 Contacta asociaciones'],
-  alta_humedad: ['🍄 Aplica fungicida preventivo', '🌳 Poda para ventilación', '💧 Evita riego por aspersión', '🔍 Monitorea hojas'],
-  hongos_criticos: ['🍄 Aplica fungicida urgente', '🔴 Elimina ramas afectadas', '💧 No riegues por aspersión', '📞 Consulta técnico'],
-  inundacion: ['🌊 Revisa drenaje', '🍄 Aplica anti-hongos', '🌳 Evalúa raíces', '🛡️ Protege de erosión'],
-  mosca: ['🧪 Aplica tratamiento', '🪓 Recoge frutos afectados', '🔒 Instala trampas', '📅 Programa tratamiento'],
-  polilla: ['🪓 Poda afectada', '🧪 Aplica tratamiento', '🔒 Trampas de feromonas', '🥅 Redes anti-insectos'],
-  xylella: ['🚨 Notifica a authorities', '🪓 Elimina árboles afectados', '🛡️ Medidas preventivas', '🔬 Confirma laboratorio'],
-  repilo: ['🍄 Aplica fungicida', '🌳 Poda para aireación', '💧 Evita exceso de riego', '🔍 Monitorea regularmente'],
-  condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
-};
-
 // Helper wrapper
 const callRiesgosOlivar = (t: number, h: number, l: number) => calcularRiesgosOlivar({ temp: t, humedad: h, lluvia: l });
-const NORMALIZAR_TIPO_ALERTA: Record<string, string> = {
-  calor: 'ola_calor',
-  helada: 'helada',
-  sequia: 'sequia_extrema',
-  humedad: 'alta_humedad',
-};
 
 function normalizarTipoAlerta(tipo: string): string {
-  return NORMALIZAR_TIPO_ALERTA[tipo] || tipo || 'condiciones_optimas';
+  return normalizarTipoAlertaCompartido(tipo);
 }
 
 function activarPorTipo(tipo: string, riesgosActivos: any[]): boolean {
-  const t = normalizarTipoAlerta(tipo);
-  if (t === 'condiciones_optimas') return riesgosActivos.length === 0;
-  return riesgosActivos.some(r => r.tipo === t);
+  return activarPorTipoCompartido(tipo, riesgosActivos);
 }
 
 export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: number; enviados: number }> {

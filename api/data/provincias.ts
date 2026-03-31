@@ -2,6 +2,7 @@
 // DATOS PROVINCIALES - OLIVA ξ
 // Datos estáticos para el ecosistema completo
 // Actualizado: 2025-W25 (scraping manual RAIF)
+// Actualizado: 2026-03-30 - Añadidos datos de 10 plagas
 // ============================================
 
 export interface DatosProvincia {
@@ -19,10 +20,16 @@ export interface DatosProvincia {
 }
 
 export interface PlagaEstado {
-  polilla: string;  // alto, medio, bajo
+  polilla: string;
   mosca: string;
   repilo: string;
   xylella?: string;
+  tuberculosis?: string;
+  barrenillo?: string;
+  cochinilla?: string;
+  phytophthora?: string;
+  lepra?: string;
+  verticillium?: string;
   ultimaActualizacion: string;
 }
 
@@ -41,6 +48,12 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "alto",    // RAIF 2025 - niveles altos
       mosca: "medio",
       repilo: "bajo",
+      tuberculosis: "medio",   // Frío + humedad, zonas altas
+      barrenillo: "bajo",      // RAIF 2025: incidencia escasa
+      cochinilla: "bajo",      // Controlada 一般mente
+      phytophthora: "bajo",    // Suelo calizo bien drenado
+      lepra: "bajo",           // Baja incidencia
+      verticillium: "medio",   // Presente en olivar español
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -85,7 +98,13 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "bajo",
       mosca: "medio",
       repilo: "bajo",
-      xylella: "bajo",  // Vigilancia activa
+      xylella: "bajo",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "medio",   // Humedad alta zona
+      lepra: "bajo",
+      verticillium: "medio",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -130,6 +149,12 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "bajo",
       mosca: "medio",
       repilo: "bajo",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "medio",     // Clima cálido
+      phytophthora: "bajo",
+      lepra: "bajo",
+      verticillium: "bajo",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -150,8 +175,14 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
     plagasEndemicas: ["mosca"],
     plagasActuales: {
       polilla: "medio",
-      mosca: "medio",
-      repilo: "bajo",
+      mosca: "bajo",
+      repilo: "medio",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "bajo",
+      lepra: "bajo",
+      verticillium: "bajo",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -174,6 +205,12 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "bajo",
       mosca: "bajo",
       repilo: "bajo",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "bajo",
+      lepra: "bajo",
+      verticillium: "bajo",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -196,6 +233,12 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "bajo",
       mosca: "bajo",
       repilo: "bajo",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "bajo",
+      lepra: "bajo",
+      verticillium: "bajo",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -218,7 +261,13 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
       polilla: "bajo",
       mosca: "bajo",
       repilo: "bajo",
-      xylella: "medio",  // Zona de vigilancia
+      xylella: "medio",
+      tuberculosis: "bajo",
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "bajo",
+      lepra: "bajo",
+      verticillium: "bajo",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [
@@ -238,9 +287,15 @@ export const PROVINCIAS_DATA: Record<string, DatosProvincia> = {
     epocaCritica: "primavera",
     plagasEndemicas: ["mosca", "repilo"],
     plagasActuales: {
-      polilla: "bajo",
-      mosca: "medio",
+      polilla: "medio",
+      mosca: "bajo",
       repilo: "medio",
+      tuberculosis: "medio",   // Zonas altas frías
+      barrenillo: "bajo",
+      cochinilla: "bajo",
+      phytophthora: "bajo",
+      lepra: "medio",           // Humedad montaña
+      verticillium: "medio",
       ultimaActualizacion: "2025-05"
     },
     consejosSuelo: [

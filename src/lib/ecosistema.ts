@@ -59,6 +59,7 @@ const OlivaxiEcosistema = {
   // Keys de localStorage
   PROVINCIA_KEY: 'olivaxi_provincia',
   VARIEDAD_KEY: 'olivaxi_variedad',
+  CLIMA_CACHE_KEY: 'olivaxi_clima_cache',
 
   // Estado interno
   _provincia: '',
@@ -182,6 +183,16 @@ const OlivaxiEcosistema = {
         const data = await res.json();
         olivaxiCache.set(API_ENDPOINTS.CLIMA, data);
         this._climaData = data;
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem(this.CLIMA_CACHE_KEY, JSON.stringify({
+              ts: Date.now(),
+              data,
+            }));
+          } catch (err) {
+            console.warn('[Ecosistema] No se pudo guardar cache local de clima:', err);
+          }
+        }
         return data;
       } catch (e) {
         console.error(`[Ecosistema] fetchClima intento ${attempt + 1} falló:`, e);
@@ -191,6 +202,22 @@ const OlivaxiEcosistema = {
       }
     }
     console.error('[Ecosistema] fetchClima falló después de', retries, 'intentos');
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(this.CLIMA_CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { ts?: number; data?: any[] };
+          const isFresh = parsed?.ts && (Date.now() - parsed.ts) < (12 * 60 * 60 * 1000);
+          if (isFresh && Array.isArray(parsed.data) && parsed.data.length > 0) {
+            console.warn('[Ecosistema] Usando cache local de clima por fallo de red/API');
+            this._climaData = parsed.data;
+            return parsed.data;
+          }
+        }
+      } catch (err) {
+        console.warn('[Ecosistema] Cache local de clima inválida:', err);
+      }
+    }
     return this._climaData || [];
   },
 
@@ -325,20 +352,6 @@ const OlivaxiEcosistema = {
       }
     });
 
-    // Compatibilidad: escuchar eventos legacy del mapa
-    window.addEventListener('provincia-seleccionada', ((e: CustomEvent) => {
-      const prov = e.detail?.provincia;
-      if (prov && prov !== this._provincia) {
-        this.setProvincia(prov);
-      }
-    }) as EventListener);
-
-    window.addEventListener('variedad-seleccionada', ((e: CustomEvent) => {
-      const v = e.detail?.variedad;
-      if (v !== undefined && v !== this._variedad) {
-        this.setVariedad(v);
-      }
-    }) as EventListener);
   },
 };
 

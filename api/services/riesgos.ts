@@ -19,6 +19,12 @@ export interface ResultadoRiesgoPlaga {
   polilla: NivelRiesgo;
   xylella: NivelRiesgo;
   repilo: NivelRiesgo;
+  tuberculosis: NivelRiesgo;
+  barrenillo: NivelRiesgo;
+  cochinilla: NivelRiesgo;
+  phytophthora: NivelRiesgo;
+  lepra: NivelRiesgo;
+  verticillium: NivelRiesgo;
 }
 
 export interface ResultadoRiesgoOlivar {
@@ -87,7 +93,61 @@ export function calcularRiesgosPlaga({ temp, humedad, lluvia }: CondicionesClima
     return { nivel: 'bajo', descripcion: 'Riesgo bajo de repilo', consejo: 'Sin acción necesaria' };
   })();
 
-  return { mosca, polilla, xylella, repilo };
+  const tuberculosis = (() => {
+    if (humedad > 75 && temp < 18) {
+      return { nivel: 'alto', descripcion: 'Condiciones favorables a tuberculosis del olivo', consejo: 'Poda sanitaria y desinfección de herramientas' };
+    } else if (humedad > 60 && temp < 22) {
+      return { nivel: 'medio', descripcion: 'Vigilar tuberculosis en heridas y poda', consejo: 'Monitoreo preventivo' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de tuberculosis', consejo: 'Sin acción necesaria' };
+  })();
+
+  const barrenillo = (() => {
+    if (temp > 28 && humedad < 55 && lluvia < 2) {
+      return { nivel: 'alto', descripcion: 'Condiciones ideales para barrenillo', consejo: 'Retirar madera atacada y reforzar trampas' };
+    } else if (temp > 24 && humedad < 65) {
+      return { nivel: 'medio', descripcion: 'Riesgo moderado de barrenillo', consejo: 'Vigilar ramas debilitadas' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de barrenillo', consejo: 'Sin acción necesaria' };
+  })();
+
+  const cochinilla = (() => {
+    if (temp > 26 && humedad < 60) {
+      return { nivel: 'alto', descripcion: 'Condiciones favorables a cochinilla', consejo: 'Revisar focos y aplicar control localizado' };
+    } else if (temp > 22 && humedad < 70) {
+      return { nivel: 'medio', descripcion: 'Riesgo moderado de cochinilla', consejo: 'Monitoreo preventivo' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de cochinilla', consejo: 'Sin acción necesaria' };
+  })();
+
+  const phytophthora = (() => {
+    if (lluvia > 5 && humedad > 75) {
+      return { nivel: 'alto', descripcion: 'Condiciones de riesgo para phytophthora', consejo: 'Mejorar drenaje y evitar encharcamientos' };
+    } else if (lluvia > 2 && humedad > 65) {
+      return { nivel: 'medio', descripcion: 'Riesgo moderado de phytophthora', consejo: 'Vigilar zonas con mal drenaje' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de phytophthora', consejo: 'Sin acción necesaria' };
+  })();
+
+  const lepra = (() => {
+    if (humedad > 70 && temp < 15) {
+      return { nivel: 'alto', descripcion: 'Condiciones favorables a lepra del olivo', consejo: 'Aplicar cobre preventivo y saneo' };
+    } else if (humedad > 60 && temp < 20) {
+      return { nivel: 'medio', descripcion: 'Riesgo moderado de lepra', consejo: 'Monitoreo preventivo' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de lepra', consejo: 'Sin acción necesaria' };
+  })();
+
+  const verticillium = (() => {
+    if (humedad > 75 && temp >= 15 && temp <= 28) {
+      return { nivel: 'alto', descripcion: 'Condiciones favorables a verticillium', consejo: 'Evitar exceso de humedad y controlar drenaje' };
+    } else if (humedad > 65 && temp >= 12 && temp <= 30) {
+      return { nivel: 'medio', descripcion: 'Riesgo moderado de verticillium', consejo: 'Vigilancia del estado vascular del árbol' };
+    }
+    return { nivel: 'bajo', descripcion: 'Riesgo bajo de verticillium', consejo: 'Sin acción necesaria' };
+  })();
+
+  return { mosca, polilla, xylella, repilo, tuberculosis, barrenillo, cochinilla, phytophthora, lepra, verticillium };
 }
 
 export function calcularRiesgosOlivar({ temp, humedad, lluvia }: CondicionesClimaticas): ResultadoRiesgoOlivar {

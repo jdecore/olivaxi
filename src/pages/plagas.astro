@@ -1,95 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProvinciaSelect from '../components/ProvinciaSelect.astro';
+import { PLAGAS_CATALOGO, CAMBIO_CLIMATICO_PLAGAS } from '../lib/catalogos';
 
-const plagas = [
-  {
-    id: 'mosca',
-    nombre: 'Mosca del olivo',
-    icono: '🪰',
-    condiciones: ['Altas Temperaturas', 'Baja Lluvia (Sequía)'],
-    tratamiento: 'Trampas masivas McPhail (70-100/ha); cebo proteico parcheo; insecticidas si >7% frutos picados. Con +3°C alarga actividad hasta noviembre.',
-    severidad: 'alta'
-  },
-  {
-    id: 'polilla',
-    nombre: 'Polilla del olivo (Prays)',
-    icono: '🦋',
-    condiciones: ['Bajas Temperaturas', 'Altas Temperaturas', 'Baja Humedad', 'Baja Lluvia'],
-    tratamiento: 'Bacillus thuringiensis en floración; aceites minerales; monitoreo con trampas. Más ciclos por temperaturas cálidas.',
-    severidad: 'media'
-  },
-  {
-    id: 'xylella',
-    nombre: 'Xylella fastidiosa',
-    icono: '🚨',
-    condiciones: ['Altas Temperaturas', 'Baja Humedad'],
-    tratamiento: 'Control de vectores (Philaenus), eliminación de focos y notificación fitosanitaria obligatoria.',
-    severidad: 'alta'
-  },
-  {
-    id: 'tuberculosis',
-    nombre: 'Tuberculosis del olivo',
-    icono: '🦠',
-    condiciones: ['Bajas Temperaturas', 'Alta Humedad'],
-    tratamiento: 'Aplicar cobre en heridas; mejorar drenaje y poda sanitaria. Tratar inmediatamente después de heladas.',
-    severidad: 'media'
-  },
-  {
-    id: 'repilo',
-    nombre: 'Repilo',
-    icono: '🍂',
-    condiciones: ['Alta Humedad'],
-    tratamiento: 'Cobre (máx 4kg/ha/año); bicarbonatos (500-1000g/hl); tratamientos preventivos post-invierno.',
-    severidad: 'alta'
-  },
-  {
-    id: 'barrenillo',
-    nombre: 'Barrenillo',
-    icono: '🪲',
-    condiciones: ['Altas Temperaturas', 'Baja Humedad', 'Estrés hídrico'],
-    tratamiento: 'Retirar leña de poda, trampeo de madera cebo y evitar debilidad del árbol por sequía.',
-    severidad: 'media'
-  },
-  {
-    id: 'cochinilla',
-    nombre: 'Cochinilla',
-    icono: '🐛',
-    condiciones: ['Altas Temperaturas', 'Baja Humedad'],
-    tratamiento: 'Aceites minerales; insecticidas sistémicos; mejorar ventilación. Por estrés hídrico aumenta.',
-    severidad: 'baja'
-  },
-  {
-    id: 'phytophthora',
-    nombre: 'Phytophthora',
-    icono: '🍄',
-    condiciones: ['Alta Humedad', 'Alta Lluvia'],
-    tratamiento: 'Mejorar drenaje; fungicidas específicos (metalaxyl, fosetil-Al); evitar encharcamiento.',
-    severidad: 'alta'
-  },
-  {
-    id: 'lepra',
-    nombre: 'Lepra',
-    icono: '🤕',
-    condiciones: ['Bajas Temperaturas', 'Alta Humedad'],
-    tratamiento: 'Cobre en heridas; poda sanitaria; eliminar restos vegetales afectados.',
-    severidad: 'media'
-  },
-  {
-    id: 'verticillium',
-    nombre: 'Verticillium',
-    icono: '🥀',
-    condiciones: ['Alta Lluvia'],
-    tratamiento: 'Rotación de cultivos; suelo solarizado; evitar heridas en raíces; variedades resistentes.',
-    severidad: 'alta'
-  }
-];
-
-const cambioClimatico = [
-  { plaga: 'Mosca del olivo', cambio: '+3°C alarga actividad hasta noviembre', severidad: 'alta' },
-  { plaga: 'Xylella fastidiosa', cambio: 'Expansión norteña, transmitida por Philaenus spumarius', severidad: 'critica' },
-  { plaga: 'Hongos oportunistas', cambio: '+60% pérdidas proyectadas con +2°C', severidad: 'alta' }
-];
+const plagas = PLAGAS_CATALOGO;
+const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 ---
 
 <Layout title="Plagas del Olivar | olivaξ">
@@ -98,7 +13,12 @@ const cambioClimatico = [
     <p class="subtitle">Estado fitosanitario actualizado por provincia (RAIF + riesgos climáticos y de suelo)</p>
     <div class="provincia-bar">
       <ProvinciaSelect id="provincia-select-plagas" placeholder="Selecciona provincia..." />
-      <div id="raif-status-bar" class="raif-status"></div>
+      <div id="plagas-summary" class="plagas-summary"></div>
+    </div>
+    <div id="alert-strip" class="alert-strip" style="display: none;">
+      <span class="alert-icon">🔴</span>
+      <span class="alert-text">⚠️ Riesgo ALTO detectado: <strong id="alert-plaga"></strong> en <strong id="alert-provincia"></strong>. Actúa esta semana.</span>
+      <a href="/alertas" class="alert-btn">Activar alertas</a>
     </div>
   </div>
 
@@ -111,41 +31,29 @@ const cambioClimatico = [
   </div>
 
   <section class="plagas-section" id="plagas-grid">
-    {plagas.map((p, idx) => (
+    {plagas.map((p) => (
       <div 
         class="plaga-card" 
         data-condiciones={p.condiciones.join(",")}
         data-nombre={p.nombre}
         data-severidad={p.severidad}
+        data-id={p.id}
       >
-        <div class="plaga-inner">
-          <div class="plaga-front">
-            <span class="plaga-icon">{p.icono}</span>
-            <h3>{p.nombre}</h3>
-            <div class="condiciones-box">
-              <span class="condiciones-label">Condiciones que la favorecen:</span>
-              <div class="condiciones-tags">
-                {p.condiciones.map(c => (
-                  <span class="condicion-tag">{c}</span>
-                ))}
-              </div>
-            </div>
-            <span class="flip-hint">Click para ver tratamiento →</span>
-          </div>
-          <div class="plaga-back">
-            <span class="plaga-icon">{p.icono}</span>
-            <h3>💊 Tratamiento</h3>
-            <p class="tratamiento-text">{p.tratamiento}</p>
-            <div class="condiciones-footer">
-              <span class="footer-label">Afectada por:</span>
-              <div class="condiciones-tags">
-                {p.condiciones.map(c => (
-                  <span class="condicion-tag">{c}</span>
-                ))}
-              </div>
-            </div>
-            <span class="flip-hint">← Volver</span>
-          </div>
+        <div class="plaga-header">
+          <span class="plaga-emoji">{p.icono}</span>
+          <span class={`plaga-nivel nivel-${p.severidad === 'alta' ? 'alto' : p.severidad === 'media' ? 'medio' : 'bajo'}`}>
+            {p.severidad === 'alta' ? 'ALTO' : p.severidad === 'media' ? 'MEDIO' : 'BAJO'}
+          </span>
+        </div>
+        <h3 class="plaga-nombre">{p.nombre}</h3>
+        <div class="plaga-condiciones">
+          {p.condiciones.map(c => (
+            <span class="condicion-pill">{c}</span>
+          ))}
+        </div>
+        <div class="plaga-tratamiento">
+          <p class="tratamiento-texto">{p.tratamiento}</p>
+          <a href={`/consejero?q=Tengo+riesgo+de+${p.nombre.replace(/ /g, '+')}+en+mi+olivar.+¿Qué+debo+hacer?`} class="btn-consejero">Preguntar al consejero</a>
         </div>
       </div>
     ))}
@@ -171,7 +79,11 @@ const cambioClimatico = [
 <script>
   import OlivaxiEcosistema from '../lib/ecosistema';
 
-  const raifStatusBar = document.getElementById('raif-status-bar');
+  const summaryEl = document.getElementById('plagas-summary');
+  const alertStrip = document.getElementById('alert-strip');
+  const alertPlaga = document.getElementById('alert-plaga');
+  const alertProvincia = document.getElementById('alert-provincia');
+  let expandedCard = null;
 
   const condicionesMap = {
     'temperatura': ['Bajas Temperaturas', 'Altas Temperaturas'],
@@ -179,58 +91,55 @@ const cambioClimatico = [
     'lluvia': ['Baja Lluvia', 'Alta Lluvia']
   };
 
-  const PLAGAS_CONSEJOS = {
-    mosca: { alto: '🧪 Tratamiento urgente: cebo proteico + trampa McPhail', medio: '🪰 Vigilar: instala trampas masivas', bajo: '✅ Sin riesgo activo' },
-    polilla: { alto: '🦋 Tratamiento inmediato: Bacillus thuringiensis', medio: '🪓 Poda sanitaria + monitoreo', bajo: '✅ Sin riesgo activo' },
-    repilo: { alto: '🍄 Fungicida urgente: cobre + bicarbonatos', medio: '🌳 Poda para aireación + evitar riego', bajo: '✅ Sin riesgo activo' },
-    xylella: { alto: '🚨 Notificar autoridades + eliminar afectados', medio: '🛡️ Medidas preventivas activas', bajo: '✅ Sin riesgo activo' },
-    tuberculosis: { alto: '🧴 Aplicar cobre tras heridas y heladas', medio: '✂️ Poda sanitaria y desinfección', bajo: '✅ Riesgo controlado' },
-    barrenillo: { alto: '🪲 Retira madera atacada y coloca cebos', medio: '🌳 Vigila ramas débiles', bajo: '✅ Riesgo controlado' },
-    cochinilla: { alto: '🧪 Tratamiento localizado + aceites', medio: '👀 Monitoriza colonias', bajo: '✅ Riesgo bajo' },
-    phytophthora: { alto: '💧 Mejora drenaje + fungicida específico', medio: '🕳️ Evita encharcamiento', bajo: '✅ Riesgo bajo' },
-    lepra: { alto: '🧴 Cobre preventivo y saneo', medio: '🌿 Elimina tejido afectado', bajo: '✅ Riesgo bajo' },
-    verticillium: { alto: '🥀 Arranque sanitario y control estricto', medio: '🛡️ Prevención en suelo', bajo: '✅ Riesgo bajo' }
-  };
-  
-    const PLAGAS_CONDICIONES = {
-    mosca: (d) => d.clima.temperatura > 20 && d.clima.humedad < 70 ? '🔥 IDEALES' : d.clima.temperatura > 25 ? '🌡️ FAVORABLES' : '❄️ DESFAVORABLES',
-    polilla: (d) => d.clima.temperatura > 15 && d.clima.temperatura < 30 ? '🔥 IDEALES' : '❄️ DESFAVORABLES',
-    repilo: (d) => d.clima.humedad > 70 ? '💧 IDEALES (alta humedad)' : d.clima.humedad > 50 ? '💧 FAVORABLES' : '✅ DESFAVORABLES',
-    xylella: (d) => '🚨 Siempre riesgo (transmitida por vectores)',
-    tuberculosis: (d) => d.clima.humedad > 70 && d.clima.temperatura < 18 ? '🧫 FAVORABLES' : '✅ DESFAVORABLES',
-    barrenillo: (d) => d.clima.temperatura > 28 && d.clima.humedad < 55 ? '🔥 IDEALES' : '🌡️ MODERADAS',
-    cochinilla: (d) => d.clima.temperatura > 26 && d.clima.humedad < 60 ? '🔥 IDEALES' : '✅ DESFAVORABLES',
-    phytophthora: (d) => d.clima.lluvia > 5 && d.clima.humedad > 75 ? '💧 IDEALES' : '✅ DESFAVORABLES',
-    lepra: (d) => d.clima.humedad > 70 && d.clima.temperatura < 15 ? '🌧️ FAVORABLES' : '✅ DESFAVORABLES',
-    verticillium: (d) => (d.suelo?.humedad ?? 0) > 65 ? '🌱 FAVORABLES (suelo húmedo)' : '✅ DESFAVORABLES'
-  };
-
-  const RIESGO_KEY_BY_TIPO = {
-    repilo_hongo: 'repilo',
-    verticilosis: 'verticillium',
-    antracnosis: 'phytophthora',
-    tuberculosis: 'tuberculosis'
-  };
-
   // --- Render datos de plagas ---
   function renderPlagasData(d) {
-    const getIcon = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
+    const provincia = d.provincia || OlivaxiEcosistema.provincia;
+    const tieneProvincia = !!provincia;
     
-    if (raifStatusBar) {
-      const endemicas = d.provinciaInfo?.plagasEndemicas?.length ? `<span>🏠 Endémicas: ${d.provinciaInfo.plagasEndemicas.join(', ')}</span>` : '';
-      const raifDate = d.provinciaInfo?.plagasUltimaActualizacion ? `<span>🗓️ RAIF: ${d.provinciaInfo.plagasUltimaActualizacion}</span>` : '';
-      raifStatusBar.innerHTML = `
-        <span>🪰 Mosca: ${getIcon(d.plagas?.mosca?.nivel)} ${d.plagas?.mosca?.nivel || 'bajo'}</span>
-        <span>🦋 Polilla: ${getIcon(d.plagas?.polilla?.nivel)} ${d.plagas?.polilla?.nivel || 'bajo'}</span>
-        <span>🍂 Repilo: ${getIcon(d.plagas?.repilo?.nivel)} ${d.plagas?.repilo?.nivel || 'bajo'}</span>
-        <span>🚨 Xylella: ${getIcon(d.plagas?.xylella?.nivel)} ${d.plagas?.xylella?.nivel || 'bajo'}</span>
-        <span>🌡️ ${d.clima?.temperatura || '?'}°C • 💧 ${d.clima?.humedad || '?'}%</span>
-        ${raifDate}
-        ${endemicas}
-      `;
+    // Update summary
+    const allPlagas = ['mosca', 'polilla', 'repilo', 'xylella', 'tuberculosis', 'barrenillo', 'cochinilla', 'phytophthora', 'lepra', 'verticillium'];
+    let altos = 0, medios = 0;
+    
+    allPlagas.forEach(key => {
+      const nivel = d.plagas?.[key]?.nivel;
+      if (nivel === 'alto') altos++;
+      else if (nivel === 'medio') medios++;
+    });
+
+    if (summaryEl) {
+      if (!tieneProvincia) {
+        summaryEl.textContent = 'Selecciona una provincia para ver niveles de riesgo';
+      } else {
+        summaryEl.textContent = `${provincia} · ${altos} plagas en nivel alto · ${medios} en nivel medio`;
+      }
     }
-    
-    const plagasMap = {
+
+    // Update alert strip
+    const plagaAlta = allPlagas.find(key => d.plagas?.[key]?.nivel === 'alto');
+    if (alertStrip && alertPlaga && alertProvincia) {
+      if (plagaAlta && tieneProvincia) {
+        const nombresPlaga: Record<string, string> = {
+          mosca: 'Mosca del olivo',
+          polilla: 'Polilla del olivo',
+          repilo: 'Repilo',
+          xylella: 'Xylella fastidiosa',
+          tuberculosis: 'Tuberculosis del olivo',
+          barrenillo: 'Barrenillo',
+          cochinilla: 'Cochinilla',
+          phytophthora: 'Phytophthora',
+          lepra: 'Lepra',
+          verticillium: 'Verticillium'
+        };
+        alertPlaga.textContent = nombresPlaga[plagaAlta] || plagaAlta;
+        alertProvincia.textContent = provincia;
+        alertStrip.style.display = 'flex';
+      } else {
+        alertStrip.style.display = 'none';
+      }
+    }
+
+    // Update cards
+    const nombresPlagaMap: Record<string, string> = {
       'Mosca del olivo': 'mosca',
       'Polilla del olivo (Prays)': 'polilla',
       'Repilo': 'repilo',
@@ -242,34 +151,35 @@ const cambioClimatico = [
       'Lepra': 'lepra',
       'Verticillium': 'verticillium'
     };
+
     document.querySelectorAll('.plaga-card').forEach(card => {
       const nombre = card.dataset.nombre;
-      const plagaKey = plagasMap[nombre];
+      const plagaKey = nombresPlagaMap[nombre];
       if (!plagaKey) return;
+
+      const nivel = tieneProvincia ? (d.plagas?.[plagaKey]?.nivel || 'bajo') : 'sin-provincia';
       
-      const riesgoEntry = (d.riesgosActivos || []).find(r =>
-        (r.tipo === plagaKey || RIESGO_KEY_BY_TIPO[r.tipo] === plagaKey)
-      );
-      const nivel = d.plagas?.[plagaKey]?.nivel || riesgoEntry?.nivel || 'bajo';
-      const condiciones = PLAGAS_CONDICIONES[plagaKey] ? PLAGAS_CONDICIONES[plagaKey](d) : 'N/A';
-      const consejo = PLAGAS_CONSEJOS[plagaKey]?.[nivel] || 'Sin datos';
-      const fuente = d.plagas?.[plagaKey]?.fuente === 'RAIF' ? 'RAIF' : (riesgoEntry ? 'Modelo climático/suelo' : 'Base técnica');
-      
-      let estadoDiv = card.querySelector('.plaga-estado-dinamico');
-      if (!estadoDiv) {
-        estadoDiv = document.createElement('div');
-        estadoDiv.className = 'plaga-estado-dinamico';
-        card.querySelector('.plaga-front')?.appendChild(estadoDiv);
+      // Update badge
+      const badge = card.querySelector('.plaga-nivel');
+      if (badge) {
+        badge.className = `plaga-nivel nivel-${nivel}`;
+        if (nivel === 'sin-provincia') {
+          badge.textContent = 'SIN DATOS';
+          badge.classList.add('nivel-sin-datos');
+        } else {
+          badge.textContent = nivel.toUpperCase();
+        }
       }
-      
-      estadoDiv.innerHTML = `
-        <div class="estado-provincial">
-          <div class="estado-header"><span class="estado-nivel ${nivel}">${getIcon(nivel)} ${nivel.toUpperCase()}</span></div>
-          <div class="estado-detalle">🌡️ ${condiciones}</div>
-          <div class="estado-detalle">🧾 Fuente: ${fuente}</div>
-          <div class="estado-consejo">💡 ${consejo}</div>
-        </div>
-      `;
+
+      // Update tratamiento visibility based on level
+      const tratamiento = card.querySelector('.plaga-tratamiento');
+      if (tratamiento) {
+        if (nivel === 'alto') {
+          tratamiento.classList.add('visible');
+        } else {
+          tratamiento.classList.remove('visible');
+        }
+      }
 
       // Store nivel for sorting
       card.dataset.nivelRiesgo = nivel === 'alto' ? '3' : nivel === 'medio' ? '2' : '1';
@@ -280,7 +190,7 @@ const cambioClimatico = [
     if (grid) {
       const cards = Array.from(grid.querySelectorAll('.plaga-card'));
       cards.sort((a, b) => {
-        return (parseInt(b.dataset.nivelRiesgo) || 1) - (parseInt(a.dataset.nivelRiesgo) || 1);
+        return (parseInt(b.dataset.nivelRiesgo) || 0) - (parseInt(a.dataset.nivelRiesgo) || 0);
       });
       cards.forEach(card => grid.appendChild(card));
     }
@@ -290,32 +200,36 @@ const cambioClimatico = [
   async function cargarDatosProvincia() {
     const provincia = OlivaxiEcosistema.provincia;
     if (!provincia) {
-      if (raifStatusBar) raifStatusBar.innerHTML = '';
+      if (summaryEl) summaryEl.textContent = 'Selecciona una provincia para ver niveles de riesgo';
+      if (alertStrip) alertStrip.style.display = 'none';
       return;
     }
     try {
       const d = await OlivaxiEcosistema.fetchDashboard();
       if (d) {
         renderPlagasData(d);
-      } else if (raifStatusBar) {
-        raifStatusBar.textContent = '⚠️ No se pudieron cargar los datos de plagas para esta provincia.';
+      } else if (summaryEl) {
+        summaryEl.textContent = '⚠️ No se pudieron cargar los datos de plagas para esta provincia.';
       }
     } catch (e) {
       console.error('[plagas] Error cargando dashboard:', e);
-      if (raifStatusBar) {
-        raifStatusBar.textContent = '❌ Error al cargar datos. Intenta de nuevo.';
+      if (summaryEl) {
+        summaryEl.textContent = '❌ Error al cargar datos. Intenta de nuevo.';
       }
     }
   }
 
   // --- Escuchar cambios del ecosistema ---
-  OlivaxiEcosistema.onChange((state) => {
+  const offEcosistema = OlivaxiEcosistema.onChange((state) => {
     if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
       renderPlagasData(state.dashboardData);
     } else if (state.provincia) {
       cargarDatosProvincia();
+    } else {
+      renderPlagasData({});
     }
   });
+  window.addEventListener('beforeunload', offEcosistema);
 
   // --- Tabs de filtrado ---
   document.querySelectorAll('.tab').forEach(tab => {
@@ -344,10 +258,18 @@ const cambioClimatico = [
     });
   });
 
-  // --- Flip cards ---
+  // --- Toggle cards (expand/collapse) ---
   document.querySelectorAll('.plaga-card').forEach(card => {
-    card.addEventListener('click', () => {
-      card.classList.toggle('flipped');
+    card.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('btn-consejero')) return;
+      
+      if (expandedCard && expandedCard !== card) {
+        expandedCard.classList.remove('expanded');
+      }
+      
+      card.classList.toggle('expanded');
+      expandedCard = card.classList.contains('expanded') ? card : null;
     });
   });
 </script>
@@ -392,52 +314,70 @@ const cambioClimatico = [
     cursor: pointer;
   }
 
-  .raif-status {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    font-size: 12px;
+  .plagas-summary {
+    font-size: 13px;
+    color: var(--color-aceituna);
     padding: 6px 12px;
-    background: rgba(212,232,73,0.15);
+    background: var(--color-white-surface);
     border-radius: 20px;
+    border: 0.5px solid var(--color-border);
   }
 
-  .raif-status span {
+  .plagas-summary .summary-gris {
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  .plagas-summary .resumen-altos {
+    color: #a32d2d;
+    font-weight: 600;
+  }
+
+  .plagas-summary .resumen-medios {
+    color: #633806;
+    font-weight: 500;
+  }
+
+  .alert-strip {
     display: flex;
     align-items: center;
-    gap: 4px;
-  }
-
-  .plaga-estado-dinamico {
-    margin-top: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.9);
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 700px;
+    margin: 1rem auto 0;
+    padding: 0.75rem 1rem;
+    background: #fcebeb;
+    border: 0.5px solid #f09595;
     border-radius: 6px;
-    border-left: 3px solid var(--color-limon);
+    flex-wrap: wrap;
   }
 
-  .plaga-estado-dinamico .estado-header {
-    font-size: 11px;
+  .alert-icon {
+    font-size: 1.2rem;
+  }
+
+  .alert-text {
+    color: #a32d2d;
+    font-size: 13px;
+  }
+
+  .alert-text strong {
     font-weight: 700;
-    margin-bottom: 4px;
   }
 
-  .plaga-estado-dinamico .estado-nivel.alto { color: #dc2626; }
-  .plaga-estado-dinamico .estado-nivel.medio { color: #b45309; }
-  .plaga-estado-dinamico .estado-nivel.bajo { color: #15803d; }
-
-  .plaga-estado-dinamico .estado-detalle {
-    font-size: 10px;
-    color: var(--color-muted);
-    margin-bottom: 3px;
-  }
-
-  .plaga-estado-dinamico .estado-consejo {
-    font-size: 10px;
-    padding: 4px 6px;
-    background: rgba(212,232,73,0.2);
+  .alert-btn {
+    background: #dc2626;
+    color: white;
+    padding: 6px 14px;
     border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .alert-btn:hover {
+    background: #b91c1c;
   }
 
   .tabs-container {
@@ -468,7 +408,7 @@ const cambioClimatico = [
   .plagas-section {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1rem;
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
@@ -480,100 +420,126 @@ const cambioClimatico = [
   @media (min-width: 1400px) { .plagas-section { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
   .plaga-card {
-    perspective: 1000px;
-    cursor: pointer;
-    height: 320px;
-  }
-
-  .plaga-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-  }
-
-  .plaga-card.flipped .plaga-inner { transform: rotateY(180deg); }
-
-  .plaga-front, .plaga-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 0;
-    padding: 1.25rem;
     background: var(--color-white-surface);
-    border: 3px solid var(--color-border);
-    box-shadow: 4px 4px 0 var(--color-border);
+    border: 0.5px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .plaga-back {
-    transform: rotateY(180deg);
-    background: var(--color-white-surface);
+  .plaga-card:hover {
+    border-color: var(--color-limon);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 
-  .plaga-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-  .plaga-card h3 { font-size: 1.1rem; color: var(--color-aceituna); margin-bottom: 0.75rem; }
-
-  .condiciones-box {
-    background: var(--color-sal);
-    border-radius: 4px;
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
+  .plaga-card.expanded {
+    border-color: var(--color-limon);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
   }
 
-  .condiciones-label {
-    font-size: 0.7rem;
-    color: var(--color-muted);
-    display: block;
-    margin-bottom: 0.5rem;
+  .plaga-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .condiciones-tags {
+  .plaga-emoji {
+    font-size: 1.75rem;
+  }
+
+  .plaga-nivel {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .plaga-nivel.nivel-alto {
+    background: #fcebeb;
+    color: #a32d2d;
+    border: 0.5px solid #f09595;
+  }
+
+  .plaga-nivel.nivel-medio {
+    background: #faeeda;
+    color: #633806;
+    border: 0.5px solid #fac775;
+  }
+
+  .plaga-nivel.nivel-bajo {
+    background: #eaf3de;
+    color: #3b6d11;
+    border: 0.5px solid #97c459;
+  }
+
+  .plaga-nivel.nivel-sin-datos {
+    background: #f5f5f5;
+    color: #666;
+    border: 0.5px solid #ddd;
+  }
+
+  .plaga-nombre {
+    font-size: 1rem;
+    color: var(--color-aceituna);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .plaga-condiciones {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
   }
 
-  .condicion-tag {
-    font-size: 10px;
+  .condicion-pill {
+    font-size: 11px;
     padding: 3px 8px;
-    background: var(--color-limon);
-    color: var(--color-aceituna);
-    border-radius: 3px;
-    font-weight: 600;
+    background: var(--color-background-secondary, #f5f5f5);
+    color: var(--color-text-secondary, #666);
+    border-radius: 100px;
   }
 
-  .flip-hint {
-    font-size: 0.7rem;
-    color: var(--color-muted);
-    text-align: center;
-    margin-top: auto;
-    padding-top: 0.5rem;
+  .plaga-tratamiento {
+    display: none;
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .tratamiento-text {
+  .plaga-tratamiento.visible {
+    display: flex;
+  }
+
+  .tratamiento-texto {
     font-size: 0.85rem;
     color: var(--color-aceituna);
     line-height: 1.5;
-    margin-bottom: 1rem;
-    flex: 1;
+    margin: 0;
   }
 
-  .condiciones-footer {
-    background: var(--color-sal);
-    border-radius: 4px;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
+  .btn-consejero {
+    display: inline-block;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s;
   }
 
-  .footer-label {
-    font-size: 0.65rem;
-    color: var(--color-muted);
-    display: block;
-    margin-bottom: 0.35rem;
+  .btn-consejero:hover {
+    background: #c8df3f;
   }
 
   .clima-section {
@@ -628,14 +594,14 @@ const cambioClimatico = [
     .page-header h1 { font-size: 1.4rem; }
     .subtitle { font-size: 0.9rem; }
     .plagas-section { grid-template-columns: 1fr; }
-    .plaga-card { min-height: 180px; height: auto; padding: 1rem; }
-    .plaga-card h3 { font-size: 1rem; }
-    .plaga-desc { font-size: 0.85rem; }
-    .plaga-inner { position: relative; }
-    .clima-grid { grid-template-columns: 1fr; }
-    .clima-hero { padding: 5rem 1rem 1rem; }
-    .clima-hero h2 { font-size: 1.25rem; }
+    .plagas-section { gap: 0.75rem; padding: 1rem; }
+    .plaga-card { padding: 0.85rem; }
+    .plaga-nombre { font-size: 0.95rem; }
+    .plaga-condiciones { gap: 0.25rem; }
+    .condicion-pill { font-size: 10px; padding: 2px 6px; }
     .provincia-bar select { width: 100%; }
-    .badge-severidad { font-size: 11px; padding: 4px 8px; }
+    .alert-strip { flex-direction: column; gap: 0.5rem; }
+    .alert-text { text-align: center; }
+    .clima-grid { grid-template-columns: 1fr; }
   }
 </style>

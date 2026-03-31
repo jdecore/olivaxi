@@ -55,9 +55,23 @@ const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
   .filter(Boolean);
 const CORS_ALLOWED = new Set(allowedOrigins.length ? allowedOrigins : defaultAllowedOrigins);
 
+function isOriginAllowed(origin: string): boolean {
+  if (CORS_ALLOWED.has(origin)) return true;
+  try {
+    const u = new URL(origin);
+    const h = u.hostname.toLowerCase();
+    if (h === "olivaxi.duckdns.org") return true;
+    if (h === "localhost" || h === "127.0.0.1") return true;
+    if (h === "45.90.237.135") return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 app.use("*", async (c, next) => {
   const origin = c.req.header("origin");
-  const isAllowedOrigin = !!origin && CORS_ALLOWED.has(origin);
+  const isAllowedOrigin = !!origin && isOriginAllowed(origin);
 
   if (origin && !isAllowedOrigin) {
     return c.json({ error: "Origen no permitido por CORS" }, 403);

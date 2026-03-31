@@ -431,6 +431,12 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
           <div class="info-item">🦋 ${getIcono(d.plagas?.polilla?.nivel)} <b>${d.plagas?.polilla?.nivel || 'bajo'}</b></div>
           <div class="info-item">🍂 ${getIcono(d.plagas?.repilo?.nivel)} <b>${d.plagas?.repilo?.nivel || 'bajo'}</b></div>
           <div class="info-item">🚨 ${getIcono(d.plagas?.xylella?.nivel)} <b>${d.plagas?.xylella?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🦠 ${getIcono(d.plagas?.tuberculosis?.nivel)} <b>${d.plagas?.tuberculosis?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🪲 ${getIcono(d.plagas?.barrenillo?.nivel)} <b>${d.plagas?.barrenillo?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🐛 ${getIcono(d.plagas?.cochinilla?.nivel)} <b>${d.plagas?.cochinilla?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🍄 ${getIcono(d.plagas?.phytophthora?.nivel)} <b>${d.plagas?.phytophthora?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🤕 ${getIcono(d.plagas?.lepra?.nivel)} <b>${d.plagas?.lepra?.nivel || 'bajo'}</b></div>
+          <div class="info-item">🥀 ${getIcono(d.plagas?.verticillium?.nivel)} <b>${d.plagas?.verticillium?.nivel || 'bajo'}</b></div>
         </div>
       </div>
       <div class="info-section">
@@ -518,7 +524,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   // --- Escuchar cambios del ecosistema ---
-  OlivaxiEcosistema.onChange((state) => {
+  const offEcosistema = OlivaxiEcosistema.onChange((state) => {
     if (provinciaSelect && state.provincia && provinciaSelect.value !== state.provincia) {
       provinciaSelect.value = state.provincia;
     }
@@ -530,6 +536,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       actualizarTipoAlerta();
     }
   });
+  window.addEventListener('beforeunload', offEcosistema);
 
   // --- Submit del formulario ---
   btn?.addEventListener("click", async () => {

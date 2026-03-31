@@ -58,7 +58,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .suelo-datos {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      gap: 12px;
       width: 100%;
       max-width: 600px;
     }
@@ -71,9 +71,9 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
       transform: translateX(-100%);
-      animation: shimmer 1.2s ease-in-out infinite;
+      animation: shimmer 1.5s ease-in-out infinite;
       pointer-events: none;
     }
     @keyframes shimmer {
@@ -83,62 +83,57 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .suelo-dato {
       background: var(--color-white-surface);
       border: 1px solid var(--color-border);
-      padding: 12px 10px;
-      border-radius: 8px;
+      padding: 14px 12px;
+      border-radius: 10px;
       text-align: center;
-      transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
     }
     .suelo-datos.animated .suelo-dato {
-      animation: kpiIn .45s cubic-bezier(.2,.8,.2,1) both;
+      animation: kpiIn .5s ease-out both;
     }
-    .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .02s; }
-    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .08s; }
-    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .14s; }
-    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .20s; }
+    .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .05s; }
+    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .1s; }
+    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .15s; }
+    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .2s; }
     @keyframes kpiIn {
-      from { opacity: 0; transform: translateY(8px) scale(.985); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .suelo-dato:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0,0,0,.08);
-      border-color: rgba(212,232,73,.9);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.06);
+      border-color: rgba(180,180,180,.5);
     }
 
-    .suelo-dato .icon { font-size: 1.3rem; margin-bottom: 4px; }
+    .suelo-dato .icon { font-size: 1.4rem; margin-bottom: 6px; }
     .suelo-dato .value {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 700;
-      transition: opacity .24s ease, transform .24s ease, color .24s ease, filter .24s ease;
-      will-change: opacity, transform;
+      transition: color .2s ease;
     }
-    .suelo-dato .value.ok { color: #15803d; }
+    .suelo-dato .value.ok { color: #16a34a; }
     .suelo-dato .value.warning { color: #d97706; }
     .suelo-dato .value.danger { color: #dc2626; }
-    .suelo-dato .label { font-size: 0.7rem; color: var(--color-muted); margin-top: 4px; }
+    .suelo-dato .label { font-size: 0.75rem; color: var(--color-muted); margin-top: 6px; }
     .suelo-dato .status {
-      font-size: 0.65rem;
-      margin-top: 4px;
+      font-size: 0.7rem;
+      margin-top: 6px;
       font-weight: 600;
-      transition: opacity .24s ease, transform .24s ease, color .24s ease, filter .24s ease;
-      will-change: opacity, transform;
+      transition: color .2s ease;
     }
-    .suelo-dato .status.ok { color: #15803d; }
+    .suelo-dato .status.ok { color: #16a34a; }
     .suelo-dato .status.warning { color: #d97706; }
     .suelo-dato .status.danger { color: #dc2626; }
     .suelo-dato .value.updating,
     .suelo-dato .status.updating {
-      opacity: .35;
-      transform: translateY(2px);
-      filter: blur(.2px);
+      opacity: 0.4;
     }
     .suelo-dato.updated {
-      animation: metricPulse .28s ease-out;
+      animation: metricPulse .4s ease-out;
     }
     @keyframes metricPulse {
-      from { box-shadow: 0 0 0 rgba(212, 232, 73, 0); }
-      50% { box-shadow: 0 0 0 3px rgba(212, 232, 73, .22); }
-      to { box-shadow: 0 0 0 rgba(212, 232, 73, 0); }
+      from { background-color: rgba(212,232,73,0.3); }
+      to { background-color: transparent; }
     }
     @media (prefers-reduced-motion: reduce) {
       .suelo-datos.loading .suelo-dato::after,
@@ -848,16 +843,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
   ['agua', 'suelo', 'conservacion'].forEach(area => updateCarousel(area));
 
   function syncWithEcosistema() {
-    let prov = OlivaxiEcosistema.provincia;
-
-    // Fallback robusto: si el singleton aún no restauró estado, leer localStorage.
-    if (!prov) {
-      const saved = typeof localStorage !== 'undefined' ? (localStorage.getItem('olivaxi_provincia') || '') : '';
-      if (saved) {
-        OlivaxiEcosistema.setProvincia(saved, { silent: true, fetchDashboard: false });
-        prov = saved;
-      }
-    }
+    const prov = OlivaxiEcosistema.provincia;
     
     if (prov) {
       if (provinciaSelectAgua && provinciaSelectAgua.value !== prov) {
@@ -898,7 +884,8 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     }
   }
 
-  OlivaxiEcosistema.onChange(() => {
+  const offEcosistema = OlivaxiEcosistema.onChange(() => {
     syncWithEcosistema();
   }, { immediate: true });
+  window.addEventListener('beforeunload', offEcosistema);
 </script>

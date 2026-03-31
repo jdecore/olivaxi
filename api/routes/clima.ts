@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import db from "../db/sqlite";
-import { PROVINCIAS, PROVINCIAS_DATA, getDatosProvincia, getPlagasProvincia, getConsejoSuelo } from "../data/provincias";
+import { PROVINCIAS, getDatosProvincia, getPlagasProvincia, getConsejoSuelo } from "../data/provincias";
 import { calcularRiesgosPlaga, calcularRiesgosOlivar } from "../services/riesgos";
+import { CONSEJOS, VARIEDADES_INFO } from "../data/shared";
 
 export interface DatosClima {
   provincia: string;
@@ -21,6 +22,12 @@ export interface DatosClima {
     polilla: { nivel: string; descripcion: string; consejo: string };
     xylella: { nivel: string; descripcion: string; consejo: string };
     repilo: { nivel: string; descripcion: string; consejo: string };
+    tuberculosis: { nivel: string; descripcion: string; consejo: string };
+    barrenillo: { nivel: string; descripcion: string; consejo: string };
+    cochinilla: { nivel: string; descripcion: string; consejo: string };
+    phytophthora: { nivel: string; descripcion: string; consejo: string };
+    lepra: { nivel: string; descripcion: string; consejo: string };
+    verticillium: { nivel: string; descripcion: string; consejo: string };
   };
   riesgos_olivar?: {
     frio: { nivel: string; descripcion: string; impacto: string };
@@ -33,21 +40,8 @@ export interface DatosClima {
 }
 
 const CACHE_TTL = 6 * 60 * 60 * 1000;
-
-function calcularRiesgo(riesgos_olivar: any): string {
-  const condiciones = [
-    riesgos_olivar.frio.nivel,
-    riesgos_olivar.calor.nivel,
-    riesgos_olivar.baja_humedad.nivel,
-    riesgos_olivar.alta_humedad.nivel,
-    riesgos_olivar.baja_lluvia.nivel,
-    riesgos_olivar.alta_lluvia.nivel
-  ];
-  
-  if (condiciones.includes('alto')) return 'alto';
-  if (condiciones.includes('medio')) return 'medio';
-  return 'bajo';
-}
+const TEMP_MEDIA_HISTORICA_DEFAULT = 22;
+const PRECIPITACION_MEDIA_DIARIA_DEFAULT = 2;
 
 function nivelToPriority(nivel: string | undefined): number {
   if (nivel === "crítico") return 4;
@@ -75,62 +69,19 @@ function getEstado(temp: number): string {
 
 // Use functions from ../services/riesgos.ts
 
-const VARIEDADES_RESISTENCIAS: Record<string, any> = {
-  cornicabra: { 
-    nombre: "Cornicabra", 
-    clima: { 
-      frio: { nivel: "muy-alta", rango: -10 },
-      calor: { nivel: "muy-alta", rango: 40 },
-      sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
-      humedad_alta: { nivel: "media", rango: 80 }
-    } 
-  },
-  picual: { 
-    nombre: "Picual", 
-    clima: { 
-      frio: { nivel: "alta", rango: -7 },
-      calor: { nivel: "muy-alta", rango: 40 },
-      sequia: { nivel: "media", rangoHumedad: 30, rangoLluvia: 2 },
-      humedad_alta: { nivel: "baja", rango: 75 }
-    } 
-  },
-  arbequina: { 
-    nombre: "Arbequina", 
-    clima: { 
-      frio: { nivel: "muy-alta", rango: -5 },
-      calor: { nivel: "media", rango: 35 },
-      sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
-      humedad_alta: { nivel: "baja", rango: 70 }
-    } 
-  },
-  hojiblanca: { 
-    nombre: "Hojiblanca", 
-    clima: { 
-      frio: { nivel: "media", rango: -3 },
-      calor: { nivel: "alta", rango: 38 },
-      sequia: { nivel: "media-alta", rangoHumedad: 35, rangoLluvia: 2 },
-      humedad_alta: { nivel: "media", rango: 75 }
-    } 
-  },
-  manzanilla: { 
-    nombre: "Manzanilla", 
-    clima: { 
-      frio: { nivel: "media", rango: -3 },
-      calor: { nivel: "media-alta", rango: 38 },
-      sequia: { nivel: "baja", rangoHumedad: 50, rangoLluvia: 5 },
-      humedad_alta: { nivel: "baja", rango: 70 }
-    } 
-  },
-  empeltre: { 
-    nombre: "Empeltre", 
-    clima: { 
-      frio: { nivel: "media", rango: -5 },
-      calor: { nivel: "media-alta", rango: 38 },
-      sequia: { nivel: "muy-alta", rangoHumedad: 20, rangoLluvia: 0.5 },
-      humedad_alta: { nivel: "media", rango: 75 }
-    } 
-  }
-};
+const VARIEDADES_RESISTENCIAS: Record<string, any> = Object.entries(VARIEDADES_INFO).reduce((acc, [id, v]) => {
+  const base = v?.clima || {};
+  acc[id] = {
+    nombre: v?.nombre || id,
+    clima: {
+      frio: { nivel: base.frio || "media", rango: id === 'cornicabra' ? -10 : id === 'picual' ? -7 : id === 'arbequina' ? -5 : -3 },
+      calor: { nivel: base.calor || "media", rango: id === 'arbequina' ? 35 : id === 'hojiblanca' || id === 'manzanilla' || id === 'empeltre' ? 38 : 40 },
+      sequia: { nivel: base.sequia || "media", rangoHumedad: id === 'cornicabra' || id === 'empeltre' ? 20 : id === 'picual' ? 30 : id === 'arbequina' || id === 'manzanilla' ? 50 : 35, rangoLluvia: id === 'cornicabra' || id === 'empeltre' ? 0.5 : id === 'picual' || id === 'hojiblanca' ? 2 : 5 },
+      humedad_alta: { nivel: base.humedad_alta || "media", rango: id === 'cornicabra' ? 80 : id === 'arbequina' || id === 'manzanilla' ? 70 : 75 }
+    }
+  };
+  return acc;
+}, {} as Record<string, any>);
 
 function calcularScoreRiesgo(temp: number, humedad: number, lluvia: number, variedadClima: any): { score: number; nivel: string; detalle: string[] } {
   if (!variedadClima) {
@@ -332,6 +283,12 @@ export async function getClimaData() {
         mosca: { ...riesgos_plaga.mosca, fuente: "RAIF", nivelRAIF: riesgosProvincia.mosca },
         repilo: { ...riesgos_plaga.repilo, fuente: "RAIF", nivelRAIF: riesgosProvincia.repilo },
         xylella: { ...riesgos_plaga.xylella, fuente: "RAIF", nivelRAIF: riesgosProvincia.xylella || riesgos_plaga.xylella?.nivel || 'bajo' },
+        tuberculosis: { ...riesgos_plaga.tuberculosis, fuente: "RAIF", nivelRAIF: riesgosProvincia.tuberculosis || riesgos_plaga.tuberculosis?.nivel || 'bajo' },
+        barrenillo: { ...riesgos_plaga.barrenillo, fuente: "RAIF", nivelRAIF: riesgosProvincia.barrenillo || riesgos_plaga.barrenillo?.nivel || 'bajo' },
+        cochinilla: { ...riesgos_plaga.cochinilla, fuente: "RAIF", nivelRAIF: riesgosProvincia.cochinilla || riesgos_plaga.cochinilla?.nivel || 'bajo' },
+        phytophthora: { ...riesgos_plaga.phytophthora, fuente: "RAIF", nivelRAIF: riesgosProvincia.phytophthora || riesgos_plaga.phytophthora?.nivel || 'bajo' },
+        lepra: { ...riesgos_plaga.lepra, fuente: "RAIF", nivelRAIF: riesgosProvincia.lepra || riesgos_plaga.lepra?.nivel || 'bajo' },
+        verticillium: { ...riesgos_plaga.verticillium, fuente: "RAIF", nivelRAIF: riesgosProvincia.verticillium || riesgos_plaga.verticillium?.nivel || 'bajo' },
       })
     };
 
@@ -405,27 +362,6 @@ function getClimaDataCached() {
   }
   return [];
 }
-
-// ============================================
-// CONSEJOS por tipo de riesgo
-// ============================================
-const CONSEJOS: Record<string, string[]> = {
-  ola_calor: ['💧 Riega antes del amanecer', '🌿 Evita fertilizar', '🛡️ Acolcha el suelo con paja', '🌳 No podes en días calurosos'],
-  calor_critico: ['💧 Aumenta riego', '🌿 Aplica mulch', '🛡️ Protege del sol directo', '🌳 Evita poda'],
-  helada: ['🧣 Protege árboles jóvenes con manta', '💧 No riegues antes de helada', '🌳 Evita poda ahora', '🔥 Considera heaters si es viable'],
-  helada_critica: ['🧣 Protege con manta térmica', '💧 No riegues', '🌳 Evita podar', '🔥 Calefacción si es viable'],
-  estres_hidrico: ['💦 Aplica riego profundo', '🪵 Usa mulch para retener humedad', '✂️ Reduce poda', '🌿 Aplica compost'],
-  sequia_severa: ['💧 Aumenta riego significativamente', '🪵 Aplica mulch espeso', '🌳 Reduce frutos si es necesario', '💦 Considera riego de emergencia'],
-  sequia_extrema: ['💥 Solicita permiso para emergencia', '🛡️ Protege árboles centenarios', '📞 Contacta asociaciones'],
-  alta_humedad: ['🍄 Aplica fungicida preventivo', '🌳 Poda para ventilación', '💧 Evita riego por aspersión', '🔍 Monitorea hojas'],
-  hongos_criticos: ['🍄 Aplica fungicida urgente', '🔴 Elimina ramas afectadas', '💧 No riegues por aspersión', '📞 Consulta técnico'],
-  inundacion: ['🌊 Revisa drenaje', '🍄 Aplica anti-hongos', '🌳 Evalúa raíces', '🛡️ Protege de erosión'],
-  mosca: ['🧪 Aplica tratamiento', '🪓 Recoge frutos afectados', '🔒 Instala trampas', '📅 Programa tratamiento'],
-  polilla: ['🪓 Poda afectada', '🧪 Aplica tratamiento', '🔒 Trampas de feromonas', '🥅 Redes anti-insectos'],
-  xylella: ['🚨 Notifica a autoridades', '🪓 Elimina árboles afectados', '🛡️ Medidas preventivas', '🔬 Confirma laboratorio'],
-  repilo: ['🍄 Aplica fungicida', '🌳 Poda para aireación', '💧 Evita exceso de riego', '🔍 Monitorea regularmente'],
-  condiciones_optimas: ['✅ Continúa con tu rutina', '📊 Monitorea regularmente', '🌳 Tu olivar está bien']
-};
 
 function normalizarHumedadSuelo(humedadSuelo: number | undefined): number {
   const valor = Number(humedadSuelo ?? 0);
@@ -565,6 +501,24 @@ export function getRiesgosActivos(provData: any): any[] {
   if (riesgos_plaga?.xylella?.nivel === 'alto') activos.push({ tipo: 'xylella', categoria: 'plagas', nivel: 'alto', titulo: 'Xylella', icono: '🚨' });
   else if (riesgos_plaga?.xylella?.nivel === 'medio') activos.push({ tipo: 'xylella', categoria: 'plagas', nivel: 'medio', titulo: 'Xylella', icono: '🚨' });
   
+  if (riesgos_plaga?.tuberculosis?.nivel === 'alto') activos.push({ tipo: 'tuberculosis', categoria: 'hongos', nivel: 'alto', titulo: 'Tuberculosis olivo', icono: '🧫' });
+  else if (riesgos_plaga?.tuberculosis?.nivel === 'medio') activos.push({ tipo: 'tuberculosis', categoria: 'hongos', nivel: 'medio', titulo: 'Tuberculosis olivo', icono: '🧫' });
+
+  if (riesgos_plaga?.barrenillo?.nivel === 'alto') activos.push({ tipo: 'barrenillo', categoria: 'plagas', nivel: 'alto', titulo: 'Barrenillo', icono: '🪲' });
+  else if (riesgos_plaga?.barrenillo?.nivel === 'medio') activos.push({ tipo: 'barrenillo', categoria: 'plagas', nivel: 'medio', titulo: 'Barrenillo', icono: '🪲' });
+
+  if (riesgos_plaga?.cochinilla?.nivel === 'alto') activos.push({ tipo: 'cochinilla', categoria: 'plagas', nivel: 'alto', titulo: 'Cochinilla', icono: '🐛' });
+  else if (riesgos_plaga?.cochinilla?.nivel === 'medio') activos.push({ tipo: 'cochinilla', categoria: 'plagas', nivel: 'medio', titulo: 'Cochinilla', icono: '🐛' });
+
+  if (riesgos_plaga?.phytophthora?.nivel === 'alto') activos.push({ tipo: 'phytophthora', categoria: 'hongos', nivel: 'alto', titulo: 'Phytophthora', icono: '🍄' });
+  else if (riesgos_plaga?.phytophthora?.nivel === 'medio') activos.push({ tipo: 'phytophthora', categoria: 'hongos', nivel: 'medio', titulo: 'Phytophthora', icono: '🍄' });
+
+  if (riesgos_plaga?.lepra?.nivel === 'alto') activos.push({ tipo: 'lepra', categoria: 'hongos', nivel: 'alto', titulo: 'Lepra', icono: '🤕' });
+  else if (riesgos_plaga?.lepra?.nivel === 'medio') activos.push({ tipo: 'lepra', categoria: 'hongos', nivel: 'medio', titulo: 'Lepra', icono: '🤕' });
+
+  if (riesgos_plaga?.verticillium?.nivel === 'alto') activos.push({ tipo: 'verticilosis', categoria: 'hongos', nivel: 'alto', titulo: 'Verticilosis', icono: '🥀' });
+  else if (riesgos_plaga?.verticillium?.nivel === 'medio') activos.push({ tipo: 'verticilosis', categoria: 'hongos', nivel: 'medio', titulo: 'Verticilosis', icono: '🥀' });
+  
   activos.push(...getRiesgosSueloYHongos(provData));
   const prioridad: Record<string, number> = { alto: 3, medio: 2, bajo: 1 };
   return activos.sort((a, b) => (prioridad[b.nivel] || 1) - (prioridad[a.nivel] || 1));
@@ -591,7 +545,7 @@ clima.get("/dashboard", async (c) => {
         
         // Calcular comparacion histórica simulada
         const tempActual = provData.temperatura;
-        const tempMediaHistorica = 22; // Media de referencia
+        const tempMediaHistorica = TEMP_MEDIA_HISTORICA_DEFAULT;
         const variacionTemp = tempActual - tempMediaHistorica;
         const tendencia = variacionTemp > 1 ? 'subiendo' : variacionTemp < -1 ? 'bajando' : 'estable';
         
@@ -608,8 +562,8 @@ clima.get("/dashboard", async (c) => {
           riesgoCalor: tempActual > 35,
           riesgoFrio: tempActual < 5,
           precipitacionActual: provData.lluvia,
-          precipitacionMedia: 2,
-          deficitLluvia: provData.lluvia < 2
+          precipitacionMedia: PRECIPITACION_MEDIA_DIARIA_DEFAULT,
+          deficitLluvia: provData.lluvia < PRECIPITACION_MEDIA_DIARIA_DEFAULT
         };
         
         return c.json({
@@ -648,7 +602,13 @@ clima.get("/dashboard", async (c) => {
             mosca: provData.riesgos_plaga?.mosca,
             polilla: provData.riesgos_plaga?.polilla,
             repilo: provData.riesgos_plaga?.repilo,
-            xylella: provData.riesgos_plaga?.xylella
+            xylella: provData.riesgos_plaga?.xylella,
+            tuberculosis: provData.riesgos_plaga?.tuberculosis,
+            barrenillo: provData.riesgos_plaga?.barrenillo,
+            cochinilla: provData.riesgos_plaga?.cochinilla,
+            phytophthora: provData.riesgos_plaga?.phytophthora,
+            lepra: provData.riesgos_plaga?.lepra,
+            verticillium: provData.riesgos_plaga?.verticillium,
           },
           riesgos: {
             olivar: provData.riesgos_olivar,
