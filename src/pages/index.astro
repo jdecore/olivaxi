@@ -367,6 +367,13 @@ function switchToAlertasTab() {
   document.getElementById('slide-alertas')?.classList.add('active');
 }
 
+function switchToVariedadesTab() {
+  CAROUSEL_TABS.forEach(x => x.classList.remove('active'));
+  CAROUSEL_SLIDES.forEach(x => x.classList.remove('active'));
+  document.querySelector('[data-slide="variedades"]')?.classList.add('active');
+  document.getElementById('slide-variedades')?.classList.add('active');
+}
+
 // --- Render: Provincias Grid ---
 function renderProvinciasGrid() {
   if (!PROVINCIAS_GRID || !datosClima.length) return;
@@ -390,7 +397,7 @@ function renderProvinciasGrid() {
     button.addEventListener('click', () => {
       OlivaxiEcosistema.setProvincia(p.provincia);
       window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia: p.provincia } }));
-      switchToAlertasTab();
+      switchToVariedadesTab();
     });
 
     fragment.appendChild(button);
@@ -421,7 +428,10 @@ function renderVariedadesGrid() {
     badge.textContent = riesgo.toUpperCase();
     button.appendChild(nombreEl);
     button.appendChild(badge);
-    button.addEventListener('click', () => OlivaxiEcosistema.setVariedad(id));
+    button.addEventListener('click', () => {
+      OlivaxiEcosistema.setVariedad(id);
+      switchToAlertasTab();
+    });
     fragment.appendChild(button);
   });
   VARIEDADES_GRID.appendChild(fragment);
