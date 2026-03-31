@@ -23,5 +23,6 @@ services:
       - GROQ_KEY=${GROQ_KEY}
       - GEMINI_KEY=${GEMINI_KEY}
       - OPENROUTER_KEY=${OPENROUTER_KEY}
+      - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
     restart: unless-stopped

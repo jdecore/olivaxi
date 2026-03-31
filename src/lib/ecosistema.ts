@@ -9,6 +9,28 @@ import { olivaxiCache } from './cache';
 // --- Constantes para validación ---
 const VARIEDADES_VALIDAS = VARIEDADES.map(v => v.id);
 const PROVINCIAS_VALIDAS = [...PROVINCIAS];
+const DASHBOARD_CACHE_PREFIX = 'olivaxi_dashboard_cache:';
+
+async function fetchJsonWithRetry(url: string, retries = 3, timeoutMs = 7000): Promise<any> {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(timeout);
+      lastError = e;
+      if (attempt < retries - 1) {
+        await new Promise(r => setTimeout(r, 450 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError || new Error('Fetch failed');
+}
 
 // --- Tipos ---
 export interface EcosistemaState {
@@ -69,6 +91,8 @@ const OlivaxiEcosistema = {
   _listeners: new Set<EcosistemaListener>(),
   _initialized: false,
   _fetchId: 0,
+  _climaRefreshPromise: null as Promise<any[]> | null,
+  _dashboardRefreshPromise: null as Promise<any | null> | null,
 
   // ═══════════════════════════════
   // GETTERS
@@ -173,33 +197,47 @@ const OlivaxiEcosistema = {
     const cached = olivaxiCache.get<any[]>(API_ENDPOINTS.CLIMA, undefined, CACHE_TTL.CLIMA);
     if (cached) {
       this._climaData = cached;
+      if (!this._climaRefreshPromise) {
+        this._climaRefreshPromise = (async () => {
+          try {
+            const fresh = await fetchJsonWithRetry(apiUrl(API_ENDPOINTS.CLIMA), 2, 7000);
+            if (Array.isArray(fresh) && fresh.length > 0) {
+              olivaxiCache.set(API_ENDPOINTS.CLIMA, fresh);
+              this._climaData = fresh;
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(this.CLIMA_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: fresh }));
+              }
+              this._notify();
+              return fresh;
+            }
+          } catch (e) {
+            console.warn('[Ecosistema] refresh clima en background falló:', e);
+          } finally {
+            this._climaRefreshPromise = null;
+          }
+          return cached;
+        })();
+      }
       return cached;
     }
 
-    for (let attempt = 0; attempt < retries; attempt++) {
-      try {
-        const res = await fetch(apiUrl(API_ENDPOINTS.CLIMA));
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        olivaxiCache.set(API_ENDPOINTS.CLIMA, data);
-        this._climaData = data;
-        if (typeof localStorage !== 'undefined') {
-          try {
-            localStorage.setItem(this.CLIMA_CACHE_KEY, JSON.stringify({
-              ts: Date.now(),
-              data,
-            }));
-          } catch (err) {
-            console.warn('[Ecosistema] No se pudo guardar cache local de clima:', err);
-          }
-        }
-        return data;
-      } catch (e) {
-        console.error(`[Ecosistema] fetchClima intento ${attempt + 1} falló:`, e);
-        if (attempt < retries - 1) {
-          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    try {
+      const data = await fetchJsonWithRetry(apiUrl(API_ENDPOINTS.CLIMA), retries, 8000);
+      olivaxiCache.set(API_ENDPOINTS.CLIMA, data);
+      this._climaData = data;
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(this.CLIMA_CACHE_KEY, JSON.stringify({
+            ts: Date.now(),
+            data,
+          }));
+        } catch (err) {
+          console.warn('[Ecosistema] No se pudo guardar cache local de clima:', err);
         }
       }
+      return data;
+    } catch (e) {
+      console.error('[Ecosistema] fetchClima falló:', e);
     }
     console.error('[Ecosistema] fetchClima falló después de', retries, 'intentos');
     if (typeof localStorage !== 'undefined') {
@@ -226,11 +264,36 @@ const OlivaxiEcosistema = {
 
     const params: Record<string, string> = { provincia: this._provincia };
     if (this._variedad) params.variedad = this._variedad;
+    const localDashboardKey = `${DASHBOARD_CACHE_PREFIX}${this._provincia}:${this._variedad || '-'}`;
 
     // Cache primero
     const cached = olivaxiCache.get<any>(API_ENDPOINTS.DASHBOARD, params, CACHE_TTL.DASHBOARD);
     if (cached) {
       this._dashboardData = cached;
+      if (!this._dashboardRefreshPromise) {
+        this._dashboardRefreshPromise = (async () => {
+          const query = new URLSearchParams(params).toString();
+          const refreshFetchId = ++this._fetchId;
+          try {
+            const fresh = await fetchJsonWithRetry(apiUrl(`${API_ENDPOINTS.DASHBOARD}?${query}`), 2, 7000);
+            if (refreshFetchId !== this._fetchId) return cached;
+            if (fresh?.ok) {
+              olivaxiCache.set(API_ENDPOINTS.DASHBOARD, fresh, params);
+              this._dashboardData = fresh;
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(localDashboardKey, JSON.stringify({ ts: Date.now(), data: fresh }));
+              }
+              this._notify();
+              return fresh;
+            }
+          } catch (e) {
+            console.warn('[Ecosistema] refresh dashboard en background falló:', e);
+          } finally {
+            this._dashboardRefreshPromise = null;
+          }
+          return cached;
+        })();
+      }
       return cached;
     }
 
@@ -239,10 +302,7 @@ const OlivaxiEcosistema = {
 
     try {
       const query = new URLSearchParams(params).toString();
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(apiUrl(`${API_ENDPOINTS.DASHBOARD}?${query}`), { signal: controller.signal });
-      clearTimeout(timeout);
+      const data = await fetchJsonWithRetry(apiUrl(`${API_ENDPOINTS.DASHBOARD}?${query}`), 3, 7000);
 
       // Verificar que este fetch aún es el más reciente
       if (fetchId !== this._fetchId) {
@@ -250,12 +310,16 @@ const OlivaxiEcosistema = {
         return null;
       }
 
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      const data = await res.json();
-
       if (data.ok) {
         olivaxiCache.set(API_ENDPOINTS.DASHBOARD, data, params);
         this._dashboardData = data;
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem(localDashboardKey, JSON.stringify({ ts: Date.now(), data }));
+          } catch (err) {
+            console.warn('[Ecosistema] No se pudo guardar cache local de dashboard:', err);
+          }
+        }
         return data;
       }
     } catch (e) {
@@ -264,8 +328,24 @@ const OlivaxiEcosistema = {
         return null;
       }
       console.error('[Ecosistema] Error fetchDashboard:', e);
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(localDashboardKey);
+          if (raw) {
+            const parsed = JSON.parse(raw) as { ts?: number; data?: any };
+            const isFresh = parsed?.ts && (Date.now() - parsed.ts) < (12 * 60 * 60 * 1000);
+            if (isFresh && parsed?.data?.ok) {
+              console.warn('[Ecosistema] Usando cache local de dashboard por fallo de red/API');
+              this._dashboardData = parsed.data;
+              return parsed.data;
+            }
+          }
+        } catch (err) {
+          console.warn('[Ecosistema] Cache local de dashboard inválida:', err);
+        }
+      }
     }
-    return null;
+    return this._dashboardData || null;
   },
 
   // ═══════════════════════════════
