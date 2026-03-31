@@ -118,6 +118,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
   const predHeader = predCard?.querySelector('.prediction-header');
   let predExpanded = false;
   let provinciaActual = OlivaxiEcosistema.provincia || localStorage.getItem('olivaxi-provincia') || 'Jaén';
+  let predictionCache = { provincia: null, html: '', level: null };
   
   function setPredictionCardLevel(level) {
     if (!predCard) return;
@@ -136,15 +137,26 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   if (predCard) {
     predCard.addEventListener('click', async () => {
-      predExpanded = !predExpanded;
-      predCard.classList.toggle('expanded', predExpanded);
+      // Si ya está abierto, no cerrar ni volver a consultar API.
+      if (predExpanded) return;
+      predExpanded = true;
+      predCard.classList.add('expanded');
       
-      if (predExpanded && predContent) {
+      if (predContent) {
+        const provinciaConsulta = OlivaxiEcosistema.provincia || provinciaActual || 'Jaén';
+        if (
+          predictionCache.provincia === provinciaConsulta &&
+          predictionCache.html
+        ) {
+          setPredictionCardLevel(predictionCache.level);
+          predContent.innerHTML = predictionCache.html;
+          return;
+        }
+
         setPredictionCardLevel(null);
         predContent.innerHTML = '<div class="prediction-loading">Prediciendo...</div>';
         
         try {
-          const provinciaConsulta = OlivaxiEcosistema.provincia || provinciaActual || 'Jaén';
           const path = `/api/prediccion?provincia=${encodeURIComponent(provinciaConsulta)}`;
           const urls = apiUrlCandidates(path);
           let data = null;
@@ -197,16 +209,24 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
                 </div>
               </div>
             `;
+            predictionCache = {
+              provincia: provinciaConsulta,
+              html: predContent.innerHTML,
+              level: nivelClass,
+            };
           } else if (lastError && typeof lastError === 'string') {
             setPredictionCardLevel(null);
             predContent.innerHTML = `<div class="prediction-error">${lastError}</div>`;
+            predictionCache = { provincia: provinciaConsulta, html: '', level: null };
           } else {
             setPredictionCardLevel(null);
             predContent.innerHTML = '<div class="prediction-error">No se pudo conectar con la API de predicción</div>';
+            predictionCache = { provincia: provinciaConsulta, html: '', level: null };
           }
         } catch (e) {
           setPredictionCardLevel(null);
           predContent.innerHTML = '<div class="prediction-error">Error de conexión</div>';
+          predictionCache = { provincia: null, html: '', level: null };
         }
       }
     });
