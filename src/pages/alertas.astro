@@ -7,10 +7,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
 <Layout title="Alertas - olivaξ">
   <div id="verify-celebration" class="verify-celebration" hidden>
-    <div class="verify-celebration-inner">
-      <span class="verify-icon">✅</span>
-      <span class="verify-text">Correo confirmado: alertas activadas correctamente</span>
-      <span class="verify-spark">✨</span>
+    <div id="verify-celebration-inner" class="verify-celebration-inner success">
+      <span id="verify-icon" class="verify-icon">✅</span>
+      <span id="verify-text" class="verify-text">Correo confirmado: alertas activadas correctamente</span>
+      <span id="verify-spark" class="verify-spark">✨</span>
     </div>
   </div>
   <!-- Hero -->
@@ -367,6 +367,20 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     font-size: 0.85rem;
   }
 
+  .verify-celebration-inner.warning {
+    background: #facc15;
+    color: #422006;
+    border-color: #eab308;
+    box-shadow: 0 10px 26px rgba(250, 204, 21, 0.30);
+  }
+
+  .verify-celebration-inner.error {
+    background: #ef4444;
+    color: #fff;
+    border-color: #dc2626;
+    box-shadow: 0 10px 26px rgba(239, 68, 68, 0.30);
+  }
+
   .verify-celebration.show .verify-icon {
     animation: verifyBounce 0.9s ease;
   }
@@ -413,6 +427,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const provinciaSelect = document.getElementById("provincia");
   const variedadSelect = document.getElementById("variedad");
   const verifyCelebration = document.getElementById("verify-celebration");
+  const verifyInner = document.getElementById("verify-celebration-inner");
+  const verifyIcon = document.getElementById("verify-icon");
+  const verifyText = document.getElementById("verify-text");
+  const verifySpark = document.getElementById("verify-spark");
   let verifyCelebrationTimeout = null;
 
   function clearNode(node) {
@@ -420,15 +438,27 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     while (node.firstChild) node.removeChild(node.firstChild);
   }
 
-  function showVerifyCelebration() {
-    if (!verifyCelebration) return;
+  function showVerifyCelebration(type = 'success', text = '', opts = { autoHideMs: 3200 }) {
+    if (!verifyCelebration || !verifyInner || !verifyIcon || !verifyText || !verifySpark) return;
     if (verifyCelebrationTimeout) clearTimeout(verifyCelebrationTimeout);
+    verifyInner.classList.remove('success', 'warning', 'error');
+    verifyInner.classList.add(type);
+    verifyIcon.textContent = type === 'error' ? '❌' : type === 'warning' ? '⏳' : '✅';
+    verifySpark.textContent = type === 'error' ? '⚠️' : '✨';
+    verifyText.textContent = text || (type === 'success'
+      ? 'Correo confirmado: alertas activadas correctamente'
+      : type === 'warning'
+      ? 'Confirmando alerta...'
+      : 'No se pudo confirmar la alerta');
     verifyCelebration.removeAttribute("hidden");
     verifyCelebration.classList.add("show");
-    verifyCelebrationTimeout = setTimeout(() => {
-      verifyCelebration.classList.remove("show");
-      setTimeout(() => verifyCelebration.setAttribute("hidden", "true"), 350);
-    }, 3200);
+    const autoHideMs = opts?.autoHideMs ?? 3200;
+    if (autoHideMs > 0) {
+      verifyCelebrationTimeout = setTimeout(() => {
+        verifyCelebration.classList.remove("show");
+        setTimeout(() => verifyCelebration.setAttribute("hidden", "true"), 350);
+      }, autoHideMs);
+    }
   }
 
   // --- Cargar datos de provincia via ecosistema ---
@@ -551,6 +581,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       msg.className = "warning show";
       msg.removeAttribute("hidden");
     }
+    showVerifyCelebration('warning', 'Confirmando alerta...', { autoHideMs: 0 });
 
     try {
       const res = await fetch(apiUrl('/api/alertas/verify'), {
@@ -566,7 +597,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         msg.className = "success show";
         msg.removeAttribute("hidden");
       }
-      showVerifyCelebration();
+      showVerifyCelebration('success', 'Correo confirmado: alertas activadas correctamente', { autoHideMs: 3200 });
 
       const cleanUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, "", cleanUrl);
@@ -576,6 +607,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         msg.className = "error show";
         msg.removeAttribute("hidden");
       }
+      showVerifyCelebration('error', e?.message || 'Error al confirmar alerta', { autoHideMs: 5000 });
     }
   }
 

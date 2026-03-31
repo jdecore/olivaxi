@@ -5,13 +5,12 @@ import { getClimaData, getClimaByProvincia, getRiesgosActivos } from "../routes/
 import { VARIEDADES_INFO, CONSEJOS, normalizarTipoAlertaCompartido, activarPorTipoCompartido } from "../data/shared";
 
 // Configuración de email
-const gmailUser = process.env.GMAIL_USER;
+const getGmailUser = () => (process.env.GMAIL_USER || "").trim();
 const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
-
-const transporter = nodemailer.createTransport({
+const getTransporter = () => nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: gmailUser,
+    user: getGmailUser(),
     pass: getGmailPass(),
   },
 });
@@ -28,9 +27,10 @@ function activarPorTipo(tipo: string, riesgosActivos: any[]): boolean {
 }
 
 export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: number; enviados: number }> {
+  const gmailUser = getGmailUser();
   const gmailPass = getGmailPass();
-  if (!gmailPass) {
-    console.log("[CRON] Sin Gmail config, saltando");
+  if (!gmailPass || !gmailUser) {
+    console.log("[CRON] Sin Gmail config completa (user/pass), saltando");
     return { ok: false, alertas: 0, enviados: 0 };
   }
 
@@ -89,7 +89,7 @@ export async function ejecutarCheckAlertas(): Promise<{ ok: boolean; alertas: nu
 <p>🫒 Equipo olivaξ</p>`;
 
     try {
-      await transporter.sendMail({
+      await getTransporter().sendMail({
         from: `olivaξ <${gmailUser}>`,
         to: alerta.email,
         subject: `${icon} ALERTA: ${alerta.provincia} a ${temp.toFixed(1)}°C`,

@@ -376,11 +376,6 @@ async function enviarAlertaInmediata(alerta: any, ip: string): Promise<boolean> 
   const riesgosActivos = getRiesgosActivosDesdeProvinciaData(provData);
   const activar = activarPorTipo(tipo, riesgosActivos);
 
-  if (!activar) {
-    logAudit(ip, 'VERIFY_IMMEDIATE_SKIP', true, 'Sin riesgo activo ahora');
-    return false;
-  }
-
   const contexto = await obtenerContextoAlerta(
     alerta.provincia,
     alerta.variedad,
@@ -401,21 +396,31 @@ async function enviarAlertaInmediata(alerta: any, ip: string): Promise<boolean> 
     emailHtml = buildPersonalizedFallbackEmail(alerta, contexto, riesgosActivos, tipo, temp);
   }
   const topRisk = riesgosActivos[0];
-  const subject = llmUsed
-    ? `${topRisk?.icono || "🚨"} ALERTA URGENTE - ${alerta.provincia}: ${topRisk?.titulo || tipo}`
-    : `${topRisk?.icono || "🚨"} ALERTA INMEDIATA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
+  const noRiesgoAhora = !activar;
+  const subject = noRiesgoAhora
+    ? `✅ Alerta activa - ${alerta.provincia}: monitoreo iniciado`
+    : llmUsed
+      ? `${topRisk?.icono || "🚨"} ALERTA URGENTE - ${alerta.provincia}: ${topRisk?.titulo || tipo}`
+      : `${topRisk?.icono || "🚨"} ALERTA INMEDIATA - ${alerta.provincia}: ${topRisk?.titulo || tipo}`;
+
+  const htmlFinal = noRiesgoAhora
+    ? `<p>Hola <strong>${alerta.nombre}</strong>,</p>
+<p>✅ Tu alerta en <strong>${alerta.provincia}</strong> está activa y monitorizando riesgos.</p>
+<p>Ahora mismo no hay un riesgo que dispare aviso urgente para tu tipo seleccionado (<strong>${tipo.replaceAll('_', ' ')}</strong>), pero te notificaremos automáticamente cuando aparezca.</p>
+<p>🫒 Equipo olivaξ</p>`
+    : emailHtml;
 
   await getTransporter().sendMail({
     from: `olivaξ <${getGmailUser()}>`,
     to: alerta.email,
     subject,
-    html: emailHtml,
+    html: htmlFinal,
   });
 
   db.query("UPDATE alertas SET last_notified_at = ? WHERE id = ?")
     .run(Date.now(), alerta.id);
 
-  logAudit(ip, 'VERIFY_IMMEDIATE_SENT', true, `id=${alerta.id} email=${alerta.email}`);
+  logAudit(ip, noRiesgoAhora ? 'VERIFY_IMMEDIATE_ARMED' : 'VERIFY_IMMEDIATE_SENT', true, `id=${alerta.id} email=${alerta.email}`);
   return true;
 }
 
