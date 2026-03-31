@@ -266,6 +266,18 @@ const RIESGO_BADGE = $('riesgo-badge');
 const CAROUSEL_TABS = document.querySelectorAll('.carousel-tab');
 const CAROUSEL_SLIDES = document.querySelectorAll('.carousel-slide');
 
+function clearNode(node) {
+  if (!node) return;
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+function createDiv(className, text) {
+  const el = document.createElement('div');
+  if (className) el.className = className;
+  if (typeof text === 'string') el.textContent = text;
+  return el;
+}
+
 // --- Estado local (derivado del ecosistema) ---
 let datosClima = [];
 let dashboardData = null;
@@ -354,20 +366,32 @@ function switchToAlertasTab() {
 function renderProvinciasGrid() {
   if (!PROVINCIAS_GRID || !datosClima.length) return;
   const prov = OlivaxiEcosistema.provincia;
-  const var_ = OlivaxiEcosistema.variedad;
+  clearNode(PROVINCIAS_GRID);
+  const fragment = document.createDocumentFragment();
 
-  PROVINCIAS_GRID.innerHTML = datosClima.map(p =>
-    `<button class="provincia-btn ${prov === p.provincia ? 'selected':''}" data-provincia="${p.provincia}">
-      <span class="riesgo-dot ${getRiesgoClass(p.riesgo)}"></span>${p.provincia}
-      <div class="temp">${p.temperatura}°C</div>
-    </button>`
-  ).join('');
+  datosClima.forEach((p) => {
+    const button = document.createElement('button');
+    button.className = `provincia-btn ${prov === p.provincia ? 'selected' : ''}`;
+    button.dataset.provincia = p.provincia;
 
-  PROVINCIAS_GRID.querySelectorAll('.provincia-btn').forEach(b => b.addEventListener('click', () => {
-    OlivaxiEcosistema.setProvincia(b.dataset.provincia);
-    window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia: b.dataset.provincia } }));
-    switchToAlertasTab();
-  }));
+    const dot = document.createElement('span');
+    dot.className = `riesgo-dot ${getRiesgoClass(p.riesgo)}`;
+    button.appendChild(dot);
+    button.appendChild(document.createTextNode(p.provincia));
+
+    const temp = createDiv('temp', `${p.temperatura}°C`);
+    button.appendChild(temp);
+
+    button.addEventListener('click', () => {
+      OlivaxiEcosistema.setProvincia(p.provincia);
+      window.dispatchEvent(new CustomEvent('flyToProvincia', { detail: { provincia: p.provincia } }));
+      switchToAlertasTab();
+    });
+
+    fragment.appendChild(button);
+  });
+
+  PROVINCIAS_GRID.appendChild(fragment);
 }
 
 // --- Render: Variedades Grid ---
@@ -378,17 +402,24 @@ function renderVariedadesGrid() {
   const V = { cornicabra: 'Cornicabra', picual: 'Picual', arbequina: 'Arbequina', hojiblanca: 'Hojiblanca', manzanilla: 'Manzanilla', empeltre: 'Empeltre' };
   const provData = prov ? datosClima.find(x => x.provincia === prov) : null;
 
-  VARIEDADES_GRID.innerHTML = Object.entries(V).map(([id, nombre]) => {
+  clearNode(VARIEDADES_GRID);
+  const fragment = document.createDocumentFragment();
+  Object.entries(V).forEach(([id, nombre]) => {
     const riesgo = provData?.riesgos_variedad?.[id]?.nivel || 'bajo';
-    return `<button class="variedad-btn ${var_ === id ? 'selected' : ''}" data-variedad="${id}">
-      <div class="nombre">${nombre}</div>
-      <span class="riesgo-label ${riesgo}">${riesgo.toUpperCase()}</span>
-    </button>`;
-  }).join('');
+    const button = document.createElement('button');
+    button.className = `variedad-btn ${var_ === id ? 'selected' : ''}`;
+    button.dataset.variedad = id;
 
-  VARIEDADES_GRID.querySelectorAll('.variedad-btn').forEach(b => b.addEventListener('click', () => {
-    OlivaxiEcosistema.setVariedad(b.dataset.variedad);
-  }));
+    const nombreEl = createDiv('nombre', nombre);
+    const badge = document.createElement('span');
+    badge.className = `riesgo-label ${riesgo}`;
+    badge.textContent = riesgo.toUpperCase();
+    button.appendChild(nombreEl);
+    button.appendChild(badge);
+    button.addEventListener('click', () => OlivaxiEcosistema.setVariedad(id));
+    fragment.appendChild(button);
+  });
+  VARIEDADES_GRID.appendChild(fragment);
 }
 
 // --- Render: Alertas Panel (sidebar) ---
@@ -398,7 +429,8 @@ function renderAlertasPanel(d) {
   const var_ = OlivaxiEcosistema.variedad;
 
   if (!prov) {
-    ALERTAS_LIST.innerHTML = '<div class="no-province-msg">Selecciona una provincia para ver riesgos.</div>';
+    clearNode(ALERTAS_LIST);
+    ALERTAS_LIST.appendChild(createDiv('no-province-msg', 'Selecciona una provincia para ver riesgos.'));
     return;
   }
 
@@ -425,7 +457,12 @@ function renderAlertasPanel(d) {
     });
   }
 
-  const info = d ? `<div class="provincia-info"><div><strong>🫒</strong> ${d.variedadPredominante || 'N/A'} &nbsp; <strong>🪨</strong> ${d.tipoSuelo || 'N/A'}</div><div><strong>⛰️</strong> ${d.altitud || '?'}m &nbsp; <strong>🌧️</strong> ${d.pluviometriaAnual || '?'}mm/año</div></div>` : '';
+  const infoData = d ? {
+    variedadPredominante: d.variedadPredominante || 'N/A',
+    tipoSuelo: d.tipoSuelo || 'N/A',
+    altitud: d.altitud || '?',
+    pluviometriaAnual: d.pluviometriaAnual || '?'
+  } : null;
   const rawSueloHum = d?.sueloAnalitica?.humedadPorcentaje ?? d?.suelo?.humedad ?? d?.suelo_humedad ?? 0;
   const sueloHum = rawSueloHum <= 1 ? rawSueloHum * 100 : rawSueloHum;
   const riesgoProvincia = d?.riesgo || 'bajo';
@@ -439,8 +476,6 @@ function renderAlertasPanel(d) {
     ? 'background:var(--color-white-surface);border:1px solid var(--color-border)'
     : `background:${nivelColor}15;border:1px solid ${nivelColor}40`;
   const riskTextColor = riskIsLow ? 'var(--color-aceituna)' : nivelColor;
-  const quickStats = d ? `<div class="quick-stats"><div class="quick-stat"><div class="icon">🌡️</div><div class="value">${d.temperatura}°C</div><div class="label">Temp</div></div><div class="quick-stat"><div class="icon">🪨</div><div class="value">${Math.round(sueloHum)}%</div><div class="label">Suelo</div></div><div class="quick-stat" style="${riskCardStyle}"><div class="icon" style="color:${riskTextColor}">${riesgoVariedad ? getRiesgoDisplay(riesgoVariedad) : getRiesgoDisplay(riesgoProvincia)}</div><div class="value" style="color:${riskTextColor}">${nivelTexto}</div><div class="label">${riesgoVariedad ? var_ : 'Riesgo'}</div></div></div>` : '';
-
   const catTitle = { clima: '🌡️ Clima', suelo: '🪨 Suelo', plagas: '🦟 Plagas', hongos: '🍄 Hongos' };
   const grouped = riesgos.reduce((acc, r) => {
     const key = r.categoria || 'clima';
@@ -450,24 +485,104 @@ function renderAlertasPanel(d) {
   }, {});
   const ordered = ['clima', 'suelo', 'plagas', 'hongos'];
   
-  const resumenRiesgos = riesgos.length > 0 
-    ? `<div class="riesgo-resumen" style="background:#f7f4ee;border:1px solid #ccc;border-radius:8px;padding:10px;margin-bottom:12px">
-        <div style="font-weight:bold;color:#1C1C1C;margin-bottom:6px">📊 Riesgos activos (${nivelTexto})</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${riesgos.map(r => `<span style="background:${r.level === 'alto' ? '#fef2f2' : r.level === 'medio' ? '#fffbeb' : '#f0fdf4'};border:1px solid ${r.level === 'alto' ? '#dc2626' : r.level === 'medio' ? '#d97706' : '#15803d'};color:${r.level === 'alto' ? '#dc2626' : r.level === 'medio' ? '#b45309' : '#166534'};padding:4px 8px;border-radius:4px;font-size:11px;font-weight:500">${r.icon} ${r.text}</span>`).join('')}
-        </div>
-      </div>`
-    : '';
-  
-  const riesgosHtml = riesgos.length > 0
-    ? resumenRiesgos + `<div class="riesgos-categorias">${ordered
-        .filter(k => grouped[k]?.length)
-        .map(k => `<div class="riesgo-categoria"><div class="riesgo-categoria-titulo">${catTitle[k]}</div>${grouped[k].map(r => `<div class="alerta-item ${r.level}">${r.icon} ${r.text}</div>`).join('')}</div>`)
-        .join('')}</div>`
-    : '<div class="alerta-item bajo">✅ Sin riesgos activos</div>';
-  const consejosHtml = d?.consejos?.length ? `<div class="consejos-panel"><div class="titulo">💡 Consejos</div>${d.consejos.slice(0, 2).map(c => `<div class="consejo">${c.replace(/^\S+\s/, '')}</div>`).join('')}</div>` : '';
+  clearNode(ALERTAS_LIST);
+  if (infoData) {
+    const info = createDiv('provincia-info');
+    const row1 = document.createElement('div');
+    const r1s1 = document.createElement('strong');
+    r1s1.textContent = '🫒';
+    const r1s2 = document.createElement('strong');
+    r1s2.textContent = '🪨';
+    row1.appendChild(r1s1);
+    row1.appendChild(document.createTextNode(` ${infoData.variedadPredominante}  `));
+    row1.appendChild(r1s2);
+    row1.appendChild(document.createTextNode(` ${infoData.tipoSuelo}`));
+    const row2 = document.createElement('div');
+    const r2s1 = document.createElement('strong');
+    r2s1.textContent = '⛰️';
+    const r2s2 = document.createElement('strong');
+    r2s2.textContent = '🌧️';
+    row2.appendChild(r2s1);
+    row2.appendChild(document.createTextNode(` ${infoData.altitud}m  `));
+    row2.appendChild(r2s2);
+    row2.appendChild(document.createTextNode(` ${infoData.pluviometriaAnual}mm/año`));
+    info.appendChild(row1);
+    info.appendChild(row2);
+    ALERTAS_LIST.appendChild(info);
+  }
 
-  ALERTAS_LIST.innerHTML = info + quickStats + riesgosHtml + consejosHtml;
+  if (d) {
+    const quickStats = createDiv('quick-stats');
+    const stat1 = createDiv('quick-stat');
+    stat1.appendChild(createDiv('icon', '🌡️'));
+    stat1.appendChild(createDiv('value', `${d.temperatura}°C`));
+    stat1.appendChild(createDiv('label', 'Temp'));
+    quickStats.appendChild(stat1);
+
+    const stat2 = createDiv('quick-stat');
+    stat2.appendChild(createDiv('icon', '🪨'));
+    stat2.appendChild(createDiv('value', `${Math.round(sueloHum)}%`));
+    stat2.appendChild(createDiv('label', 'Suelo'));
+    quickStats.appendChild(stat2);
+
+    const stat3 = createDiv('quick-stat');
+    stat3.style.cssText = riskCardStyle;
+    const stat3Icon = createDiv('icon', riesgoVariedad ? getRiesgoDisplay(riesgoVariedad) : getRiesgoDisplay(riesgoProvincia));
+    stat3Icon.style.color = riskTextColor;
+    const stat3Value = createDiv('value', nivelTexto);
+    stat3Value.style.color = riskTextColor;
+    stat3.appendChild(stat3Icon);
+    stat3.appendChild(stat3Value);
+    stat3.appendChild(createDiv('label', riesgoVariedad ? var_ : 'Riesgo'));
+    quickStats.appendChild(stat3);
+
+    ALERTAS_LIST.appendChild(quickStats);
+  }
+
+  if (riesgos.length > 0) {
+    const resumen = createDiv('riesgo-resumen');
+    resumen.style.cssText = 'background:#f7f4ee;border:1px solid #ccc;border-radius:8px;padding:10px;margin-bottom:12px';
+    const resumenTitle = document.createElement('div');
+    resumenTitle.style.cssText = 'font-weight:bold;color:#1C1C1C;margin-bottom:6px';
+    resumenTitle.textContent = `📊 Riesgos activos (${nivelTexto})`;
+    resumen.appendChild(resumenTitle);
+
+    const chips = document.createElement('div');
+    chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px';
+    riesgos.forEach((r) => {
+      const chip = document.createElement('span');
+      const isAlto = r.level === 'alto';
+      const isMedio = r.level === 'medio';
+      chip.style.cssText = `background:${isAlto ? '#fef2f2' : isMedio ? '#fffbeb' : '#f0fdf4'};border:1px solid ${isAlto ? '#dc2626' : isMedio ? '#d97706' : '#15803d'};color:${isAlto ? '#dc2626' : isMedio ? '#b45309' : '#166534'};padding:4px 8px;border-radius:4px;font-size:11px;font-weight:500`;
+      chip.textContent = `${r.icon} ${r.text}`;
+      chips.appendChild(chip);
+    });
+    resumen.appendChild(chips);
+    ALERTAS_LIST.appendChild(resumen);
+
+    const categorias = createDiv('riesgos-categorias');
+    ordered.filter((k) => grouped[k]?.length).forEach((k) => {
+      const cat = createDiv('riesgo-categoria');
+      cat.appendChild(createDiv('riesgo-categoria-titulo', catTitle[k]));
+      grouped[k].forEach((r) => {
+        const item = createDiv(`alerta-item ${r.level}`, `${r.icon} ${r.text}`);
+        cat.appendChild(item);
+      });
+      categorias.appendChild(cat);
+    });
+    ALERTAS_LIST.appendChild(categorias);
+  } else {
+    ALERTAS_LIST.appendChild(createDiv('alerta-item bajo', '✅ Sin riesgos activos'));
+  }
+
+  if (d?.consejos?.length) {
+    const consejos = createDiv('consejos-panel');
+    consejos.appendChild(createDiv('titulo', '💡 Consejos'));
+    d.consejos.slice(0, 2).forEach((c) => {
+      consejos.appendChild(createDiv('consejo', c.replace(/^\S+\s/, '')));
+    });
+    ALERTAS_LIST.appendChild(consejos);
+  }
 }
 
 // --- Render: Riesgo Badge + Mapa border ---
@@ -527,27 +642,21 @@ function renderSueloPanel(d) {
   const humedadAdvice = humedad < 30 ? '🔴 Humedad baja' : (humedad > 60 ? '💧 Humedad alta' : '✅ Normal');
   const necesidadRiego = d.sueloAnalitica?.necesidadRiego || 0;
   const etoAdvice = necesidadRiego < 1 ? '✅ Riego mínimo' : (necesidadRiego < 3 ? '💧 Riego moderado' : '🔥 Riego abundante');
-  
-  SUELO_CONTENT.innerHTML = `
-    <div class="suelo-stat">
-      <div class="icon">🪨</div>
-      <div class="value">${tipoSuelo}</div>
-      <div class="label">Tipo de suelo</div>
-      <div class="advice">${soilAdvice[tipoSuelo] || 'Riego regular'}</div>
-    </div>
-    <div class="suelo-stat">
-      <div class="icon">💧</div>
-      <div class="value ${humedadClass}">${humedad}%</div>
-      <div class="label">Humedad actual</div>
-      <div class="advice">${humedadAdvice}</div>
-    </div>
-    <div class="suelo-stat">
-      <div class="icon">🚿</div>
-      <div class="value">${(d.sueloAnalitica?.necesidadRiego || 0).toFixed(1)}mm</div>
-      <div class="label">Necesidad de riego</div>
-      <div class="advice">${etoAdvice}</div>
-    </div>
-  `;
+
+  clearNode(SUELO_CONTENT);
+  const stats = [
+    { icon: '🪨', value: tipoSuelo, valueClass: '', label: 'Tipo de suelo', advice: soilAdvice[tipoSuelo] || 'Riego regular' },
+    { icon: '💧', value: `${humedad}%`, valueClass: humedadClass, label: 'Humedad actual', advice: humedadAdvice },
+    { icon: '🚿', value: `${(d.sueloAnalitica?.necesidadRiego || 0).toFixed(1)}mm`, valueClass: '', label: 'Necesidad de riego', advice: etoAdvice }
+  ];
+  stats.forEach((s) => {
+    const stat = createDiv('suelo-stat');
+    stat.appendChild(createDiv('icon', s.icon));
+    stat.appendChild(createDiv(`value ${s.valueClass}`.trim(), s.value));
+    stat.appendChild(createDiv('label', s.label));
+    stat.appendChild(createDiv('advice', s.advice));
+    SUELO_CONTENT.appendChild(stat);
+  });
 }
 
 // --- Render: Narrative section ---
@@ -567,7 +676,18 @@ function renderNarrativeSection(d) {
   const aguaSub = necesidadRiego > 0 ? `Riego objetivo: ${necesidadRiego.toFixed(1)} mm/día` : 'No requiere ajuste de riego';
   const sanidadTexto = plagasAltas > 0 ? `🦟 ${plagasAltas} plaga(s) en ALTO` : (hongosActivos > 0 ? `🍄 ${hongosActivos} riesgo(s) de hongos` : '✅ Sanidad estable');
   const sanidadSub = d.provinciaInfo?.epocaCritica ? `Época crítica: ${d.provinciaInfo.epocaCritica}` : 'Monitoreo preventivo recomendado';
-  NARRATIVE_CONTENT.innerHTML = `<div class="narrative-item ${tempClass}"><div class="narrative-label">Riesgo global hoy</div><div class="narrative-value">${riesgoGlobal.toUpperCase()}</div><div class="narrative-sub">${resumenRiesgo}</div></div><div class="narrative-item ${deficitRiego > 0 ? 'positivo' : ''}"><div class="narrative-label">Agua y suelo</div><div class="narrative-value">${aguaTexto}</div><div class="narrative-sub">${aguaSub}</div></div><div class="narrative-item ${(plagasAltas > 0 || hongosActivos > 0) ? 'positivo' : ''}"><div class="narrative-label">Sanidad del olivar</div><div class="narrative-value">${sanidadTexto}</div><div class="narrative-sub">${sanidadSub}</div></div>`;
+  clearNode(NARRATIVE_CONTENT);
+  [
+    { className: tempClass, label: 'Riesgo global hoy', value: riesgoGlobal.toUpperCase(), sub: resumenRiesgo },
+    { className: deficitRiego > 0 ? 'positivo' : '', label: 'Agua y suelo', value: aguaTexto, sub: aguaSub },
+    { className: (plagasAltas > 0 || hongosActivos > 0) ? 'positivo' : '', label: 'Sanidad del olivar', value: sanidadTexto, sub: sanidadSub }
+  ].forEach((item) => {
+    const block = createDiv(`narrative-item ${item.className}`.trim());
+    block.appendChild(createDiv('narrative-label', item.label));
+    block.appendChild(createDiv('narrative-value', item.value));
+    block.appendChild(createDiv('narrative-sub', item.sub));
+    NARRATIVE_CONTENT.appendChild(block);
+  });
   
   // Generar conclusión accionable
   const conclusionEl = $('narrative-conclusion');
@@ -603,11 +723,18 @@ function renderNarrativeSection(d) {
     pregunta = 'Con riesgo bajo hoy, ¿qué tareas preventivas recomiendas esta semana para mi olivar?';
   }
   
-  conclusionEl.innerHTML = `<div class="narrative-conclusion-line1">${linea1}</div><div class="narrative-conclusion-line2">${linea2}</div>`;
+  clearNode(conclusionEl);
+  conclusionEl.appendChild(createDiv('narrative-conclusion-line1', linea1));
+  conclusionEl.appendChild(createDiv('narrative-conclusion-line2', linea2));
   
   const linkEl = $('consejero-context-link');
   if (linkEl && pregunta) {
-    linkEl.innerHTML = `<a href="/consejero?q=${encodeURIComponent(pregunta)}" class="consejero-cta">¿Cómo adapto mi riego a estas condiciones? → Preguntar al consejero</a>`;
+    clearNode(linkEl);
+    const a = document.createElement('a');
+    a.href = `/consejero?q=${encodeURIComponent(pregunta)}`;
+    a.className = 'consejero-cta';
+    a.textContent = '¿Cómo adapto mi riego a estas condiciones? → Preguntar al consejero';
+    linkEl.appendChild(a);
   }
 }
 
@@ -694,7 +821,14 @@ async function loadData() {
   } catch (e) {
     console.error('[loadData] Error:', e);
     if (PROVINCIAS_GRID) {
-      PROVINCIAS_GRID.innerHTML = '<div class="no-province-msg">Error al cargar. <button onclick="location.reload()">Reintentar</button></div>';
+      clearNode(PROVINCIAS_GRID);
+      const msg = createDiv('no-province-msg', 'Error al cargar. ');
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.textContent = 'Reintentar';
+      retry.addEventListener('click', () => location.reload());
+      msg.appendChild(retry);
+      PROVINCIAS_GRID.appendChild(msg);
     }
   }
 }

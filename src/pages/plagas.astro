@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 import { PLAGAS_CATALOGO, CAMBIO_CLIMATICO_PLAGAS } from '../lib/catalogos';
 
 const plagas = PLAGAS_CATALOGO;
@@ -10,16 +9,8 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 <Layout title="Plagas del Olivar | olivaξ">
   <div class="page-header">
     <h1>🦠 Plagas del Olivar</h1>
-    <p class="subtitle">Estado fitosanitario actualizado por provincia (RAIF + riesgos climáticos y de suelo)</p>
-    <div class="provincia-bar">
-      <ProvinciaSelect id="provincia-select-plagas" placeholder="Selecciona provincia..." />
-      <div id="plagas-summary" class="plagas-summary"></div>
-    </div>
-    <div id="alert-strip" class="alert-strip" style="display: none;">
-      <span class="alert-icon">🔴</span>
-      <span class="alert-text">⚠️ Riesgo ALTO detectado: <strong id="alert-plaga"></strong> en <strong id="alert-provincia"></strong>. Actúa esta semana.</span>
-      <a href="/alertas" class="alert-btn">Activar alertas</a>
-    </div>
+    <p class="subtitle">Catálogo de plagas y enfermedades del olivo con información técnica</p>
+    <p class="hint-text">Oprime una tarjeta para ver el tratamiento</p>
   </div>
 
   <div class="tabs-container">
@@ -77,13 +68,6 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 </Layout>
 
 <script>
-  import OlivaxiEcosistema from '../lib/ecosistema';
-  import { PLAGAS_IDS, PLAGAS_ID_POR_NOMBRE, PLAGAS_NOMBRE_POR_ID } from '../lib/plagas';
-
-  const summaryEl = document.getElementById('plagas-summary');
-  const alertStrip = document.getElementById('alert-strip');
-  const alertPlaga = document.getElementById('alert-plaga');
-  const alertProvincia = document.getElementById('alert-provincia');
   let expandedCard = null;
 
   const condicionesMap = {
@@ -92,110 +76,20 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     'lluvia': ['Baja Lluvia', 'Alta Lluvia']
   };
 
-  // --- Render datos de plagas ---
-  function renderPlagasData(d) {
-    const provincia = d.provincia || OlivaxiEcosistema.provincia;
-    const tieneProvincia = !!provincia;
-    
-    // Update summary
-    const allPlagas = PLAGAS_IDS;
-    let altos = 0, medios = 0;
-    
-    allPlagas.forEach(key => {
-      const nivel = d.plagas?.[key]?.nivel;
-      if (nivel === 'alto') altos++;
-      else if (nivel === 'medio') medios++;
-    });
-
-    if (summaryEl) {
-      if (!tieneProvincia) {
-        summaryEl.textContent = 'Selecciona una provincia para ver niveles de riesgo';
-      } else {
-        summaryEl.textContent = `${provincia} · ${altos} plagas en nivel alto · ${medios} en nivel medio`;
-      }
-    }
-
-    // Update alert strip
-    const plagaAlta = allPlagas.find(key => d.plagas?.[key]?.nivel === 'alto');
-    if (alertStrip && alertPlaga && alertProvincia) {
-      if (plagaAlta && tieneProvincia) {
-        alertPlaga.textContent = PLAGAS_NOMBRE_POR_ID[plagaAlta] || plagaAlta;
-        alertProvincia.textContent = provincia;
-        alertStrip.style.display = 'flex';
-      } else {
-        alertStrip.style.display = 'none';
-      }
-    }
-
-    // Update cards
-    document.querySelectorAll('.plaga-card').forEach(card => {
-      const nombre = card.dataset.nombre;
-      const plagaKey = PLAGAS_ID_POR_NOMBRE[nombre];
-      if (!plagaKey) return;
-
-      const nivel = tieneProvincia ? (d.plagas?.[plagaKey]?.nivel || 'bajo') : 'sin-provincia';
+  // --- Toggle cards (expand/collapse) ---
+  document.querySelectorAll('.plaga-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.classList.contains('btn-consejero') || target.closest('.btn-consejero')) return;
       
-      // Update badge
-      const badge = card.querySelector('.plaga-nivel');
-      if (badge) {
-        badge.className = `plaga-nivel nivel-${nivel}`;
-        if (nivel === 'sin-provincia') {
-          badge.textContent = 'SIN DATOS';
-          badge.classList.add('nivel-sin-datos');
-        } else {
-          badge.textContent = nivel.toUpperCase();
-        }
+      if (expandedCard && expandedCard !== card) {
+        expandedCard.classList.remove('expanded');
       }
-
-      // Store nivel for sorting
-      card.dataset.nivelRiesgo = nivel === 'alto' ? '3' : nivel === 'medio' ? '2' : '1';
+      
+      card.classList.toggle('expanded');
+      expandedCard = card.classList.contains('expanded') ? card : null;
     });
-
-    // Reordenar cards por riesgo: alto → medio → bajo
-    const grid = document.getElementById('plagas-grid');
-    if (grid) {
-      const cards = Array.from(grid.querySelectorAll('.plaga-card'));
-      cards.sort((a, b) => {
-        return (parseInt(b.dataset.nivelRiesgo) || 0) - (parseInt(a.dataset.nivelRiesgo) || 0);
-      });
-      cards.forEach(card => grid.appendChild(card));
-    }
-  }
-
-  // --- Cargar datos via ecosistema ---
-  async function cargarDatosProvincia() {
-    const provincia = OlivaxiEcosistema.provincia;
-    if (!provincia) {
-      if (summaryEl) summaryEl.textContent = 'Selecciona una provincia para ver niveles de riesgo';
-      if (alertStrip) alertStrip.style.display = 'none';
-      return;
-    }
-    try {
-      const d = await OlivaxiEcosistema.fetchDashboard();
-      if (d) {
-        renderPlagasData(d);
-      } else if (summaryEl) {
-        summaryEl.textContent = '⚠️ No se pudieron cargar los datos de plagas para esta provincia.';
-      }
-    } catch (e) {
-      console.error('[plagas] Error cargando dashboard:', e);
-      if (summaryEl) {
-        summaryEl.textContent = '❌ Error al cargar datos. Intenta de nuevo.';
-      }
-    }
-  }
-
-  // --- Escuchar cambios del ecosistema ---
-  const offEcosistema = OlivaxiEcosistema.onChange((state) => {
-    if (state.dashboardData && state.dashboardData.provincia === state.provincia) {
-      renderPlagasData(state.dashboardData);
-    } else if (state.provincia) {
-      cargarDatosProvincia();
-    } else {
-      renderPlagasData({});
-    }
   });
-  window.addEventListener('beforeunload', offEcosistema);
 
   // --- Tabs de filtrado ---
   document.querySelectorAll('.tab').forEach(tab => {
@@ -223,26 +117,6 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
       }
     });
   });
-
-  // --- Toggle cards (expand/collapse) ---
-  document.querySelectorAll('.plaga-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      const target = e.target;
-      if (target.classList.contains('btn-consejero') || target.closest('.btn-consejero')) return;
-      
-      if (expandedCard && expandedCard !== card) {
-        expandedCard.classList.remove('expanded');
-        expandedCard.querySelector('.plaga-tratamiento')?.classList.remove('visible');
-      }
-      
-      const isExpanded = card.classList.toggle('expanded');
-      const tratamiento = card.querySelector('.plaga-tratamiento');
-      if (tratamiento) {
-        tratamiento.classList.toggle('visible', isExpanded);
-      }
-      expandedCard = isExpanded ? card : null;
-    });
-  });
 </script>
 
 <style is:global>
@@ -263,92 +137,11 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     font-size: 1rem;
   }
 
-  .provincia-bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .provincia-bar select {
-    padding: 8px 16px;
-    border: 2px solid var(--color-limon);
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    background: var(--color-white-surface);
-    color: var(--color-aceituna);
-    cursor: pointer;
-  }
-
-  .plagas-summary {
-    font-size: 13px;
-    color: var(--color-aceituna);
-    padding: 6px 12px;
-    background: var(--color-white-surface);
-    border-radius: 20px;
-    border: 0.5px solid var(--color-border);
-  }
-
-  .plagas-summary .summary-gris {
+  .hint-text {
     color: var(--color-muted);
+    font-size: 0.85rem;
     font-style: italic;
-  }
-
-  .plagas-summary .resumen-altos {
-    color: #a32d2d;
-    font-weight: 600;
-  }
-
-  .plagas-summary .resumen-medios {
-    color: #633806;
-    font-weight: 500;
-  }
-
-  .alert-strip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    max-width: 700px;
-    margin: 1rem auto 0;
-    padding: 0.75rem 1rem;
-    background: #fcebeb;
-    border: 0.5px solid #f09595;
-    border-radius: 6px;
-    flex-wrap: wrap;
-  }
-
-  .alert-icon {
-    font-size: 1.2rem;
-  }
-
-  .alert-text {
-    color: #a32d2d;
-    font-size: 13px;
-  }
-
-  .alert-text strong {
-    font-weight: 700;
-  }
-
-  .alert-btn {
-    background: #dc2626;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s;
-  }
-
-  .alert-btn:hover {
-    background: #b91c1c;
+    margin-top: 0.5rem;
   }
 
   .tabs-container {
@@ -570,9 +363,6 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     .plaga-nombre { font-size: 0.95rem; }
     .plaga-condiciones { gap: 0.25rem; }
     .condicion-pill { font-size: 10px; padding: 2px 6px; }
-    .provincia-bar select { width: 100%; }
-    .alert-strip { flex-direction: column; gap: 0.5rem; }
-    .alert-text { text-align: center; }
     .clima-grid { grid-template-columns: 1fr; }
   }
 </style>

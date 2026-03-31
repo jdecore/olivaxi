@@ -8,11 +8,9 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 <Layout title="Alertas - olivaξ">
   <!-- Hero -->
   <section class="alertas-hero">
-    <h1>🔔 Alertas Inteligentes para tu Olivar</h1>
-    <p>Te avisamos cuando las condiciones climáticas o plagas afecten a tu cultivo. Datos reales de tu provincia basados en RAIF.</p>
-    <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">
-      🌱 Datos climáticos + 🦟 Plagas activas + 🪨 Consejos según tu suelo
-    </p>
+    <span class="hero-badge">🔔 Notificaciones en tiempo real · RAIF + clima</span>
+    <h1>Activa alertas para tu olivar</h1>
+    <p>Te avisamos cuando las condiciones climáticas o plagas afecten tu cultivo</p>
   </section>
 
   <!-- Form -->
@@ -60,7 +58,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         </select>
       </div>
 
-      <button id="btn-submit" type="button">Activar alerta 🔔</button>
+      <button id="btn-submit" type="button">Activar alertas para mi olivar</button>
 
       <p class="alertas-info">Se te avisará cuando cualquier riesgo aparezca en tu zona para tu cultivo de olivo.</p>
 
@@ -71,20 +69,32 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
 <style is:global>
   .alertas-hero {
-    background: var(--color-aceituna);
-    color: var(--color-sal);
-    padding: 100px 1rem 3rem;
+    background: #f5f0e8;
+    color: var(--color-aceituna);
+    padding: 100px 1rem 2rem;
     text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--color-limon);
+    color: var(--color-aceituna);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
   }
 
   .alertas-hero h1 {
     font-size: 1.875rem;
     font-weight: 700;
     font-family: 'Literata', Georgia, serif;
+    margin-bottom: 0.5rem;
   }
 
   .alertas-hero p {
-    color: rgba(247,244,238,0.7);
+    color: var(--color-muted);
     margin-top: 0.5rem;
   }
 
@@ -131,34 +141,29 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .form-field label {
     display: block;
-    font-weight: 800;
+    font-weight: 500;
     color: var(--color-aceituna);
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     transition: color 0.3s ease;
   }
 
   .form-field input,
   .form-field select {
     width: 100%;
-    background: rgba(247, 244, 238, 0.9);
-    border: 2px solid rgba(28, 28, 28, 0.2);
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
+    background: var(--color-white-surface);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
     color: var(--color-aceituna);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-family: 'Outfit', system-ui, sans-serif;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
-    will-change: transform;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .form-field input:hover,
   .form-field select:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 25px rgba(212, 232, 73, 0.3);
-    border-color: rgba(212, 232, 73, 0.5);
+    border-color: var(--color-limon);
   }
 
   .form-field label:hover {
@@ -169,71 +174,38 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   .form-field select:focus {
     outline: none;
     border-color: var(--color-limon);
-    box-shadow: 0 0 0 4px rgba(212, 232, 73, 0.4), 0 8px 25px rgba(212, 232, 73, 0.25);
-    transform: scale(1.03) translateY(-2px);
-    filter: brightness(1.05);
-    background: var(--color-white);
+    box-shadow: 0 0 0 3px rgba(212, 232, 73, 0.2);
   }
 
   #btn-submit {
     width: 100%;
-    background: linear-gradient(135deg, var(--color-aceituna) 0%, #3C3C3C 100%);
-    color: var(--color-white);
+    background: #3b6d11;
+    color: #eaf3de;
     padding: 1rem 1.5rem;
-    border-radius: 14px;
-    font-weight: 800;
+    border-radius: 8px;
+    font-weight: 600;
     margin-top: 1.5rem;
     cursor: pointer;
     border: none;
     font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 10px 30px rgba(28, 28, 28, 0.3);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease;
-    will-change: transform;
-    opacity: 1;
-    animation: none;
-    position: relative;
-    overflow: hidden;
-  }
-
-  #btn-submit::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -75%;
-    width: 40%;
-    height: 300%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-    transform: skewX(-20deg);
-    animation: shine 4s linear infinite;
-  }
-
-  @keyframes shine {
-    100% { left: 150%; }
-  }
-
-  @keyframes btnEntry {
-    to { opacity: 1; transform: translateY(0); }
+    box-shadow: 0 4px 12px rgba(59, 109, 17, 0.25);
+    transition: background 0.2s ease, transform 0.2s ease;
   }
 
   #btn-submit:hover { 
-    transform: translateY(-6px) scale(1.05);
-    filter: brightness(1.3);
-    box-shadow: 0 20px 40px rgba(212, 232, 73, 0.4);
+    background: #2d5a0c;
+    transform: translateY(-2px);
   }
 
   #btn-submit:active {
-    transform: scale(0.95) translateY(-2px);
-    transition-duration: 0.1s;
-    filter: brightness(0.9);
+    transform: translateY(0);
   }
 
   #btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .provincia-info-panel {
-    background: rgba(212, 232, 73, 0.1);
-    border: 2px solid var(--color-limon);
+    background: var(--color-white-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1.5rem;
@@ -243,73 +215,71 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .provincia-info-panel.show { display: block; }
 
-  .provincia-info-panel h4 {
-    margin: 0 0 0.5rem;
+  .provincia-info-panel .metrics-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
     color: var(--color-aceituna);
-    font-size: 1rem;
   }
 
-  .provincia-info-panel .info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  .provincia-info-panel .metrics-strip .prov-name {
+    font-weight: 700;
+  }
+
+  .provincia-info-panel .riesgos-section {
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+  }
+
+  .provincia-info-panel .riesgos-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-aceituna);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
 
-  .provincia-info-panel .info-item {
+  .provincia-info-panel .riesgos-list {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
-  .provincia-info-panel .consejos {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+  .provincia-info-panel .riesgo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-size: 0.75rem;
-    list-style: none;
+    font-weight: 600;
   }
 
-  .provincia-info-panel .consejos li {
-    margin-bottom: 0.25rem;
+  .provincia-info-panel .riesgo-badge.alto {
+    background: #fcebeb;
+    color: #a32d2d;
+    border: 0.5px solid #f09595;
   }
 
-  .provincia-info-panel .info-section {
-    margin-bottom: 0.6rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
+  .provincia-info-panel .riesgo-badge.medio {
+    background: #faeeda;
+    color: #92400e;
+    border: 0.5px solid #fac775;
   }
 
-  .provincia-info-panel .info-section:last-child {
-    border-bottom: none;
-  }
-
-  .provincia-info-panel .info-title {
-    font-size: 0.65rem;
-    font-weight: 700;
+  .provincia-info-panel .consejos-box {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(212, 232, 73, 0.15);
+    border-radius: 8px;
+    font-size: 0.8rem;
     color: var(--color-aceituna);
-    margin-bottom: 0.3rem;
-    letter-spacing: 0.05em;
-  }
-
-  .provincia-info-panel .info-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.3rem;
-  }
-
-  .provincia-info-panel .info-item {
-    font-size: 0.7rem;
-    padding: 3px 5px;
-    background: rgba(255,255,255,0.5);
-    border-radius: 4px;
-  }
-
-  .provincia-info-panel .riesgo-item {
-    padding: 4px 6px;
-    margin-bottom: 3px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .alertas-info {
@@ -381,6 +351,46 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const selectTipo = document.getElementById("tipo");
   const provinciaSelect = document.getElementById("provincia");
   const variedadSelect = document.getElementById("variedad");
+  const PLAGAS_RAIF = [
+    { id: 'mosca', icono: '🪰' },
+    { id: 'polilla', icono: '🦋' },
+    { id: 'repilo', icono: '🍂' },
+    { id: 'xylella', icono: '🚨' },
+    { id: 'tuberculosis', icono: '🦠' },
+    { id: 'barrenillo', icono: '🪲' },
+    { id: 'cochinilla', icono: '🐛' },
+    { id: 'phytophthora', icono: '🍄' },
+    { id: 'lepra', icono: '🤕' },
+    { id: 'verticillium', icono: '🥀' }
+  ];
+
+  function clearNode(node) {
+    if (!node) return;
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function createInfoItem(label, value) {
+    const item = document.createElement('div');
+    item.className = 'info-item';
+    item.appendChild(document.createTextNode(`${label} `));
+    const bold = document.createElement('b');
+    bold.textContent = value;
+    item.appendChild(bold);
+    return item;
+  }
+
+  function createSection(title) {
+    const section = document.createElement('div');
+    section.className = 'info-section';
+    const heading = document.createElement('div');
+    heading.className = 'info-title';
+    heading.textContent = title;
+    const grid = document.createElement('div');
+    grid.className = 'info-grid';
+    section.appendChild(heading);
+    section.appendChild(grid);
+    return { section, grid };
+  }
 
   // --- Cargar datos de provincia via ecosistema ---
   async function cargarDatosProvincia() {
@@ -390,61 +400,58 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     const d = await OlivaxiEcosistema.fetchDashboard();
     if (!d) return;
 
-    const getIcono = (nivel) => nivel === 'alto' ? '🔴' : nivel === 'medio' ? '🟡' : '🟢';
-    
-    const riesgosHTML = d.riesgosActivos?.length 
-      ? d.riesgosActivos.map(r => `<div class="riesgo-item ${r.nivel}"><span>${r.icono}</span> ${r.titulo} - ${r.nivel.toUpperCase()}</div>`).join('')
-      : '<div class="riesgo-item bajo">✅ Sin riesgos activos</div>';
-    
-    const consejosHTML = d.consejos?.length
-      ? d.consejos.slice(0, 2).map(c => `<li>💡 ${c.replace(/^\S+\s/, '')}</li>`).join('')
-      : '';
-    
-    provinciaInfoPanel.innerHTML = `
-      <h4>📍 ${provincia} - Datos en tiempo real</h4>
-      <div class="info-section">
-        <div class="info-title">🌡️ CLIMA</div>
-        <div class="info-grid">
-          <div class="info-item">🌡️ <b>${d.clima.temperatura}°C</b></div>
-          <div class="info-item">💧 <b>${d.clima.humedad}%</b></div>
-          <div class="info-item">🌧️ <b>${d.clima.lluvia}mm</b></div>
-          <div class="info-item">📊 <b>${d.clima.estado}</b></div>
-        </div>
-      </div>
-      <div class="info-section">
-        <div class="info-title">🪨 SUELO</div>
-        <div class="info-grid">
-          <div class="info-item">🌡️ suelo <b>${Math.round(d.suelo?.temperatura || 0)}°C</b></div>
-          <div class="info-item">💧 suelo <b>${Math.round(d.suelo?.humedad || 0)}%</b></div>
-          <div class="info-item">📈 ETo <b>${(d.suelo?.evapotranspiracion || 0).toFixed(1)}mm</b></div>
-          <div class="info-item">🚿 déficit <b>${(d.sueloAnalitica?.deficitRiego || 0).toFixed(1)}mm</b></div>
-          <div class="info-item">🫒 <b>${d.provinciaInfo?.variedadPredominante || 'N/A'}</b></div>
-          <div class="info-item">🪨 <b>${d.provinciaInfo?.tipoSuelo || 'N/A'}</b></div>
-          <div class="info-item">⛰️ <b>${d.provinciaInfo?.altitud || '?'}m</b></div>
-          <div class="info-item">🌧️ <b>${d.provinciaInfo?.pluviometriaAnual || '?'}mm</b></div>
-        </div>
-      </div>
-      <div class="info-section">
-        <div class="info-title">🦟 PLAGAS (RAIF)</div>
-        <div class="info-grid">
-          <div class="info-item">🪰 ${getIcono(d.plagas?.mosca?.nivel)} <b>${d.plagas?.mosca?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🦋 ${getIcono(d.plagas?.polilla?.nivel)} <b>${d.plagas?.polilla?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🍂 ${getIcono(d.plagas?.repilo?.nivel)} <b>${d.plagas?.repilo?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🚨 ${getIcono(d.plagas?.xylella?.nivel)} <b>${d.plagas?.xylella?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🦠 ${getIcono(d.plagas?.tuberculosis?.nivel)} <b>${d.plagas?.tuberculosis?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🪲 ${getIcono(d.plagas?.barrenillo?.nivel)} <b>${d.plagas?.barrenillo?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🐛 ${getIcono(d.plagas?.cochinilla?.nivel)} <b>${d.plagas?.cochinilla?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🍄 ${getIcono(d.plagas?.phytophthora?.nivel)} <b>${d.plagas?.phytophthora?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🤕 ${getIcono(d.plagas?.lepra?.nivel)} <b>${d.plagas?.lepra?.nivel || 'bajo'}</b></div>
-          <div class="info-item">🥀 ${getIcono(d.plagas?.verticillium?.nivel)} <b>${d.plagas?.verticillium?.nivel || 'bajo'}</b></div>
-        </div>
-      </div>
-      <div class="info-section">
-        <div class="info-title">⚠️ RIESGOS ACTIVOS</div>
-        ${riesgosHTML}
-      </div>
-      ${consejosHTML ? `<div class="info-section"><div class="info-title">💡 CONSEJOS</div><ul class="consejos">${consejosHTML}</ul></div>` : ''}
+    clearNode(provinciaInfoPanel);
+
+    // Strip de 3 métricas clave
+    const temp = Math.round(d.suelo?.temperatura || d.clima?.temperatura || 0);
+    let humedadSuelo = d.suelo?.humedad || 0;
+    if (humedadSuelo <= 1) humedadSuelo = Math.round(humedadSuelo * 100);
+    const eto = (d.suelo?.evapotranspiracion || 0).toFixed(1);
+
+    const metricsStrip = document.createElement('div');
+    metricsStrip.className = 'metrics-strip';
+    metricsStrip.innerHTML = `
+      <span class="prov-name">${provincia}</span>
+      <span>${temp}°C</span>
+      <span>·</span>
+      <span>Suelo ${humedadSuelo}% humedad</span>
+      <span>·</span>
+      <span>ETo ${eto}mm</span>
     `;
+    provinciaInfoPanel.appendChild(metricsStrip);
+
+    // Riesgos activos (solo MEDIO y ALTO)
+    const riesgosFiltrados = (d.riesgosActivos || []).filter(r => r.nivel === 'medio' || r.nivel === 'alto');
+    
+    if (riesgosFiltrados.length > 0) {
+      const riesgosSection = document.createElement('div');
+      riesgosSection.className = 'riesgos-section';
+      
+      const riesgosTitle = document.createElement('div');
+      riesgosTitle.className = 'riesgos-title';
+      riesgosTitle.textContent = 'Riesgos activos:';
+      riesgosSection.appendChild(riesgosTitle);
+
+      const riesgosList = document.createElement('div');
+      riesgosList.className = 'riesgos-list';
+      riesgosFiltrados.forEach(r => {
+        const badge = document.createElement('span');
+        badge.className = `riesgo-badge ${r.nivel}`;
+        badge.innerHTML = `${r.icono || '⚠️'} ${r.titulo} — ${String(r.nivel).toUpperCase()}`;
+        riesgosList.appendChild(badge);
+      });
+      riesgosSection.appendChild(riesgosList);
+      provinciaInfoPanel.appendChild(riesgosSection);
+    }
+
+    // Consejos
+    if (d.consejos?.length) {
+      const consejosBox = document.createElement('div');
+      consejosBox.className = 'consejos-box';
+      consejosBox.innerHTML = `💡 ${d.consejos[0]}`;
+      provinciaInfoPanel.appendChild(consejosBox);
+    }
+
     provinciaInfoPanel.classList.add('show');
   }
 
@@ -453,7 +460,10 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     const provincia = OlivaxiEcosistema.provincia;
     const variedad = OlivaxiEcosistema.variedad;
     
-    selectTipo.innerHTML = '<option value="">Selecciona...</option>';
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'Selecciona...';
+    selectTipo.replaceChildren(emptyOption);
     if (!provincia) return;
 
     try {

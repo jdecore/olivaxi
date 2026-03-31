@@ -39,50 +39,70 @@ class OlivaxiMapa extends HTMLElement {
     const Ecosistema = this._ecosistema;
     const TILE_SERVER = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
 
-    this.innerHTML = `
-      <div class="mapa-wrapper">
-        <div class="mapa-filters">
-          <button class="filter-btn active" data-filtro="temperatura">🌡️</button>
-          <button class="filter-btn" data-filtro="humedad">💧</button>
-          <button class="filter-btn" data-filtro="precipitacion">🌧️</button>
-        </div>
-        <div class="mapa-inner"></div>
-        <div class="mapa-legend"></div>
-        <div class="mapa-loading">
-          <div class="spinner"></div>
-          <p>Cargando...</p>
-        </div>
-      </div>
-    `;
+    while (this.firstChild) this.removeChild(this.firstChild);
 
-    const styles = `
-      <style>
-        olivaxi-mapa { display: block; width: 100%; height: 100%; }
-        .mapa-wrapper { position: relative; height: 100%; width: 100%; overflow: hidden; background: #e8e8e8; }
-        .mapa-inner { height: 100%; width: 100%; }
-        .mapa-filters { position: absolute; top: 8px; left: 8px; z-index: 10; display: flex; gap: 4px; }
-        .filter-btn { padding: 8px 12px; font-size: 12px; border: 1.5px solid var(--color-border); border-radius: 4px; background: var(--color-white-surface); color: var(--color-aceituna); cursor: pointer; font-weight: 600; }
-        .filter-btn:hover { background: var(--color-limon); }
-        .filter-btn.active { background: var(--color-limon); }
-        .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 10px; }
-        .mapa-loading.hidden { display: none; }
-        .spinner { width: 28px; height: 28px; border: 2px solid var(--color-border); border-top-color: var(--color-limon); border-radius: 50%; animation: spin .8s linear infinite; }
-        .mapa-legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: min(96%, 760px); background: rgba(255,255,255,0.92); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; font-size: 9px; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; box-sizing: border-box; }
-        .mapa-legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 6px; min-width: 0; padding: 2px 4px; border-radius: 4px; }
-        .mapa-legend-label { color: #1C1C1C; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-        @media (max-width: 640px) {
-          .mapa-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(96%, 360px); padding: 6px 8px; }
-          .mapa-legend-label { font-size: 10px; }
-          .filter-btn { padding: 10px 14px; font-size: 13px; }
-        }
-        .provincia-marker { }
-        .provincia-marker:hover { transform: scale(1.3); }
-        .provincia-marker.selected { border-color: #D4E849 !important; transform: scale(1.2); }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      </style>
+    const style = document.createElement('style');
+    style.textContent = `
+      olivaxi-mapa { display: block; width: 100%; height: 100%; }
+      .mapa-wrapper { position: relative; height: 100%; width: 100%; overflow: hidden; background: #e8e8e8; }
+      .mapa-inner { height: 100%; width: 100%; }
+      .mapa-filters { position: absolute; top: 8px; left: 8px; z-index: 10; display: flex; gap: 4px; }
+      .filter-btn { padding: 8px 12px; font-size: 12px; border: 1.5px solid var(--color-border); border-radius: 4px; background: var(--color-white-surface); color: var(--color-aceituna); cursor: pointer; font-weight: 600; }
+      .filter-btn:hover { background: var(--color-limon); }
+      .filter-btn.active { background: var(--color-limon); }
+      .mapa-loading { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; gap: 10px; }
+      .mapa-loading.hidden { display: none; }
+      .spinner { width: 28px; height: 28px; border: 2px solid var(--color-border); border-top-color: var(--color-limon); border-radius: 50%; animation: spin .8s linear infinite; }
+      .mapa-legend { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: min(96%, 760px); background: rgba(255,255,255,0.92); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; font-size: 9px; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; box-sizing: border-box; }
+      .mapa-legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 6px; min-width: 0; padding: 2px 4px; border-radius: 4px; }
+      .mapa-legend-label { color: #1C1C1C; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+      @media (max-width: 640px) {
+        .mapa-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(96%, 360px); padding: 6px 8px; }
+        .mapa-legend-label { font-size: 10px; }
+        .filter-btn { padding: 10px 14px; font-size: 13px; }
+      }
+      .provincia-marker { }
+      .provincia-marker:hover { transform: scale(1.3); }
+      .provincia-marker.selected { border-color: #D4E849 !important; transform: scale(1.2); }
+      @keyframes spin { to { transform: rotate(360deg); } }
     `;
+    this.appendChild(style);
 
-    this.insertAdjacentHTML('afterbegin', styles);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mapa-wrapper';
+
+    const filters = document.createElement('div');
+    filters.className = 'mapa-filters';
+    [
+      ['temperatura', '🌡️'],
+      ['humedad', '💧'],
+      ['precipitacion', '🌧️']
+    ].forEach(([filtro, label], idx) => {
+      const btn = document.createElement('button');
+      btn.className = `filter-btn${idx === 0 ? ' active' : ''}`;
+      btn.dataset.filtro = filtro;
+      btn.textContent = label;
+      filters.appendChild(btn);
+    });
+
+    const mapaInner = document.createElement('div');
+    mapaInner.className = 'mapa-inner';
+    const legend = document.createElement('div');
+    legend.className = 'mapa-legend';
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'mapa-loading';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    const loadingText = document.createElement('p');
+    loadingText.textContent = 'Cargando...';
+    loadingEl.appendChild(spinner);
+    loadingEl.appendChild(loadingText);
+
+    wrapper.appendChild(filters);
+    wrapper.appendChild(mapaInner);
+    wrapper.appendChild(legend);
+    wrapper.appendChild(loadingEl);
+    this.appendChild(wrapper);
 
     const loading = this.querySelector('.mapa-loading');
     const mapaDiv = this.querySelector('.mapa-inner');
@@ -96,7 +116,15 @@ class OlivaxiMapa extends HTMLElement {
       }
       if (typeof maplibregl === 'undefined') {
         console.error('MapLibre not loaded after 10s');
-        loading.querySelector('p').innerHTML = 'Error: Mapa no disponible.<br><small style="font-size:11px">💡 Desactiva bloqueadores de anuncios para mejor experiencia</small>';
+        const msg = loading.querySelector('p');
+        while (msg.firstChild) msg.removeChild(msg.firstChild);
+        msg.appendChild(document.createTextNode('Error: Mapa no disponible.'));
+        const br = document.createElement('br');
+        const small = document.createElement('small');
+        small.style.fontSize = '11px';
+        small.textContent = '💡 Desactiva bloqueadores de anuncios para mejor experiencia';
+        msg.appendChild(br);
+        msg.appendChild(small);
         return;
       }
     }
@@ -233,6 +261,77 @@ class OlivaxiMapa extends HTMLElement {
     return [];
   }
 
+  createPopupContent(d, val, riesgoColor) {
+    const container = document.createElement('div');
+    container.style.cssText = 'font-family:system-ui;padding:12px;background:#fff;color:#1C1C1C;border-radius:8px;min-width:200px;font-size:12px';
+
+    const title = document.createElement('div');
+    title.style.cssText = `font-weight:bold;font-size:14px;margin-bottom:8px;border-bottom:2px solid ${riesgoColor};padding-bottom:6px`;
+    const titleInfo = document.createElement('span');
+    titleInfo.style.cssText = 'font-size:11px;font-weight:normal';
+    titleInfo.textContent = ` (${d.riesgo?.toUpperCase() || 'bajo'})`;
+    title.appendChild(document.createTextNode(`${this.getRiskBadge(d.riesgo)} ${d.provincia}`));
+    title.appendChild(titleInfo);
+    container.appendChild(title);
+
+    const clima = document.createElement('div');
+    clima.style.marginBottom = '4px';
+    clima.appendChild(document.createTextNode('🌡️ '));
+    const valBold = document.createElement('b');
+    valBold.textContent = val;
+    clima.appendChild(valBold);
+    clima.appendChild(document.createTextNode(` · 💧 ${d.humedad}% · 🌧️ ${d.lluvia}mm`));
+    container.appendChild(clima);
+
+    const appendRow = (prefix, value, suffix = '', emphasize = true) => {
+      if (!value && value !== 0) return;
+      const row = document.createElement('div');
+      row.style.marginBottom = '4px';
+      row.appendChild(document.createTextNode(`${prefix} `));
+      const b = document.createElement('b');
+      b.textContent = String(value);
+      if (emphasize) row.appendChild(b);
+      else row.appendChild(document.createTextNode(String(value)));
+      if (suffix) row.appendChild(document.createTextNode(suffix));
+      container.appendChild(row);
+    };
+
+    if (d.variedadPredominante) appendRow('🫒', d.variedadPredominante);
+    if (d.tipoSuelo) appendRow('🪨', d.tipoSuelo);
+    if (d.altitud) appendRow('⛰️', `${d.altitud}m`, '', false);
+    if (d.pluviometriaAnual) appendRow('🌧️', d.pluviometriaAnual, 'mm/año', false);
+
+    if (d.epocaCritica) {
+      const critical = document.createElement('div');
+      critical.style.cssText = 'margin-bottom:4px;padding:4px;background:#D4E84920;border-radius:4px';
+      critical.appendChild(document.createTextNode('⚠️ '));
+      const b = document.createElement('b');
+      b.textContent = d.epocaCritica;
+      critical.appendChild(b);
+      container.appendChild(critical);
+    }
+
+    const riesgosActivos = this.getRiesgosActivos(d).slice(0, 6);
+    if (riesgosActivos.length > 0) {
+      const chips = document.createElement('div');
+      chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:6px';
+      riesgosActivos.forEach((r) => {
+        const chip = document.createElement('span');
+        chip.style.cssText = `background:${riesgoColor}20;color:${riesgoColor};padding:2px 6px;border-radius:4px;font-size:10px`;
+        const nivel = String(r.nivel || 'medio').toUpperCase();
+        chip.textContent = `${r.icono || '⚠️'} ${r.titulo || r.tipo || 'Riesgo'} (${nivel})`;
+        chips.appendChild(chip);
+      });
+      container.appendChild(chips);
+    }
+
+    const footer = document.createElement('div');
+    footer.style.cssText = 'margin-top:8px;padding-top:8px;border-top:1px solid #ccc;color:#D4E849;font-size:10px';
+    footer.textContent = 'Click para seleccionar →';
+    container.appendChild(footer);
+    return container;
+  }
+
   render() {
     if (!this.map || !this.map.loaded()) return;
     
@@ -262,33 +361,11 @@ class OlivaxiMapa extends HTMLElement {
                   this.filtro === 'precipitacion' ? d.lluvia + 'mm' :
                   d.riesgo || 'bajo';
       
-      const bg = '#fff';
-      const txt = '#1C1C1C';
-      
       const riesgoColor = this.getMarkerColor(d);
-      
-      const riesgosActivos = this.getRiesgosActivos(d).slice(0, 6);
-      const riesgosHtml = riesgosActivos.length > 0 
-        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${riesgosActivos.map(r => `<span style="background:${riesgoColor}20;color:${riesgoColor};padding:2px 6px;border-radius:4px;font-size:10px">${r.icono || '⚠️'} ${r.titulo || r.tipo || 'Riesgo'} (${(r.nivel || 'medio').toUpperCase()})</span>`).join('')}</div>`
-        : '';
-      
-      const popupHtml = `
-        <div style="font-family:system-ui;padding:12px;background:${bg};color:${txt};border-radius:8px;min-width:200px;font-size:12px">
-          <div style="font-weight:bold;font-size:14px;margin-bottom:8px;border-bottom:2px solid ${riesgoColor};padding-bottom:6px">
-            ${this.getRiskBadge(d.riesgo)} ${d.provincia} <span style="font-size:11px;font-weight:normal">(${d.riesgo?.toUpperCase() || 'bajo'})</span>
-          </div>
-          <div style="margin-bottom:4px">🌡️ <b>${val}</b> · 💧 ${d.humedad}% · 🌧️ ${d.lluvia}mm</div>
-          ${d.variedadPredominante ? `<div style="margin-bottom:4px">🫒 <b>${d.variedadPredominante}</b></div>` : ''}
-          ${d.tipoSuelo ? `<div style="margin-bottom:4px">🪨 <b>${d.tipoSuelo}</b></div>` : ''}
-          ${d.altitud ? `<div style="margin-bottom:4px">⛰️ <b>${d.altitud}m</b></div>` : ''}
-          ${d.pluviometriaAnual ? `<div style="margin-bottom:4px">🌧️ <b>${d.pluviometriaAnual}mm</b>/año</div>` : ''}
-          ${d.epocaCritica ? `<div style="margin-bottom:4px;padding:4px;background:#D4E84920;border-radius:4px">⚠️ <b>${d.epocaCritica}</b></div>` : ''}
-          ${riesgosHtml}
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ccc;color:#D4E849;font-size:10px">Click para seleccionar →</div>
-        </div>
-      `;
-      
-      const popup = new maplibregl.Popup({ offset: [0, -12], closeButton: false }).setHTML(popupHtml);
+
+      const popup = new maplibregl.Popup({ offset: [0, -12], closeButton: false }).setDOMContent(
+        this.createPopupContent(d, val, riesgoColor)
+      );
 
       el.addEventListener('click', () => {
         this._ecosistema.setProvincia(d.provincia);
@@ -333,16 +410,25 @@ class OlivaxiMapa extends HTMLElement {
   updateLegend() {
     const legend = this.querySelector('.mapa-legend');
     if (!legend) return;
-    const txt = '#1C1C1C';
     const L = {
       temperatura: [['<10°C','#74B9FF'],['10-20°C','#55EFC4'],['20-28°C','#A8D8A8'],['28-35°C','#FDCB6E'],['35-38°C','#E17055'],['>38°C','#D63031']],
       humedad: [['<20%','#D63031'],['20-40%','#E17055'],['40-60%','#FDCB6E'],['60-80%','#55EFC4'],['>80%','#74B9FF']],
       precipitacion: [['0mm','#FDCB6E'],['<2mm','#55EFC4'],['2-10mm','#74B9FF'],['>10mm','#0984e3']],
       riesgo: [['🟢 Bajo','#22c55e'],['🟡 Medio','#f59e0b'],['🔴 Alto','#ef4444']]
     };
-    legend.innerHTML = (L[this.filtro] || []).map(([l,c]) => 
-      `<span class="mapa-legend-item"><i style="width:10px;height:10px;background:${c};border-radius:3px;flex:0 0 10px"></i><span class="mapa-legend-label">${l}</span></span>`
-    ).join('');
+    while (legend.firstChild) legend.removeChild(legend.firstChild);
+    (L[this.filtro] || []).forEach(([label, color]) => {
+      const item = document.createElement('span');
+      item.className = 'mapa-legend-item';
+      const swatch = document.createElement('i');
+      swatch.style.cssText = `width:10px;height:10px;background:${color};border-radius:3px;flex:0 0 10px`;
+      const text = document.createElement('span');
+      text.className = 'mapa-legend-label';
+      text.textContent = label;
+      item.appendChild(swatch);
+      item.appendChild(text);
+      legend.appendChild(item);
+    });
   }
 }
 

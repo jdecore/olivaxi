@@ -311,5 +311,44 @@ PUBLIC_API_URL=http://localhost:3000
 
 ---
 
-*Documentación actualizada: 2026-03-30*
+## 📝 Últimas Mejoras Implementadas (2026-03-30)
+
+### 🌿 Variedades (variedades.astro)
+- Imágenes optimizadas con Astro (AVIF, ~40% reducción)
+- Placeholder visual cuando no hay imagen (inicial de la variedad)
+- Botón "Ver detalles" corregido (toggle funciona)
+- Selector de provincia eliminado del header
+- Contenedor de datos en vivo aumentado 10%
+
+### 💧 Agua y Suelos (agua-suelos.astro)
+- 3 secciones separadas (Agua, Suelo, Conservación)
+- Carrusel con flechas en cada sección
+- Selector de área al hacer clic en el título (cambio de color)
+- Animaciones de carga mejoradas (skeleton + entrada suave)
+
+### 🦠 Plagas (plagas.astro)
+- Toggle de expand/collapse corregido (mostrar tratamiento al hacer clic)
+
+### 💬 Chat Consejero (ChatConsejero.jsx)
+- Fondo beige uniforme (#f5f0e8)
+- Mensaje de bienvenida dinámico con datos de provincia
+- Avatar y mensaje según modo activo
+- Skills pills movidos arriba, se ocultan al seleccionar modo
+- Input con autofocus
+- Context strip siempre visible con colores según riesgo
+- Quick questions buttons
+- Micro-cambios visuales: borde según modo, avatar según modo, intro según modo
+
+### 🔔 Alertas (alertas.astro)
+- Hero sin fondo negro (beige)
+- Panel de datos simplificado: strip 3 métricas + riesgos activos (solo MEDIO/ALTO)
+- Formulario: labels en minúsculas, borde fino, botón verde #3b6d11
+
+### 🖼️ Imágenes
+- Todas las imágenes de variedades en `src/assets/variedades/`
+- Astro optimiza automáticamente a AVIF con cache
+
+---
+
+*Documentación actualizada: 2026-03-31*
 *Proyecto: olivaξ - Monitor Climático de Olivares*

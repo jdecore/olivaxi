@@ -13,14 +13,16 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
 
 <style>
   .main-container {
-    height: 100vh;
+    /* main ya tiene padding-top en Layout; aquí ajustamos al viewport útil */
+    height: calc(100dvh - 72px);
+    min-height: calc(100dvh - 72px);
     display: flex;
     flex-direction: column;
     background: #f5f0e8;
     overflow: hidden;
     position: relative;
     z-index: 1;
-    padding-top: 48px;
+    padding-top: 0;
   }
 
   .chat-wrapper {
@@ -38,7 +40,8 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
 
   @media (max-width: 900px) {
     .main-container {
-      padding-top: 56px;
+      height: calc(100dvh - 72px);
+      min-height: calc(100dvh - 72px);
     }
   }
 

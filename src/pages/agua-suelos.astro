@@ -63,21 +63,47 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       max-width: 600px;
     }
     .suelo-datos.hidden { display: none; }
+    
+    /* Skeleton loading */
     .suelo-datos.loading .suelo-dato {
-      position: relative;
-      overflow: hidden;
+      background: #f0f0f0;
+      animation: skeletonPulse 1.8s ease-in-out infinite;
+    }
+    .suelo-datos.loading .suelo-dato:nth-child(1) { animation-delay: 0s; }
+    .suelo-datos.loading .suelo-dato:nth-child(2) { animation-delay: 0.15s; }
+    .suelo-datos.loading .suelo-dato:nth-child(3) { animation-delay: 0.3s; }
+    .suelo-datos.loading .suelo-dato:nth-child(4) { animation-delay: 0.45s; }
+    @keyframes skeletonPulse {
+      0%, 100% { background-color: #f0f0f0; }
+      50% { background-color: #e8e8e8; }
+    }
+    .suelo-datos.loading .suelo-dato .icon,
+    .suelo-datos.loading .suelo-dato .value,
+    .suelo-datos.loading .suelo-dato .label,
+    .suelo-datos.loading .suelo-dato .status {
+      visibility: hidden;
+    }
+    .suelo-datos.loading .suelo-dato::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 8px;
+      background: #d8d8d8;
+      border-radius: 4px;
+      transform: translate(-50%, -50%);
     }
     .suelo-datos.loading .suelo-dato::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
-      transform: translateX(-100%);
-      animation: shimmer 1.5s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes shimmer {
-      100% { transform: translateX(100%); }
+      top: 65%;
+      left: 50%;
+      width: 40%;
+      height: 6px;
+      background: #d0d0d0;
+      border-radius: 3px;
+      transform: translate(-50%, -50%);
     }
 
     .suelo-dato {
@@ -87,17 +113,19 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       border-radius: 10px;
       text-align: center;
       transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      position: relative;
+      overflow: hidden;
     }
     .suelo-datos.animated .suelo-dato {
-      animation: kpiIn .5s ease-out both;
+      animation: kpiIn .6s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .05s; }
-    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .1s; }
-    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .15s; }
-    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .2s; }
+    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .12s; }
+    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .19s; }
+    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .26s; }
     @keyframes kpiIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+      0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
     .suelo-dato:hover {
       transform: translateY(-3px);
@@ -129,14 +157,15 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       opacity: 0.4;
     }
     .suelo-dato.updated {
-      animation: metricPulse .4s ease-out;
+      animation: dataUpdate .5s ease-out;
     }
-    @keyframes metricPulse {
-      from { background-color: rgba(212,232,73,0.3); }
-      to { background-color: transparent; }
+    @keyframes dataUpdate {
+      0% { background-color: rgba(212,232,73,0.25); }
+      100% { background-color: var(--color-white-surface); }
     }
     @media (prefers-reduced-motion: reduce) {
       .suelo-datos.loading .suelo-dato::after,
+      .suelo-datos.loading .suelo-dato::before,
       .suelo-datos.animated .suelo-dato { animation: none !important; }
       .suelo-dato { transition: none !important; }
       .suelo-dato .value,
@@ -390,7 +419,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
         <div class="suelo-dato">
           <div class="icon">🌧️</div>
           <div class="value" id="suelo-lluvia">-</div>
-          <div class="label">Lluvia mm</div>
+          <div class="label">Lluvia</div>
           <div class="status" id="suelo-lluvia-status"></div>
         </div>
       </div>
