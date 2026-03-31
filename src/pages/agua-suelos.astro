@@ -299,34 +299,48 @@ import Layout from '../layouts/Layout.astro';
 
     /* Navbar mobile-only tuning for Agua y Suelos */
     @media (max-width: 900px) {
+      /* Forzar mostrar navbar y hamburger */
       body.page-agua-suelos .navbar {
         top: 4px !important;
         left: 4px !important;
         right: 4px !important;
         transform: none !important;
-        width: auto !important;
+        width: calc(100% - 8px) !important;
         max-width: none !important;
         border-width: 1px !important;
         border-radius: 8px !important;
-        z-index: 9999 !important;
+        z-index: 99999 !important;
+        position: fixed !important;
+        background: var(--color-white-surface) !important;
       }
       body.page-agua-suelos .navbar-inner {
         height: 42px !important;
-        padding: 0 6px !important;
+        padding: 0 4px !important;
         justify-content: space-between !important;
+        display: flex !important;
+        align-items: center !important;
       }
       body.page-agua-suelos .nav-left {
         flex: 1 !important;
         min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
       }
       body.page-agua-suelos .nav-left .logo {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
       }
       body.page-agua-suelos .nav-left .logo-svg-inline {
-        height: 28px !important;
+        height: 26px !important;
         width: auto !important;
+        display: inline-block !important;
       }
       body.page-agua-suelos .nav-center {
+        display: none !important;
+      }
+      body.page-agua-suelos .nav-center.desktop-nav {
         display: none !important;
       }
       body.page-agua-suelos .nav-right {
@@ -334,37 +348,46 @@ import Layout from '../layouts/Layout.astro';
       }
       body.page-agua-suelos .hamburger-btn {
         display: inline-flex !important;
-        width: 32px !important;
-        height: 32px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 30px !important;
+        height: 30px !important;
         padding: 0 !important;
-        gap: 4px !important;
+        margin: 0 !important;
+        gap: 3px !important;
         align-items: center !important;
         justify-content: center !important;
         border: 1px solid var(--color-border) !important;
         border-radius: 6px !important;
         background: var(--color-white-surface) !important;
-        z-index: 10000 !important;
+        z-index: 100000 !important;
         flex-shrink: 0 !important;
+        position: relative !important;
+        cursor: pointer !important;
       }
       body.page-agua-suelos .hamburger-btn span {
         display: block !important;
-        width: 14px !important;
+        visibility: visible !important;
+        width: 12px !important;
         height: 2px !important;
         background: var(--color-aceituna) !important;
         opacity: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       body.page-agua-suelos .hamburger-btn.active span:nth-child(1) {
-        transform: rotate(45deg) translate(4px, 4px);
+        transform: rotate(45deg) translate(3px, 3px);
       }
       body.page-agua-suelos .hamburger-btn.active span:nth-child(2) {
         opacity: 0;
       }
       body.page-agua-suelos .hamburger-btn.active span:nth-child(3) {
-        transform: rotate(-45deg) translate(4px, -4px);
+        transform: rotate(-45deg) translate(3px, -3px);
       }
       body.page-agua-suelos .nav-dropdown {
+        display: none !important;
         position: fixed !important;
-        top: 52px !important;
+        top: 50px !important;
         left: 4px !important;
         right: 4px !important;
         width: auto !important;
@@ -376,10 +399,18 @@ import Layout from '../layouts/Layout.astro';
         max-height: calc(100dvh - 60px) !important;
         overflow-y: auto !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        z-index: 99998 !important;
+      }
+      body.page-agua-suelos .nav-dropdown.active {
+        display: flex !important;
+        flex-direction: column !important;
       }
       body.page-agua-suelos .nav-dropdown a {
+        display: block !important;
         padding: 12px 8px !important;
         font-size: 15px !important;
+        color: var(--color-aceituna) !important;
+        text-decoration: none !important;
         border-bottom: 1px solid var(--color-border) !important;
       }
       body.page-agua-suelos .nav-dropdown a:last-child {
