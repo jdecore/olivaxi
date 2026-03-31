@@ -470,7 +470,7 @@ import Layout from '../layouts/Layout.astro';
     .agua-full { grid-column: 1 / -1; }
 
     .agua-plan {
-      background: var(--color-bg);
+      background: var(--color-white-surface);
       border: 2px solid var(--color-limon);
       border-radius: 8px;
       padding: 1.5rem;
@@ -482,12 +482,13 @@ import Layout from '../layouts/Layout.astro';
     .agua-plan-btn { display: inline-block; margin-top: 12px; padding: 10px 16px; background: var(--color-limon); color: var(--color-aceituna); border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
 
     .alert-strip-wrap { max-width: 800px; margin: 0 auto 1.5rem; padding: 0 1rem; }
-    .alert-strip { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; gap: 12px; background: var(--color-bg); border: 2px solid #ef4444; color: #991b1b; flex-wrap: wrap; }
+    .alert-strip { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; gap: 12px; background: rgba(239,68,68,0.1); border: 2px solid #ef4444; color: #991b1b; flex-wrap: wrap; }
     .alert-strip-content { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
     .alert-strip-icon { font-size: 18px; }
     .alert-strip-text { font-size: 13px; }
     .alert-strip-btn { padding: 8px 16px; background: #ef4444; color: white; border-radius: 6px; font-size: 12px; text-decoration: none; white-space: nowrap; border: none; cursor: pointer; }
-    .alert-strip-panel { display: none; margin-top: 12px; padding: 16px; background: var(--color-bg); border: 1px solid #ef4444; border-radius: 8px; }
+    .alert-strip-panel { display: none; margin-top: 12px; padding: 16px; background: #fff; border: 1px solid #ef4444; border-radius: 8px; }
+    .hero-context-block { background: var(--color-bg); padding: 0.25rem 0 0.5rem; }
     .alert-strip-panel.open { display: block; }
     .alert-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
     .alert-option:last-child { border-bottom: none; }
@@ -543,39 +544,41 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <div class="alert-strip-wrap">
-    <div class="alert-strip">
-      <div class="alert-strip-content">
-        <span class="alert-strip-icon">⚠️</span>
-        <span class="alert-strip-text">Los fertilizantes pueden encarecerse por la tensión en Oriente Medio. Existen alternativas naturales para tu olivo.</span>
+  <div class="hero-context-block">
+    <div class="alert-strip-wrap">
+      <div class="alert-strip">
+        <div class="alert-strip-content">
+          <span class="alert-strip-icon">⚠️</span>
+          <span class="alert-strip-text">Los fertilizantes pueden encarecerse por la tensión en Oriente Medio. Existen alternativas naturales para tu olivo.</span>
+        </div>
+        <button class="alert-strip-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('open')">Ver alternativas</button>
       </div>
-      <button class="alert-strip-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('open')">Ver alternativas</button>
+      <div class="alert-strip-panel">
+        <div class="alert-option">
+          <span class="alert-option-icon">🌿</span>
+          <div class="alert-option-text"><strong>Cubiertas vegetales</strong><span>Fijan nitrógeno y mejoran estructura del suelo</span></div>
+        </div>
+        <div class="alert-option">
+          <span class="alert-option-icon">🪵</span>
+          <div class="alert-option-text"><strong>Compost de poda</strong><span>Recicla restos de poda como abono orgánico</span></div>
+        </div>
+        <div class="alert-option">
+          <span class="alert-option-icon">⬛</span>
+          <div class="alert-option-text"><strong>Biochar</strong><span>Aumenta retención de agua hasta 3x</span></div>
+        </div>
+        <div class="alert-option">
+          <span class="alert-option-icon">🌱</span>
+          <div class="alert-option-text"><strong>Abonos verdes</strong><span>Leguminosas que aportan nitrógeno natural</span></div>
+        </div>
+        <a href="/consejero?q=¿Cómo+implemento+cubiertas+vegetales+y+alternativas+a+fertilizantes+en+mi+olivar?" class="alert-strip-btn" style="display:inline-block;margin-top:12px;width:auto">¿Cómo lo implemento? → Consejero IA</a>
+      </div>
     </div>
-    <div class="alert-strip-panel">
-      <div class="alert-option">
-        <span class="alert-option-icon">🌿</span>
-        <div class="alert-option-text"><strong>Cubiertas vegetales</strong><span>Fijan nitrógeno y mejoran estructura del suelo</span></div>
-      </div>
-      <div class="alert-option">
-        <span class="alert-option-icon">🪵</span>
-        <div class="alert-option-text"><strong>Compost de poda</strong><span>Recicla restos de poda como abono orgánico</span></div>
-      </div>
-      <div class="alert-option">
-        <span class="alert-option-icon">⬛</span>
-        <div class="alert-option-text"><strong>Biochar</strong><span>Aumenta retención de agua hasta 3x</span></div>
-      </div>
-      <div class="alert-option">
-        <span class="alert-option-icon">🌱</span>
-        <div class="alert-option-text"><strong>Abonos verdes</strong><span>Leguminosas que aportan nitrógeno natural</span></div>
-      </div>
-      <a href="/consejero?q=¿Cómo+implemento+cubiertas+vegetales+y+alternativas+a+fertilizantes+en+mi+olivar?" class="alert-strip-btn" style="display:inline-block;margin-top:12px;width:auto">¿Cómo lo implemento? → Consejero IA</a>
-    </div>
-  </div>
 
-  <div class="agua-plan" id="agua-plan" style="display:none">
-    <div class="agua-plan-title">🎯 Plan de acción para tu suelo hoy</div>
-    <div class="agua-plan-text" id="agua-plan-text"></div>
-    <a href="#" class="agua-plan-btn" id="agua-plan-btn">¿Necesitas un plan personalizado? → Consejero IA</a>
+    <div class="agua-plan" id="agua-plan" style="display:none">
+      <div class="agua-plan-title">🎯 Plan de acción para tu suelo hoy</div>
+      <div class="agua-plan-text" id="agua-plan-text"></div>
+      <a href="#" class="agua-plan-btn" id="agua-plan-btn">¿Necesitas un plan personalizado? → Consejero IA</a>
+    </div>
   </div>
 
   <!-- ÁREA AGUA -->
