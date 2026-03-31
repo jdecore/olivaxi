@@ -125,15 +125,18 @@ import MapaCalor from '../components/MapaCalor.astro';
 
 .consejero-cta{display:block;margin-top:12px;padding:10px 16px;background:transparent;border:1.5px solid var(--color-aceituna);border-radius:6px;font-size:.85rem;font-weight:500;color:var(--color-aceituna);text-decoration:none;text-align:center;transition:background .2s}
 .consejero-cta:hover{background:rgba(28,28,28,.05)}
-.riesgo-badge{position:absolute;top:10px;right:10px;z-index:10;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--color-white-surface);border:2px solid;display:flex;align-items:center;gap:6px;cursor:pointer;transition:transform .15s ease}
+.riesgo-badge{position:absolute;top:10px;right:10px;z-index:10;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--color-white-surface);border:2px solid;display:flex;align-items:center;gap:6px;cursor:pointer;transition:transform .15s ease,border-color .3s ease,color .3s ease}
 .riesgo-badge:hover{transform:scale(1.05)}
-.riesgo-badge.alto{border-color:#ef4444;color:#dc2626}
-.riesgo-badge.medio{border-color:#f59e0b;color:#b45309}
-.riesgo-badge.bajo{border-color:#22c55e;color:#15803d}
+.riesgo-badge.alto{border-color:#ef4444;color:#dc2626;animation:riesgo-pulse-alto 1.5s ease-out}
+.riesgo-badge.medio{border-color:#f59e0b;color:#b45309;animation:riesgo-pulse-medio 1.5s ease-out}
+.riesgo-badge.bajo{border-color:#22c55e;color:#15803d;animation:riesgo-pulse 1.5s ease-out}
 .mapa-card{position:relative;transition:border-color .3s ease,border-width .3s ease}
-.mapa-card.riesgo-alto{border-color:#ef4444;border-width:4px}
-.mapa-card.riesgo-medio{border-color:#f59e0b;border-width:4px}
-.mapa-card.riesgo-bajo{border-color:#22c55e;border-width:2px}
+@keyframes riesgo-pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+@keyframes riesgo-pulse-medio{0%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}70%{box-shadow:0 0 0 10px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
+@keyframes riesgo-pulse-alto{0%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}70%{box-shadow:0 0 0 10px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.mapa-card.riesgo-bajo{border-color:#22c55e;border-width:2px;animation:riesgo-pulse 1.5s ease-out}
+.mapa-card.riesgo-medio{border-color:#f59e0b;border-width:4px;animation:riesgo-pulse-medio 1.5s ease-out}
+.mapa-card.riesgo-alto{border-color:#ef4444;border-width:4px;animation:riesgo-pulse-alto 1.5s ease-out}
 .card-actions{padding:0 12px 12px}
 .card-btn-secondary{display:block;text-align:center;padding:8px;background:var(--color-limon);border-radius:6px;font-size:11px;font-weight:600;color:var(--color-aceituna);text-decoration:none;transition:background .15s ease,color .15s ease}
 .card-btn-secondary:hover{background:var(--color-aceituna);color:var(--color-sal)}

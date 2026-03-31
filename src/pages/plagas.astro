@@ -55,7 +55,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
           ))}
         </div>
         <div class="plaga-tratamiento">
-          <p class="tratamiento-texto">{p.tratamiento}</p>
+          <div class="tratamiento-texto">{p.tratamiento}</div>
           <a href={`/consejero?q=Tengo+riesgo+de+${p.nombre.replace(/ /g, '+')}+en+mi+olivar.+¿Qué+debo+hacer?`} class="btn-consejero">Preguntar al consejero</a>
         </div>
       </div>
@@ -81,6 +81,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
 <script>
   import { apiUrlCandidates } from '../lib/api';
+  import OlivaxiEcosistema from '../lib/ecosistema';
   let expandedCard = null;
 
   const condicionesMap = {
@@ -109,7 +110,14 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
   const predContent = predCard?.querySelector('.prediction-content');
   const predHeader = predCard?.querySelector('.prediction-header');
   let predExpanded = false;
-  let provinciaActual = localStorage.getItem('olivaxi-provincia') || 'Jaén';
+  let provinciaActual = OlivaxiEcosistema.provincia || localStorage.getItem('olivaxi-provincia') || 'Jaén';
+
+  const offEcosistema = OlivaxiEcosistema.onChange((state) => {
+    if (state.provincia) {
+      provinciaActual = state.provincia;
+    }
+  }, { immediate: true });
+  window.addEventListener('beforeunload', offEcosistema);
 
   if (predCard) {
     predCard.addEventListener('click', async () => {
@@ -117,10 +125,11 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
       predCard.classList.toggle('expanded', predExpanded);
       
       if (predExpanded && predContent) {
-        predContent.innerHTML = '<div class="prediction-loading">Consultando modelo...</div>';
+        predContent.innerHTML = '<div class="prediction-loading">Prediciendo...</div>';
         
         try {
-          const path = `/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`;
+          const provinciaConsulta = OlivaxiEcosistema.provincia || provinciaActual || 'Jaén';
+          const path = `/api/prediccion?provincia=${encodeURIComponent(provinciaConsulta)}`;
           const urls = apiUrlCandidates(path);
           let data = null;
           let lastError = null;
@@ -366,10 +375,11 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
   }
 
   .tratamiento-texto {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-aceituna);
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 0;
+    white-space: pre-line;
   }
 
   .btn-consejero {
@@ -451,11 +461,10 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   .prediction-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
   }
 
   .prediction-card.expanded {
-    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5);
+    box-shadow: none;
   }
 
   .prediction-header {
