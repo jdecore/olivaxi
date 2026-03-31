@@ -25,4 +25,6 @@ services:
       - OPENROUTER_KEY=${OPENROUTER_KEY}
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
+      - ML_ENV_PYTHON=/app/ml_env/bin/python
+      - ML_PREDICT_SCRIPT=/app/ml/predict.py
     restart: unless-stopped

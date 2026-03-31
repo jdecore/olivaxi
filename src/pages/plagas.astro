@@ -419,23 +419,24 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   /* Prediction Card */
   .prediction-card {
-    background: radial-gradient(circle at center, #fed7aa 0%, #fb923c 40%, #ea580c 100%);
+    background: #fed7aa;
+    border: 3px solid #ea580c;
     border-radius: 12px;
     padding: 1rem;
     margin: 1rem auto;
     max-width: 800px;
-    color: white;
+    color: #9a3412;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   .prediction-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.5);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
   }
 
   .prediction-card.expanded {
-    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5);
   }
 
   .prediction-header {
@@ -446,7 +447,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   .prediction-icon { font-size: 1.5rem; }
   .prediction-title { flex: 1; font-weight: 600; }
-  .prediction-arrow { transition: transform 0.3s; font-size: 0.8rem; }
+  .prediction-arrow { transition: transform 0.3s; font-size: 0.8rem; color: #c2410c; }
   .prediction-card.expanded .prediction-arrow { transform: rotate(180deg); }
 
   .prediction-content {

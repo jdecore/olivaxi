@@ -71,6 +71,13 @@ npm run dev
 bun run api/index.ts
 ```
 
+En contenedor de producción, el endpoint ML usa estas rutas explícitas:
+
+```env
+ML_ENV_PYTHON=/app/ml_env/bin/python
+ML_PREDICT_SCRIPT=/app/ml/predict.py
+```
+
 ## 🧪 Pruebas rápidas
 
 ```bash

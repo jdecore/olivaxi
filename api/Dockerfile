@@ -14,6 +14,7 @@ RUN python3 -m venv ml_env && \
     ml_env/bin/pip install --no-cache-dir scikit-learn joblib pandas numpy requests
 
 ENV ML_ENV_PYTHON=/app/ml_env/bin/python
+ENV ML_PREDICT_SCRIPT=/app/ml/predict.py
 
 EXPOSE 3000
 

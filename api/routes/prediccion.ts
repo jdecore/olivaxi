@@ -1,11 +1,38 @@
 import { Hono } from "hono";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
+import { existsSync } from "fs";
+import { resolve } from "path";
 import { PROVINCIAS } from "../data/provincias";
 
 const prediccion = new Hono();
 
-const ML_ENV_PYTHON = process.env.ML_ENV_PYTHON || "/app/ml_env/bin/python";
-const PREDICT_SCRIPT = "/app/ml/predict.py";
+function pickFirstExisting(candidates: string[]): string | null {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (!candidate.includes("/")) return candidate;
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+const ML_ENV_PYTHON = pickFirstExisting([
+  process.env.ML_ENV_PYTHON || "",
+  "/app/ml_env/bin/python",
+  resolve(process.cwd(), "ml_env/bin/python"),
+  resolve(process.cwd(), "../ml_env/bin/python"),
+  "python3",
+]);
+
+const PREDICT_SCRIPT = pickFirstExisting([
+  process.env.ML_PREDICT_SCRIPT || "",
+  "/app/ml/predict.py",
+  resolve(process.cwd(), "ml/predict.py"),
+  resolve(process.cwd(), "../ml/predict.py"),
+]);
+
+if (!ML_ENV_PYTHON || !PREDICT_SCRIPT) {
+  throw new Error("Configuración ML inválida: no se encontró intérprete Python o script predict.py");
+}
 
 prediccion.get("/", async (c) => {
   const provincia = c.req.query("provincia");
@@ -20,14 +47,27 @@ prediccion.get("/", async (c) => {
   }
   
   try {
-    const cmd = `${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`;
-    
-    const output = execSync(cmd, {
+    const proc = spawnSync(ML_ENV_PYTHON, [PREDICT_SCRIPT, provincia], {
       encoding: "utf-8",
       timeout: 15000,
       maxBuffer: 1024 * 1024,
-      stdio: ["pipe", "pipe", "pipe"]
+      stdio: ["pipe", "pipe", "pipe"],
     });
+
+    if (proc.error) {
+      throw proc.error;
+    }
+
+    if (proc.status !== 0) {
+      const stderr = proc.stderr?.trim();
+      const stdout = proc.stdout?.trim();
+      throw new Error(stderr || stdout || `Proceso ML terminó con código ${proc.status}`);
+    }
+
+    const output = proc.stdout || "";
+    if (!output.trim()) {
+      throw new Error("El script de predicción no devolvió salida");
+    }
     
     const lines = output.trim().split("\n");
     const datos: Record<string, string> = {};
