@@ -335,15 +335,22 @@ const { title = "olivaξ" } = Astro.props;
       top: 6px;
       left: 10px;
       right: 10px;
+      width: auto;
+      max-width: calc(100vw - 20px);
       border-width: 1px;
       border-radius: 10px;
     }
     .navbar-inner {
       height: 44px;
       padding: 0 6px;
+      max-width: 100%;
     }
+    .nav-left { flex: 1; min-width: 0; overflow: hidden; }
+    .nav-left .logo { max-width: 100%; overflow: hidden; }
     .nav-left .logo-svg-inline {
       height: 32px;
+      max-width: 100%;
+      width: auto;
     }
     .nav-center.desktop-nav { display: none; }
     .hamburger-btn {
@@ -379,6 +386,7 @@ const { title = "olivaξ" } = Astro.props;
       left: 12px;
       right: 12px;
       top: 5px;
+      max-width: calc(100vw - 24px);
     }
     .navbar-inner {
       height: 42px;

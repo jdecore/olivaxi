@@ -470,7 +470,7 @@ import Layout from '../layouts/Layout.astro';
     .agua-full { grid-column: 1 / -1; }
 
     .agua-plan {
-      background: var(--color-white-surface);
+      background: var(--color-bg);
       border: 2px solid var(--color-limon);
       border-radius: 8px;
       padding: 1.5rem;
@@ -482,12 +482,12 @@ import Layout from '../layouts/Layout.astro';
     .agua-plan-btn { display: inline-block; margin-top: 12px; padding: 10px 16px; background: var(--color-limon); color: var(--color-aceituna); border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
 
     .alert-strip-wrap { max-width: 800px; margin: 0 auto 1.5rem; padding: 0 1rem; }
-    .alert-strip { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; gap: 12px; background: rgba(239,68,68,0.1); border: 2px solid #ef4444; color: #991b1b; flex-wrap: wrap; }
+    .alert-strip { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; gap: 12px; background: var(--color-bg); border: 2px solid #ef4444; color: #991b1b; flex-wrap: wrap; }
     .alert-strip-content { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
     .alert-strip-icon { font-size: 18px; }
     .alert-strip-text { font-size: 13px; }
     .alert-strip-btn { padding: 8px 16px; background: #ef4444; color: white; border-radius: 6px; font-size: 12px; text-decoration: none; white-space: nowrap; border: none; cursor: pointer; }
-    .alert-strip-panel { display: none; margin-top: 12px; padding: 16px; background: #fff; border: 1px solid #ef4444; border-radius: 8px; }
+    .alert-strip-panel { display: none; margin-top: 12px; padding: 16px; background: var(--color-bg); border: 1px solid #ef4444; border-radius: 8px; }
     .alert-strip-panel.open { display: block; }
     .alert-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
     .alert-option:last-child { border-bottom: none; }
