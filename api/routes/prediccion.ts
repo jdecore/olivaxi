@@ -7,10 +7,6 @@ const prediccion = new Hono();
 const ML_ENV_PYTHON = process.env.ML_ENV_PYTHON || "/app/ml_env/bin/python";
 const PREDICT_SCRIPT = "/app/ml/predict.py";
 
-prediccion.get("/test", (c) => {
-  return c.json({ test: "ok" });
-});
-
 prediccion.get("/", async (c) => {
   const provincia = c.req.query("provincia");
   
@@ -23,12 +19,8 @@ prediccion.get("/", async (c) => {
     return c.json({ error: "Provincia no válida" }, 400);
   }
   
-  const cmd = `${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`;
-  console.error("CMD:", cmd);
-  
   try {
     const cmd = `${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`;
-    console.error("CMD:", cmd);
     
     const output = execSync(cmd, {
       encoding: "utf-8",
@@ -37,11 +29,7 @@ prediccion.get("/", async (c) => {
       stdio: ["pipe", "pipe", "pipe"]
     });
     
-    console.error("Raw output:", output);
-    
     const lines = output.trim().split("\n");
-    console.error("Lines:", lines);
-    
     const datos: Record<string, string> = {};
     
     for (const line of lines) {
@@ -80,7 +68,6 @@ prediccion.get("/", async (c) => {
     });
     
   } catch (error: any) {
-    console.error("ERROR in prediction:", error);
     const errMsg = error?.message || String(error) || 'Unknown error';
     return c.json({ 
       ok: false,

@@ -297,6 +297,23 @@ PUBLIC_API_URL=http://localhost:3000
 2. Añadido stack y notas de despliegue CubePath/Docploy.
 3. Añadido uso de rotación LLM en chat y alertas.
 
+#### Limpieza de código
+1. Eliminadas todas las referencias a `olivaxi.duckdns.org` (no se usa).
+2. Actualizado CORS y allowedHosts a `45.90.237.135` en:
+   - `api/index.ts`
+   - `Dockerfile`
+   - `vite.config.js`
+   - `AGENTS.md`
+
+#### ML Predicción Mosca
+1. Corregido bug en `prediccion.ts`: faltaba definir `lines = output.trim().split("\n")` antes del loop.
+2. Añadido logging de depuración para troubleshooting.
+3. Actualizado gradiente del contenedor ML a radial (centro #fbbf24 → borde #ea580c).
+
+#### UI Mejoras
+1. Contenedor ML con gradiente radial (naranja claro centro, naranja oscuro bordes).
+2. Texto "Oprime una tarjeta para ver el tratamiento" centrado en `plagas.astro`.
+
 ### 🔁 Rotación IA confirmada en código
 
 - **Chat (`/api/chat`)**: `Groq` → `Gemini` → `OpenRouter` (con fallback/reintentos).
@@ -323,10 +340,10 @@ Tras cambios backend de alertas, confirmar despliegue/reinicio del contenedor AP
 |------------|-------------|--------|
 | `ml/train.py` | Script entrenamiento RandomForest (20k muestras, features deterministas) | ✅ (100% precisión) |
 | `ml/predict.py` | Script predicción con datos Open-Meteo | ✅ |
-| `ml/modelo_mosca.joblib` | Modelo RandomForest entrenado | ✅ |
+| `ml/modelo_mosca.joblib` | Modelo RandomForest entrenado (17.5MB) | ✅ |
 | `api/routes/prediccion.ts` | Endpoint `/api/prediccion?provincia=X` | ✅ |
-| Botón en `plagas.astro` | Tarjeta desplegable bajo "Oprime una tarjeta..." | ✅ |
-| README.md | Actualizado con ML | ✅ |
+| Botón en `plagas.astro` | Tarjeta desplegable con predicción ML | ✅ |
+| Contenedor UI | Gradiente radial naranja (centro #fbbf24 → borde #ea580c) | ✅ |
 
 ### 📊 Endpoint
 
@@ -340,10 +357,13 @@ Respuesta:
   "plaga": "mosca",
   "nivel": "medio",
   "confianza": "100%",
-  "detalles": { "temperatura": "...", "humedad": "...", "lluvia": "..." },
+  "detalles": { "temperatura": "14.7°C", "humedad": "44.0%", "lluvia": "0.0mm", "mes": "3" },
   "recomendaciones": ["Aumentar monitoreo", "Considerar tratamiento preventivo"]
 }
 ```
+
+### 🔧 Bug corregido
+- Error en `prediccion.ts`: faltaba definir `lines = output.trim().split("\n")` antes del loop - causaba "Error de conexión" en producción.
 
 ### 🎯 Estado Final
 
@@ -352,5 +372,5 @@ Respuesta:
 
 ---
 
-*Documentación actualizada: 2026-03-31 08:00*
+*Documentación actualizada: 2026-03-31 14:30*
 *Proyecto: olivaξ - Monitor Climático de Olivares*
