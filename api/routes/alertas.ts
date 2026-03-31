@@ -469,7 +469,38 @@ const normalizarHumedadSuelo = (humedadSuelo: number | undefined): number => {
   return valor <= 1 ? valor * 100 : valor;
 };
 
-function getFrontendBaseUrl(): string {
+function getFrontendBaseUrl(c?: any): string {
+  const reqOrigin = c?.req?.header?.('origin');
+  if (reqOrigin) {
+    try {
+      return String(reqOrigin).replace(/\/$/, '');
+    } catch {}
+  }
+
+  const forwardedHost = c?.req?.header?.('x-forwarded-host');
+  const forwardedProto = c?.req?.header?.('x-forwarded-proto') || 'http';
+  if (forwardedHost) {
+    try {
+      const host = String(forwardedHost).split(',')[0].trim();
+      return `${forwardedProto}://${host}`
+        .replace(/:3000$/, ':4321')
+        .replace(/:3001$/, ':4321')
+        .replace(/:3002$/, ':4321')
+        .replace(/\/$/, '');
+    } catch {}
+  }
+
+  const reqHost = c?.req?.header?.('host');
+  if (reqHost) {
+    try {
+      return `http://${String(reqHost).trim()}`
+        .replace(/:3000$/, ':4321')
+        .replace(/:3001$/, ':4321')
+        .replace(/:3002$/, ':4321')
+        .replace(/\/$/, '');
+    } catch {}
+  }
+
   const explicitWeb = process.env.PUBLIC_WEB_URL || process.env.ALERTAS_WEB_URL;
   if (explicitWeb) return explicitWeb.replace(/\/$/, '');
 
@@ -814,7 +845,7 @@ alertas.post("/", async (c) => {
   const emailConfigState = getEmailConfigState();
   if (emailConfigState === "ready") {
     try {
-      const verifyUrl = `${getFrontendBaseUrl()}/alertas?verify=${verifyToken}`;
+      const verifyUrl = `${getFrontendBaseUrl(c)}/alertas?verify=${verifyToken}`;
       const emailHtml = `<p>Hola <strong>${nombre}</strong>,</p>
 <p>Confirma tu alerta para <strong>${provincia}</strong> haciendo clic en el botón:</p>
 <p style="text-align: center; margin: 20px 0;">
