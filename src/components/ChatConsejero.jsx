@@ -523,12 +523,19 @@ export default function ChatConsejero() {
         }
 
         @media (max-width: 640px) {
+          .chat-main { padding: 10px 10px 12px; }
           .context-strip { font-size: 12px; padding: 8px 12px; flex-wrap: wrap; }
+          .context-strip-text { white-space: normal; }
           .skills-row { gap: 6px; }
           .skill-pill { padding: 6px 12px; font-size: 12px; }
           .msg-bubble { max-width: 90%; padding: 10px 12px; font-size: 13px; }
-          .input-row { padding: 8px; gap: 8px; }
+          .input-row { padding: 8px; gap: 6px; flex-wrap: nowrap; }
           .mode-select { min-width: 90px; font-size: 12px; padding: 8px; }
+          .chat-input { min-width: 0; padding: 6px; font-size: 14px; }
+          .clean-btn-wrapper { flex: 0 0 auto; }
+          .clean-btn { padding: 8px 10px; }
+          .clean-menu { right: 0; left: auto; max-width: min(220px, calc(100vw - 24px)); }
+          .clean-option { font-size: 12px; padding: 9px 10px; }
           .quick-questions { gap: 6px; }
           .quick-btn { padding: 6px 12px; font-size: 12px; }
         }
