@@ -184,26 +184,87 @@ import Layout from '../layouts/Layout.astro';
     }
 
     @media(max-width: 600px) {
-      .suelo-datos { grid-template-columns: repeat(2, 1fr); }
-      .suelo-dato { padding: 10px 8px; }
-      .suelo-dato .value { font-size: 1rem; }
-      .suelo-dato .label { font-size: 0.8rem; }
-      .agua-hero { padding: 58px 1rem 1.5rem; }
-      .agua-hero h1 { font-size: 1.5rem; }
-      .agua-hero p { font-size: 0.9rem; }
-      .provincia-bar-agua select { width: 100%; max-width: 340px; }
-      .agua-grid { grid-template-columns: 1fr; }
-      .agua-card { padding: 1rem; }
-      .agua-card h2 { font-size: 1.1rem; }
-      .area-section { padding: 1.25rem 0.75rem; }
-      .carousel-wrapper { max-width: 100%; }
+      .agua-hero { padding: 56px 0.75rem 1rem; }
+      .agua-hero h1 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+      .agua-hero p { font-size: 0.8rem; margin-bottom: 1rem; max-width: 100%; }
+      .agua-hero-badge { font-size: 10px; padding: 3px 8px; margin-bottom: 8px; }
+      
+      .provincia-bar-agua { gap: 0.75rem; }
+      .provincia-bar-agua select { 
+        width: 100%; 
+        max-width: 100%; 
+        padding: 8px 12px; 
+        font-size: 13px; 
+      }
+      
+      .suelo-datos { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 8px; 
+        padding: 0 0.5rem;
+      }
+      .suelo-dato { 
+        padding: 8px 6px; 
+      }
+      .suelo-dato .icon { font-size: 1.1rem; margin-bottom: 4px; }
+      .suelo-dato .value { font-size: 0.9rem; }
+      .suelo-dato .label { font-size: 0.7rem; margin-top: 4px; }
+      .suelo-dato .status { font-size: 0.65rem; margin-top: 4px; }
+      
+      .agua-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .agua-card { padding: 0.75rem; }
+      .agua-card h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+      .agua-card p { font-size: 0.85rem; }
+      
+      .area-section { padding: 1rem 0.5rem; margin-bottom: 0.75rem; }
+      .area-header { margin-bottom: 1rem; }
+      .area-title { font-size: 1.1rem; }
+      .area-subtitle { font-size: 0.8rem; }
+      
+      .carousel-wrapper { max-width: 100%; padding: 0; }
       .carousel-slide { padding: 0 28px; }
-      .carousel-nav { width: 34px; height: 34px; font-size: 16px; }
-      .carousel-nav.prev { left: -4px; }
-      .carousel-nav.next { right: -4px; }
-      .alert-strip { padding: 10px 12px; gap: 8px; }
-      .alert-strip-content { min-width: 0; }
-      .alert-strip-btn { width: 100%; text-align: center; }
+      .carousel-nav { 
+        width: 28px; 
+        height: 28px; 
+        font-size: 14px; 
+      }
+      .carousel-nav.prev { left: -2px; }
+      .carousel-nav.next { right: -2px; }
+      .carousel-dots { gap: 6px; margin-top: 10px; }
+      .carousel-dot { width: 8px; height: 8px; }
+      
+      .alert-strip-wrap { padding: 0 0.5rem; margin-bottom: 1rem; }
+      .alert-strip { 
+        padding: 8px 10px; 
+        gap: 6px; 
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .alert-strip-content { min-width: 0; flex-direction: column; gap: 4px; }
+      .alert-strip-icon { font-size: 14px; }
+      .alert-strip-text { font-size: 0.8rem; }
+      .alert-strip-btn { 
+        width: 100%; 
+        padding: 8px; 
+        font-size: 0.75rem;
+        margin-top: 4px;
+      }
+      .alert-strip-panel { padding: 10px; }
+      .alert-option { padding: 8px; gap: 8px; }
+      .alert-option-icon { font-size: 1rem; }
+      .alert-option-text { font-size: 0.8rem; }
+      .alert-option-text strong { font-size: 0.85rem; }
+      .alert-option-text span { font-size: 0.75rem; }
+      
+      .agua-plan { padding: 1rem; margin: 0 0.5rem 1rem; }
+      .agua-plan-title { font-size: 0.95rem; padding-bottom: 0.5rem; }
+      .agua-plan-text { font-size: 0.85rem; }
+      .agua-plan-btn { padding: 10px; font-size: 0.85rem; }
+      
+      .agua-kpi-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+      .agua-kpi-card { padding: 0.75rem; }
+      .agua-kpi-title { font-size: 0.85rem; }
+      .agua-kpi-value { font-size: 1.1rem; }
+      .agua-kpi-sub { font-size: 0.7rem; }
     }
 
     /* Navbar mobile-only tuning for Agua y Suelos */
