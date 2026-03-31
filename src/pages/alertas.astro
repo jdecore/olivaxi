@@ -340,9 +340,9 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .verify-celebration {
     position: fixed;
-    top: 86px;
+    top: 100px;
     left: 50%;
-    transform: translate(-50%, -14px) scale(0.98);
+    transform: translateX(-50%);
     opacity: 0;
     z-index: 150;
     pointer-events: none;
@@ -350,14 +350,22 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   }
 
   .verify-top-banner {
-    margin: 82px auto 8px;
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    margin: 0 auto 8px;
     max-width: 920px;
+    width: 90%;
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 14px 20px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 1rem;
     border: 2px solid transparent;
+    text-align: center;
   }
+
   .verify-top-banner.success {
     background: #dcfce7;
     color: #14532d;
@@ -376,7 +384,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .verify-celebration.show {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateX(-50%);
   }
 
   .verify-celebration-inner {
@@ -627,6 +635,17 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No se pudo confirmar");
+
+      // Mostrar mensaje de éxito más prominente
+      const mensajeExito = document.createElement('div');
+      mensajeExito.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#22c55e;color:#fff;padding:24px 32px;border-radius:16px;font-size:18px;font-weight:700;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.3);text-align:center;';
+      mensajeExito.innerHTML = '✅<br><br>Tu alerta está activa!<br><br>Recibirás un email con los riesgos actuales de tu zona.<br><br><span style="font-size:14px;font-weight:400">Redirigiendo al formulario...</span>';
+      document.body.appendChild(mensajeExito);
+      
+      setTimeout(() => {
+        mensajeExito.remove();
+        window.location.href = window.location.origin + window.location.pathname;
+      }, 4000);
 
       if (msg) {
         msg.textContent = "✅ Alerta confirmada correctamente. Ya recibirás notificaciones.";
