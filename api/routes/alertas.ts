@@ -71,6 +71,7 @@ const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g
 const getEmailConfigState = (): "ready" | "disabled" | "invalid" => {
   const user = getGmailUser();
   const pass = getGmailPass();
+  console.log('[EmailConfig] GMAIL_USER:', user ? 'SET' : 'EMPTY', 'GMAIL_PASS:', pass ? 'SET' : 'EMPTY');
   if (!user && !pass) return "disabled";
   if (user && pass) return "ready";
   return "invalid";

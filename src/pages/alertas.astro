@@ -485,13 +485,13 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       : type === 'warning'
       ? 'Confirmando alerta...'
       : 'No se pudo confirmar la alerta');
-    verifyCelebration.removeAttribute("hidden");
+    verifyCelebration.style.display = 'block';
     verifyCelebration.classList.add("show");
     const autoHideMs = opts?.autoHideMs ?? 3200;
     if (autoHideMs > 0) {
       verifyCelebrationTimeout = setTimeout(() => {
         verifyCelebration.classList.remove("show");
-        setTimeout(() => verifyCelebration.setAttribute("hidden", "true"), 350);
+        setTimeout(() => verifyCelebration.style.display = 'none', 350);
       }, autoHideMs);
     }
   }
@@ -501,7 +501,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     verifyTopBanner.classList.remove('success', 'warning', 'error');
     verifyTopBanner.classList.add(type);
     verifyTopBanner.textContent = text;
-    verifyTopBanner.removeAttribute('hidden');
+    verifyTopBanner.style.display = 'block';
   }
 
   // --- Cargar datos de provincia via ecosistema ---
