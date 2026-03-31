@@ -1,7 +1,8 @@
 # 🫒 olivaξ — Monitor climático para olivares
 
 Plataforma web de agricultura de precisión para olivares españoles, pensada para proteger un cultivo clave en España frente al cambio climático.  
-Combina clima en tiempo real, riesgo por variedad, plagas y recomendaciones prácticas, con una arquitectura ligera y modelos de IA económicos/open source para mantener costes bajos y hacerla rentable para agricultores del olivar.
+Combina clima en tiempo real, riesgo por variedad, plagas y sanidad del cultivo en un solo lugar, con recomendaciones prácticas reforzadas por fuentes confiables y literatura científica del sector agroclimático.  
+Está diseñada para consumir pocos recursos y usar modelos/proveedores de IA económicos u open source, manteniendo costes bajos y mejorando la rentabilidad para agricultores del olivar.
 
 ## 🌐 Demo desplegada
 
