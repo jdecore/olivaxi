@@ -64,18 +64,19 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     }
     .suelo-datos.hidden { display: none; }
     
-    /* Skeleton loading */
+    /* Skeleton loading: más suave y visual */
     .suelo-datos.loading .suelo-dato {
-      background: #f0f0f0;
-      animation: skeletonPulse 1.8s ease-in-out infinite;
+      background: linear-gradient(120deg, #f5f3ef 20%, #efebe5 35%, #f5f3ef 50%);
+      background-size: 220% 100%;
+      animation: skeletonShimmer 1.8s ease-in-out infinite;
     }
     .suelo-datos.loading .suelo-dato:nth-child(1) { animation-delay: 0s; }
     .suelo-datos.loading .suelo-dato:nth-child(2) { animation-delay: 0.15s; }
     .suelo-datos.loading .suelo-dato:nth-child(3) { animation-delay: 0.3s; }
     .suelo-datos.loading .suelo-dato:nth-child(4) { animation-delay: 0.45s; }
-    @keyframes skeletonPulse {
-      0%, 100% { background-color: #f0f0f0; }
-      50% { background-color: #e8e8e8; }
+    @keyframes skeletonShimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
     }
     .suelo-datos.loading .suelo-dato .icon,
     .suelo-datos.loading .suelo-dato .value,
@@ -90,7 +91,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       left: 50%;
       width: 60%;
       height: 8px;
-      background: #d8d8d8;
+      background: rgba(180, 180, 180, 0.35);
       border-radius: 4px;
       transform: translate(-50%, -50%);
     }
@@ -101,7 +102,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       left: 50%;
       width: 40%;
       height: 6px;
-      background: #d0d0d0;
+      background: rgba(160, 160, 160, 0.28);
       border-radius: 3px;
       transform: translate(-50%, -50%);
     }
@@ -112,20 +113,22 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       padding: 14px 12px;
       border-radius: 10px;
       text-align: center;
-      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease, background-color .35s ease;
       position: relative;
       overflow: hidden;
+      will-change: transform;
     }
     .suelo-datos.animated .suelo-dato {
-      animation: kpiIn .6s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: kpiIn .72s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
-    .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .05s; }
-    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .12s; }
-    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .19s; }
-    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .26s; }
+    .suelo-datos.animated .suelo-dato:nth-child(1) { animation-delay: .04s; }
+    .suelo-datos.animated .suelo-dato:nth-child(2) { animation-delay: .10s; }
+    .suelo-datos.animated .suelo-dato:nth-child(3) { animation-delay: .16s; }
+    .suelo-datos.animated .suelo-dato:nth-child(4) { animation-delay: .22s; }
     @keyframes kpiIn {
-      0% { opacity: 0; transform: translateY(16px) scale(0.96); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
+      0% { opacity: 0; transform: translateY(18px) scale(0.97); filter: blur(2px); }
+      65% { opacity: 1; transform: translateY(-2px) scale(1.01); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
     .suelo-dato:hover {
       transform: translateY(-3px);
@@ -137,7 +140,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     .suelo-dato .value {
       font-size: 1.3rem;
       font-weight: 700;
-      transition: color .2s ease;
+      transition: color .25s ease, opacity .25s ease, transform .25s ease;
     }
     .suelo-dato .value.ok { color: #16a34a; }
     .suelo-dato .value.warning { color: #d97706; }
@@ -147,20 +150,22 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       font-size: 0.7rem;
       margin-top: 6px;
       font-weight: 600;
-      transition: color .2s ease;
+      transition: color .25s ease, opacity .25s ease, transform .25s ease;
     }
     .suelo-dato .status.ok { color: #16a34a; }
     .suelo-dato .status.warning { color: #d97706; }
     .suelo-dato .status.danger { color: #dc2626; }
     .suelo-dato .value.updating,
     .suelo-dato .status.updating {
-      opacity: 0.4;
+      opacity: 0.35;
+      transform: translateY(3px);
     }
     .suelo-dato.updated {
-      animation: dataUpdate .5s ease-out;
+      animation: dataUpdate .65s cubic-bezier(.22,1,.36,1);
     }
     @keyframes dataUpdate {
-      0% { background-color: rgba(212,232,73,0.25); }
+      0% { background-color: rgba(212,232,73,0.30); box-shadow: 0 0 0 rgba(212,232,73,0); }
+      40% { background-color: rgba(212,232,73,0.18); box-shadow: 0 6px 18px rgba(212,232,73,0.22); }
       100% { background-color: var(--color-white-surface); }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -699,7 +704,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
         requestAnimationFrame(() => card.classList.add('updated'));
         setTimeout(() => card.classList.remove('updated'), 300);
       }
-    }, 120);
+    }, 150);
   }
 
   function smoothSetStatus(el, status) {
@@ -718,7 +723,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       el.className = nextClass;
       el.textContent = nextText;
       el.classList.remove('updating');
-    }, 120);
+    }, 150);
   }
 
   async function loadDashboardData() {
@@ -772,7 +777,7 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
       if (shouldAnimate) {
         sueloDatos.classList.remove('animated');
         requestAnimationFrame(() => sueloDatos.classList.add('animated'));
-        setTimeout(() => sueloDatos.classList.remove('animated'), 700);
+        setTimeout(() => sueloDatos.classList.remove('animated'), 900);
       }
     }
 

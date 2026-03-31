@@ -6,6 +6,13 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 ---
 
 <Layout title="Alertas - olivaξ">
+  <div id="verify-celebration" class="verify-celebration" hidden>
+    <div class="verify-celebration-inner">
+      <span class="verify-icon">✅</span>
+      <span class="verify-text">Correo confirmado: alertas activadas correctamente</span>
+      <span class="verify-spark">✨</span>
+    </div>
+  </div>
   <!-- Hero -->
   <section class="alertas-hero">
     <span class="hero-badge">🔔 Notificaciones en tiempo real · RAIF + clima</span>
@@ -71,7 +78,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   .alertas-hero {
     background: #f5f0e8;
     color: var(--color-aceituna);
-    padding: 100px 1rem 2rem;
+    padding: 60px 1rem 1.5rem;
     text-align: center;
   }
 
@@ -79,11 +86,11 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     display: inline-block;
     background: var(--color-limon);
     color: var(--color-aceituna);
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .alertas-hero h1 {
@@ -96,6 +103,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   .alertas-hero p {
     color: var(--color-muted);
     margin-top: 0.5rem;
+    font-size: 1.1rem;
   }
 
   .alertas-section {
@@ -141,18 +149,18 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
   .form-field label {
     display: block;
-    font-weight: 500;
-    color: var(--color-aceituna);
+    font-weight: 700;
+    color: #1C1C1C;
     margin-bottom: 0.5rem;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     transition: color 0.3s ease;
   }
 
   .form-field input,
   .form-field select {
     width: 100%;
-    background: var(--color-white-surface);
-    border: 0.5px solid var(--color-border-tertiary);
+    background: #faf9f6;
+    border: 1px solid #ccc;
     border-radius: 8px;
     padding: 0.75rem 1rem;
     color: var(--color-aceituna);
@@ -161,33 +169,37 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
+  .form-field input::placeholder {
+    color: #999;
+  }
+
   .form-field input:hover,
   .form-field select:hover {
-    border-color: var(--color-limon);
+    border-color: #3b6d11;
   }
 
   .form-field label:hover {
-    color: var(--color-limon);
+    color: #3b6d11;
   }
 
   .form-field input:focus,
   .form-field select:focus {
     outline: none;
-    border-color: var(--color-limon);
-    box-shadow: 0 0 0 3px rgba(212, 232, 73, 0.2);
+    border-color: #3b6d11;
+    box-shadow: 0 0 0 3px rgba(59, 109, 17, 0.15);
   }
 
   #btn-submit {
     width: 100%;
     background: #3b6d11;
     color: #eaf3de;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 700;
     margin-top: 1.5rem;
     cursor: pointer;
     border: none;
-    font-size: 1rem;
+    font-size: 1.15rem;
     box-shadow: 0 4px 12px rgba(59, 109, 17, 0.25);
     transition: background 0.2s ease, transform 0.2s ease;
   }
@@ -325,6 +337,55 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     color: var(--color-white);
   }
 
+  .verify-celebration {
+    position: fixed;
+    top: 86px;
+    left: 50%;
+    transform: translate(-50%, -14px) scale(0.98);
+    opacity: 0;
+    z-index: 150;
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .verify-celebration.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  .verify-celebration-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #22c55e;
+    color: #052e16;
+    border: 2px solid #16a34a;
+    border-radius: 999px;
+    padding: 10px 16px;
+    box-shadow: 0 10px 26px rgba(34, 197, 94, 0.35);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .verify-celebration.show .verify-icon {
+    animation: verifyBounce 0.9s ease;
+  }
+
+  .verify-celebration.show .verify-spark {
+    animation: verifyPulse 0.9s ease;
+  }
+
+  @keyframes verifyBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    35% { transform: translateY(-4px) scale(1.12); }
+    70% { transform: translateY(0) scale(1); }
+  }
+
+  @keyframes verifyPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.75; }
+  }
+
   @media (max-width: 480px) {
     .alertas-form {
       padding: 1.5rem 1rem;
@@ -351,45 +412,23 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const selectTipo = document.getElementById("tipo");
   const provinciaSelect = document.getElementById("provincia");
   const variedadSelect = document.getElementById("variedad");
-  const PLAGAS_RAIF = [
-    { id: 'mosca', icono: '🪰' },
-    { id: 'polilla', icono: '🦋' },
-    { id: 'repilo', icono: '🍂' },
-    { id: 'xylella', icono: '🚨' },
-    { id: 'tuberculosis', icono: '🦠' },
-    { id: 'barrenillo', icono: '🪲' },
-    { id: 'cochinilla', icono: '🐛' },
-    { id: 'phytophthora', icono: '🍄' },
-    { id: 'lepra', icono: '🤕' },
-    { id: 'verticillium', icono: '🥀' }
-  ];
+  const verifyCelebration = document.getElementById("verify-celebration");
+  let verifyCelebrationTimeout = null;
 
   function clearNode(node) {
     if (!node) return;
     while (node.firstChild) node.removeChild(node.firstChild);
   }
 
-  function createInfoItem(label, value) {
-    const item = document.createElement('div');
-    item.className = 'info-item';
-    item.appendChild(document.createTextNode(`${label} `));
-    const bold = document.createElement('b');
-    bold.textContent = value;
-    item.appendChild(bold);
-    return item;
-  }
-
-  function createSection(title) {
-    const section = document.createElement('div');
-    section.className = 'info-section';
-    const heading = document.createElement('div');
-    heading.className = 'info-title';
-    heading.textContent = title;
-    const grid = document.createElement('div');
-    grid.className = 'info-grid';
-    section.appendChild(heading);
-    section.appendChild(grid);
-    return { section, grid };
+  function showVerifyCelebration() {
+    if (!verifyCelebration) return;
+    if (verifyCelebrationTimeout) clearTimeout(verifyCelebrationTimeout);
+    verifyCelebration.removeAttribute("hidden");
+    verifyCelebration.classList.add("show");
+    verifyCelebrationTimeout = setTimeout(() => {
+      verifyCelebration.classList.remove("show");
+      setTimeout(() => verifyCelebration.setAttribute("hidden", "true"), 350);
+    }, 3200);
   }
 
   // --- Cargar datos de provincia via ecosistema ---
@@ -410,14 +449,20 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
     const metricsStrip = document.createElement('div');
     metricsStrip.className = 'metrics-strip';
-    metricsStrip.innerHTML = `
-      <span class="prov-name">${provincia}</span>
-      <span>${temp}°C</span>
-      <span>·</span>
-      <span>Suelo ${humedadSuelo}% humedad</span>
-      <span>·</span>
-      <span>ETo ${eto}mm</span>
-    `;
+    const metricProv = document.createElement('span');
+    metricProv.className = 'prov-name';
+    metricProv.textContent = provincia;
+    const metricTemp = document.createElement('span');
+    metricTemp.textContent = `${temp}°C`;
+    const metricSep1 = document.createElement('span');
+    metricSep1.textContent = '·';
+    const metricSuelo = document.createElement('span');
+    metricSuelo.textContent = `Suelo ${humedadSuelo}% humedad`;
+    const metricSep2 = document.createElement('span');
+    metricSep2.textContent = '·';
+    const metricEto = document.createElement('span');
+    metricEto.textContent = `ETo ${eto}mm`;
+    metricsStrip.append(metricProv, metricTemp, metricSep1, metricSuelo, metricSep2, metricEto);
     provinciaInfoPanel.appendChild(metricsStrip);
 
     // Riesgos activos (solo MEDIO y ALTO)
@@ -437,7 +482,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       riesgosFiltrados.forEach(r => {
         const badge = document.createElement('span');
         badge.className = `riesgo-badge ${r.nivel}`;
-        badge.innerHTML = `${r.icono || '⚠️'} ${r.titulo} — ${String(r.nivel).toUpperCase()}`;
+        badge.textContent = `${r.icono || '⚠️'} ${r.titulo} — ${String(r.nivel).toUpperCase()}`;
         riesgosList.appendChild(badge);
       });
       riesgosSection.appendChild(riesgosList);
@@ -448,7 +493,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     if (d.consejos?.length) {
       const consejosBox = document.createElement('div');
       consejosBox.className = 'consejos-box';
-      consejosBox.innerHTML = `💡 ${d.consejos[0]}`;
+      consejosBox.textContent = `💡 ${d.consejos[0]}`;
       provinciaInfoPanel.appendChild(consejosBox);
     }
 
@@ -521,6 +566,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         msg.className = "success show";
         msg.removeAttribute("hidden");
       }
+      showVerifyCelebration();
 
       const cleanUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, "", cleanUrl);

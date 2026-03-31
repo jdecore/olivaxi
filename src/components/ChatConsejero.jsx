@@ -73,6 +73,7 @@ export default function ChatConsejero() {
   const [showWelcome, setShowWelcome] = createSignal(false);
   
   let messagesEndRef;
+  let inputRef;
 
   const generateWelcomeMessage = () => {
     const prov = provincia();
@@ -218,6 +219,9 @@ export default function ChatConsejero() {
 
   onMount(() => {
     initChat();
+    // Focus en input al cargar
+    setTimeout(() => inputRef?.focus(), 100);
+    
     const handleDocClick = (e) => {
       if (!e.target.closest('.prov-dropdown-wrap')) setShowProvinceDropdown(false);
       if (!e.target.closest('.mode-pill-inline')) setShowModeDropdown(false);
@@ -456,6 +460,11 @@ export default function ChatConsejero() {
         .chat-input::placeholder { color: #999; }
         .chat-input:disabled { opacity: 0.6; }
         .clean-btn { background: #f5f0e8; border: none; border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; }
+        .clean-btn-wrapper { position: relative; display: inline-flex; }
+        .clean-menu { position: absolute; bottom: 100%; right: 0; margin-bottom: 8px; background: #fff; border: 2px solid #1C1C1C; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; min-width: 180px; z-index: 100; overflow: hidden; }
+        .clean-menu.show { display: block; }
+        .clean-option { padding: 10px 14px; font-size: 13px; color: #1C1C1C; cursor: pointer; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
+        .clean-option:hover { background: #D4E849; }
         
         /* Limit message */
         .limit-message { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px; text-align: center; color: #666; font-size: 13px; }
@@ -578,6 +587,7 @@ export default function ChatConsejero() {
             )}</For>
           </select>
           <input 
+            ref={inputRef}
             class="chat-input" 
             type="text" 
             value={input()} 
@@ -585,11 +595,15 @@ export default function ChatConsejero() {
             onKeyDown={(e) => e.key === 'Enter' && enviarPregunta()} 
             placeholder={isLoading() ? "Escribiendo..." : "Escribe tu pregunta..."}
             disabled={isLoading() || isAtLimit()} 
-            autofocus
           />
-          <button class="clean-btn" onClick={() => isAtLimit() ? (setMessages([]), setIsLoading(false)) : descargarChat()}>
-            {isAtLimit() ? '🧹' : '💾'}
-          </button>
+          <div class="clean-btn-wrapper">
+            <button class="clean-btn" onClick={() => setShowCleanMenu(!showCleanMenu())}>🧹</button>
+            <div class={`clean-menu ${showCleanMenu() ? 'show' : ''}`}>
+              <div class="clean-option" onClick={() => { setMessages([]); setIsLoading(false); setShowCleanMenu(false); }}>🧹 Limpiar chat</div>
+              <div class="clean-option" onClick={() => { descargarChat(); setMessages([]); setIsLoading(false); setShowCleanMenu(false); }}>💾 Guardar y limpiar</div>
+              <div class="clean-option" onClick={() => { descargarChat(); setShowCleanMenu(false); }}>📥 Solo guardar</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
