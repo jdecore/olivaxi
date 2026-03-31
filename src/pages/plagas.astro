@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { apiUrl } from '../lib/api';
+import { apiUrlCandidates } from '../lib/api';
 import { PLAGAS_CATALOGO, CAMBIO_CLIMATICO_PLAGAS } from '../lib/catalogos';
 
 const plagas = PLAGAS_CATALOGO;
@@ -120,10 +120,27 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
         predContent.innerHTML = '<div class="prediction-loading">Consultando modelo...</div>';
         
         try {
-          const resp = await fetch(apiUrl(`/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`));
-          const data = await resp.json();
+          const path = `/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`;
+          const urls = apiUrlCandidates(path);
+          let data = null;
+          let lastError = null;
+
+          for (const url of urls) {
+            try {
+              const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+              if (!resp.ok) continue;
+              const parsed = await resp.json();
+              if (parsed?.ok) {
+                data = parsed;
+                break;
+              }
+              lastError = parsed?.error || null;
+            } catch (err) {
+              lastError = err;
+            }
+          }
           
-          if (data.ok && data.nivel) {
+          if (data?.ok && data.nivel) {
             const nivelClass = data.nivel;
             const recomendaciones = data.recomendaciones?.join('</li><li>') || 'Sin recomendaciones';
             
@@ -144,8 +161,10 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
                 </div>
               </div>
             `;
+          } else if (lastError && typeof lastError === 'string') {
+            predContent.innerHTML = `<div class="prediction-error">${lastError}</div>`;
           } else {
-            predContent.innerHTML = '<div class="prediction-error">Error al obtener predicción</div>';
+            predContent.innerHTML = '<div class="prediction-error">No se pudo conectar con la API de predicción</div>';
           }
         } catch (e) {
           predContent.innerHTML = '<div class="prediction-error">Error de conexión</div>';
