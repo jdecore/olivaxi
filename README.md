@@ -80,6 +80,20 @@ Vista rápida de la plataforma en funcionamiento:
 
 ![Demo de olivaξ](./demo.gif)
 
+## 🖼️ Capturas de pantalla
+
+### 🏠 Inicio
+
+![Pantalla de inicio](./inicio.png)
+
+### 📊 Datos climáticos
+
+![Panel de datos](./datos.png)
+
+### 💬 Chat consejero
+
+![Chat consejero](./chat.png)
+
 ## ☁️ Despliegue en CubePath (Docploy + Compose)
 
 Así se montó la infraestructura de `olivaxi`:
