@@ -3,6 +3,11 @@
 Plataforma web enfocada en agricultura de precisión para olivares españoles.  
 Combina clima en tiempo real, riesgo por variedad, plagas y recomendaciones prácticas para apoyar decisiones en campo.
 
+## 🌐 Demo desplegada
+
+Accede a la demo pública en CubePath aquí:  
+👉 **[http://45.90.237.135:4321/](http://45.90.237.135:4321/)**
+
 ## ✨ Qué incluye
 
 - 🗺️ Mapa de calor con riesgo climático por provincia
