@@ -277,7 +277,8 @@ export default function ChatConsejero() {
     return false;
   };
 
-  const isAtLimit = () => messages().filter(m => m.role === 'bot' && !m.isWaiting).length >= 20;
+  const CHAT_MAX_QUESTIONS = 20;
+  const isAtLimit = () => messages().filter(m => m.role === 'bot' && !m.isWaiting).length >= CHAT_MAX_QUESTIONS;
 
   const getHistorial = () => {
     try {
@@ -335,7 +336,12 @@ export default function ChatConsejero() {
         body: JSON.stringify({ mensaje: pregunta, provincia: provincia(), skill: activeSkill(), systemPrompt: skillPrompt, historial, variedad: variedad() }) 
       });
       
-      if (!res.ok) throw new Error('API error');
+      if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error('Saturación por muchos usuarios. Intenta de nuevo en unos segundos.');
+        }
+        throw new Error('API error');
+      }
       
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -365,7 +371,12 @@ export default function ChatConsejero() {
                 setMessages(prev => prev.map(m => m.id === botId ? { ...m, text: fullResponse, isWaiting: false } : m));
                 scrollToBottom();
               }
-              if (json.error) throw new Error(json.error);
+              if (json.error) {
+                if (String(json.error).toLowerCase().includes('demasiadas solicitudes')) {
+                  throw new Error('Saturación por muchos usuarios. Intenta de nuevo en unos segundos.');
+                }
+                throw new Error(json.error);
+              }
             } catch (e) {
               console.warn('[ChatConsejero] SSE chunk inválido:', e);
             }
@@ -374,7 +385,10 @@ export default function ChatConsejero() {
       }
     } catch (e) { 
       console.error('Chat error:', e);
-      setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: 'Lo siento, hubo un error. Intenta de nuevo.' } : m)); 
+      const msg = String(e?.message || '').toLowerCase().includes('saturación por muchos usuarios')
+        ? 'Saturación por muchos usuarios. Intenta de nuevo en unos segundos.'
+        : 'Lo siento, hubo un error. Intenta de nuevo.';
+      setMessages(prev => prev.map(m => m.id === botId ? { ...m, isWaiting: false, text: msg } : m)); 
       setIsLoading(false);
     }
   };

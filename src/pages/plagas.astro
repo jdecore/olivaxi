@@ -153,11 +153,19 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
           for (const url of urls) {
             try {
               const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+              if (resp.status === 429) {
+                lastError = 'Saturación por muchos usuarios. Intenta de nuevo en unos segundos.';
+                continue;
+              }
               if (!resp.ok) continue;
               const parsed = await resp.json();
               if (parsed?.ok) {
                 data = parsed;
                 break;
+              }
+              if (parsed?.error?.toLowerCase?.().includes('demasiadas solicitudes')) {
+                lastError = 'Saturación por muchos usuarios. Intenta de nuevo en unos segundos.';
+                continue;
               }
               lastError = parsed?.error || null;
             } catch (err) {

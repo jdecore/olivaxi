@@ -5,8 +5,8 @@ import { llamarLLMStream } from "../services/llmRotation";
 const chat = new Hono();
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 20;
-const RATE_WINDOW = 60 * 1000;
+const RATE_LIMIT = Number(process.env.CHAT_RATE_LIMIT || 600);
+const RATE_WINDOW = Number(process.env.CHAT_RATE_WINDOW_MS || 60 * 1000);
 
 // Cleanup expired entries every 10 minutes
 setInterval(() => {

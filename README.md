@@ -94,8 +94,13 @@ OPENROUTER_KEY=
 GMAIL_USER=
 GMAIL_APP_PASSWORD=
 PUBLIC_API_URL=http://localhost:3000
-PUBLIC_WEB_URL=http://localhost:4321
+RATE_LIMIT=3000
+RATE_LIMIT_WINDOW_MS=3600000
 ```
+
+Notas de concurrencia rápida:
+- El chat permite hasta 100 preguntas por conversación.
+- El rate limit backend es configurable por entorno (RATE_LIMIT y RATE_LIMIT_WINDOW_MS).
 
 ## 📦 Build
 

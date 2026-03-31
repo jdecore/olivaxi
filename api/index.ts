@@ -11,8 +11,8 @@ const app = new Hono();
 
 // Rate limiting simple en memoria con cleanup periódico
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 100;
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
+const RATE_LIMIT = Number(process.env.RATE_LIMIT || 3000);
+const RATE_LIMIT_WINDOW = Number(process.env.RATE_LIMIT_WINDOW_MS || 60 * 60 * 1000);
 
 // Cleanup expired entries every 10 minutes
 setInterval(() => {
