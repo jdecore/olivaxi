@@ -5,6 +5,9 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Agua y Suelos - olivaξ">
   <script is:inline>
     document.body.classList.add('page-agua-suelos');
+    document.addEventListener('astro:before-swap', () => {
+      document.body.classList.remove('page-agua-suelos');
+    }, { once: true });
   </script>
   <style is:global>
     .agua-hero {
@@ -206,45 +209,54 @@ import Layout from '../layouts/Layout.astro';
     /* Navbar mobile-only tuning for Agua y Suelos */
     @media (max-width: 900px) {
       body.page-agua-suelos .navbar {
-        top: 6px;
-        left: 6px;
-        right: 6px;
-        border-width: 1px;
+        top: 6px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 14px) !important;
+        max-width: 420px !important;
+        border-width: 1px !important;
+        border-radius: 10px !important;
       }
       body.page-agua-suelos .navbar-inner {
-        height: 48px;
-        padding: 0 8px;
+        height: 46px !important;
+        padding: 0 8px !important;
       }
       body.page-agua-suelos .nav-left .logo-svg-inline {
-        height: 40px;
+        height: 34px !important;
+        width: auto !important;
       }
       body.page-agua-suelos .nav-right {
-        display: none;
+        display: none !important;
       }
       body.page-agua-suelos .hamburger-btn {
         display: inline-flex !important;
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--color-border);
-        border-radius: 8px;
-        background: var(--color-white-surface);
-        z-index: 120;
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        gap: 4px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 1px solid var(--color-border) !important;
+        border-radius: 8px !important;
+        background: var(--color-white-surface) !important;
+        z-index: 120 !important;
       }
       body.page-agua-suelos .hamburger-btn span {
-        width: 18px;
-        height: 2px;
-        background: var(--color-aceituna);
-        opacity: 1;
+        display: block !important;
+        width: 16px !important;
+        height: 2px !important;
+        background: var(--color-aceituna) !important;
+        opacity: 1 !important;
       }
       body.page-agua-suelos .nav-dropdown {
-        padding: 8px 10px;
+        padding: 8px 10px !important;
+        max-height: calc(100dvh - 72px) !important;
+        overflow-y: auto !important;
       }
       body.page-agua-suelos .nav-dropdown a {
-        padding: 10px 0;
-        font-size: 14px;
+        padding: 10px 0 !important;
+        font-size: 14px !important;
       }
     }
 

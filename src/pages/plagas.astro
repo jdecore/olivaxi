@@ -23,8 +23,6 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     </div>
   </div>
 
-  <p class="hint-text">Oprime una tarjeta para ver el tratamiento</p>
-
   <div class="tabs-container">
     <button class="tab active" data-tab="todas">Todas</button>
     <button class="tab" data-tab="temperatura">Temperatura</button>
@@ -32,6 +30,8 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     <button class="tab" data-tab="lluvia">Lluvia</button>
     <button class="tab" data-tab="clima">Cambio climático</button>
   </div>
+
+  <p class="hint-text">Oprime una tarjeta para ver el tratamiento</p>
 
   <section class="plagas-section" id="plagas-grid">
     {plagas.map((p) => (
@@ -282,7 +282,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     color: #3b6d11;
     font-size: 1rem;
     font-weight: 700;
-    margin-top: 0.5rem;
+    margin: 0.75rem auto 0;
     text-align: center;
   }
 

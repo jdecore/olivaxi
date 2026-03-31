@@ -314,6 +314,22 @@ PUBLIC_API_URL=http://localhost:3000
 1. Contenedor ML con gradiente radial (naranja claro centro, naranja oscuro bordes).
 2. Texto "Oprime una tarjeta para ver el tratamiento" centrado en `plagas.astro`.
 
+#### Actualizaciones recientes (cierre de sesión)
+1. **Flujo portada corregido (`index.astro`)**:
+   - Al elegir provincia ahora va a **Variedades**.
+   - Al elegir variedad luego pasa a **Riesgo/Alertas**.
+2. **Espaciado superior ajustado**:
+   - Reducido gap entre navbar y primer bloque en `variedades.astro` y `agua-suelos.astro`.
+3. **Optimización móvil de `agua-suelos.astro`**:
+   - Hero, carrusel y paneles compactados para móvil.
+   - Navbar móvil local reforzada para esta subweb (más compacta, botón hamburguesa visible, dropdown estable).
+4. **Optimización móvil global sin tocar desktop**:
+   - Ajustes en `Layout.astro` para navbar/dropdown en móvil (compactación, visibilidad de hamburguesa, control de overflow).
+5. **Consejero móvil**:
+   - Ajustes para que el botón/menú de limpiar no se salga del contenedor en pantallas pequeñas.
+6. **Plagas**:
+   - Texto **"Oprime una tarjeta para ver el tratamiento"** reposicionado debajo de la línea de tabs, justo antes del grid de tarjetas.
+
 ### 🔁 Rotación IA confirmada en código
 
 - **Chat (`/api/chat`)**: `Groq` → `Gemini` → `OpenRouter` (con fallback/reintentos).
@@ -372,5 +388,5 @@ Respuesta:
 
 ---
 
-*Documentación actualizada: 2026-03-31 14:30*
+*Documentación actualizada: 2026-03-31 17:49*
 *Proyecto: olivaξ - Monitor Climático de Olivares*
