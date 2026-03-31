@@ -3,11 +3,14 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Agua y Suelos - olivaξ">
+  <script is:inline>
+    document.body.classList.add('page-agua-suelos');
+  </script>
   <style is:global>
     .agua-hero {
       background: var(--color-bg);
       color: var(--color-aceituna);
-      padding: 68px 1rem 2rem;
+      padding: 20px 1rem 2rem;
       text-align: center;
     }
 
@@ -198,6 +201,32 @@ import Layout from '../layouts/Layout.astro';
       .alert-strip { padding: 10px 12px; gap: 8px; }
       .alert-strip-content { min-width: 0; }
       .alert-strip-btn { width: 100%; text-align: center; }
+    }
+
+    /* Navbar mobile-only tuning for Agua y Suelos */
+    @media (max-width: 900px) {
+      body.page-agua-suelos .navbar {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        border-width: 1px;
+      }
+      body.page-agua-suelos .navbar-inner {
+        height: 52px;
+        padding: 0 12px;
+      }
+      body.page-agua-suelos .nav-left .logo-svg-inline {
+        height: 46px;
+      }
+      body.page-agua-suelos .hamburger-btn {
+        padding: 6px;
+      }
+      body.page-agua-suelos .nav-dropdown {
+        padding: 10px 12px;
+      }
+      body.page-agua-suelos .nav-dropdown a {
+        padding: 12px 0;
+      }
     }
 
     .area-section {
