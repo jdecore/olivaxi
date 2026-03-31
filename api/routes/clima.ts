@@ -219,6 +219,7 @@ function calcularScoreRiesgo(temp: number, humedad: number, lluvia: number, vari
 export async function getClimaData() {
   const now = Date.now();
   const cacheRow = db.query("SELECT datos, cached_at FROM clima_cache WHERE id = 1").get() as { datos: string; cached_at: number } | undefined;
+  const staleCache = cacheRow ? JSON.parse(cacheRow.datos) : null;
 
   if (cacheRow && cacheRow.cached_at > now - CACHE_TTL) {
     const datos = JSON.parse(cacheRow.datos);
@@ -227,6 +228,9 @@ export async function getClimaData() {
 
   const data = await Promise.all(
     PROVINCIAS.map(async (p) => {
+      const previous = Array.isArray(staleCache)
+        ? staleCache.find((row: any) => row?.provincia === p.nombre)
+        : null;
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -250,6 +254,17 @@ export async function getClimaData() {
         };
       } catch (error) {
         console.error("Error fetch:", error);
+        if (previous) {
+          return {
+            provincia: p,
+            temp: Number(previous.temperatura ?? 0),
+            humedad: Number(previous.humedad ?? 0),
+            lluvia: Number(previous.lluvia ?? 0),
+            suelo_temp: Number(previous.suelo_temp ?? 0),
+            suelo_humedad: Number(previous.suelo_humedad ?? 0),
+            evapotranspiracion: Number(previous.evapotranspiracion ?? 0),
+          };
+        }
         return { provincia: p, temp: 0, humedad: 0, lluvia: 0, suelo_temp: 0, suelo_humedad: 0, evapotranspiracion: 0 };
       }
     })

@@ -6,6 +6,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 ---
 
 <Layout title="Alertas - olivaξ">
+  <div id="verify-top-banner" class="verify-top-banner" hidden></div>
   <div id="verify-celebration" class="verify-celebration" hidden>
     <div id="verify-celebration-inner" class="verify-celebration-inner success">
       <span id="verify-icon" class="verify-icon">✅</span>
@@ -348,6 +349,31 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
     transition: opacity 0.35s ease, transform 0.35s ease;
   }
 
+  .verify-top-banner {
+    margin: 82px auto 8px;
+    max-width: 920px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 2px solid transparent;
+  }
+  .verify-top-banner.success {
+    background: #dcfce7;
+    color: #14532d;
+    border-color: #22c55e;
+  }
+  .verify-top-banner.warning {
+    background: #fef9c3;
+    color: #713f12;
+    border-color: #eab308;
+  }
+  .verify-top-banner.error {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-color: #ef4444;
+  }
+
   .verify-celebration.show {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
@@ -427,6 +453,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
   const provinciaSelect = document.getElementById("provincia");
   const variedadSelect = document.getElementById("variedad");
   const verifyCelebration = document.getElementById("verify-celebration");
+  const verifyTopBanner = document.getElementById("verify-top-banner");
   const verifyInner = document.getElementById("verify-celebration-inner");
   const verifyIcon = document.getElementById("verify-icon");
   const verifyText = document.getElementById("verify-text");
@@ -459,6 +486,14 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         setTimeout(() => verifyCelebration.setAttribute("hidden", "true"), 350);
       }, autoHideMs);
     }
+  }
+
+  function showVerifyTopBanner(type = 'success', text = '') {
+    if (!verifyTopBanner) return;
+    verifyTopBanner.classList.remove('success', 'warning', 'error');
+    verifyTopBanner.classList.add(type);
+    verifyTopBanner.textContent = text;
+    verifyTopBanner.removeAttribute('hidden');
   }
 
   // --- Cargar datos de provincia via ecosistema ---
@@ -581,6 +616,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
       msg.className = "warning show";
       msg.removeAttribute("hidden");
     }
+    showVerifyTopBanner('warning', '⏳ Confirmando correo de alerta...');
     showVerifyCelebration('warning', 'Confirmando alerta...', { autoHideMs: 0 });
 
     try {
@@ -597,6 +633,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         msg.className = "success show";
         msg.removeAttribute("hidden");
       }
+      showVerifyTopBanner('success', '✅ Correo confirmado correctamente. Alertas activadas.');
       showVerifyCelebration('success', 'Correo confirmado: alertas activadas correctamente', { autoHideMs: 3200 });
 
       const cleanUrl = window.location.origin + window.location.pathname;
@@ -607,6 +644,7 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
         msg.className = "error show";
         msg.removeAttribute("hidden");
       }
+      showVerifyTopBanner('error', `❌ ${e?.message || 'Error al confirmar alerta'}`);
       showVerifyCelebration('error', e?.message || 'Error al confirmar alerta', { autoHideMs: 5000 });
     }
   }
