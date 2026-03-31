@@ -55,7 +55,14 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
           ))}
         </div>
         <div class="plaga-tratamiento">
-          <div class="tratamiento-texto">{p.tratamiento}</div>
+          <div class="tratamiento-items">
+            {p.tratamiento.split('\n').map((item) => (
+              <div class="tratamiento-item">
+                <span class="tratamiento-icon">{item.split(' ')[0]}</span>
+                <span class="tratamiento-action">{item.substring(item.indexOf(' ') + 1)}</span>
+              </div>
+            ))}
+          </div>
           <a href={`/consejero?q=Tengo+riesgo+de+${p.nombre.replace(/ /g, '+')}+en+mi+olivar.+¿Qué+debo+hacer?`} class="btn-consejero">Preguntar al consejero</a>
         </div>
       </div>
@@ -111,6 +118,14 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
   const predHeader = predCard?.querySelector('.prediction-header');
   let predExpanded = false;
   let provinciaActual = OlivaxiEcosistema.provincia || localStorage.getItem('olivaxi-provincia') || 'Jaén';
+  
+  function setPredictionCardLevel(level) {
+    if (!predCard) return;
+    predCard.classList.remove('risk-bajo', 'risk-medio', 'risk-alto');
+    if (level === 'bajo' || level === 'medio' || level === 'alto') {
+      predCard.classList.add(`risk-${level}`);
+    }
+  }
 
   const offEcosistema = OlivaxiEcosistema.onChange((state) => {
     if (state.provincia) {
@@ -125,6 +140,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
       predCard.classList.toggle('expanded', predExpanded);
       
       if (predExpanded && predContent) {
+        setPredictionCardLevel(null);
         predContent.innerHTML = '<div class="prediction-loading">Prediciendo...</div>';
         
         try {
@@ -151,7 +167,9 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
           
           if (data?.ok && data.nivel) {
             const nivelClass = data.nivel;
+            setPredictionCardLevel(nivelClass);
             const recomendaciones = data.recomendaciones?.join('</li><li>') || 'Sin recomendaciones';
+            const preguntaConsejero = encodeURIComponent(`Tengo riesgo ${data.nivel} de mosca del olivo en ${data.provincia}. ¿Qué plan de acción recomiendas para las próximas 48 horas?`);
             
             predContent.innerHTML = `
               <div class="prediction-result">
@@ -167,15 +185,19 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
                 <div class="pred-recomendaciones">
                   <strong>Recomendaciones:</strong>
                   <ul>${recomendaciones}</ul>
+                  <a href="/consejero?q=${preguntaConsejero}" class="btn-consejero" style="margin-top:10px;display:inline-block;">Preguntar al consejero</a>
                 </div>
               </div>
             `;
           } else if (lastError && typeof lastError === 'string') {
+            setPredictionCardLevel(null);
             predContent.innerHTML = `<div class="prediction-error">${lastError}</div>`;
           } else {
+            setPredictionCardLevel(null);
             predContent.innerHTML = '<div class="prediction-error">No se pudo conectar con la API de predicción</div>';
           }
         } catch (e) {
+          setPredictionCardLevel(null);
           predContent.innerHTML = '<div class="prediction-error">Error de conexión</div>';
         }
       }
@@ -379,8 +401,23 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     color: var(--color-aceituna);
     line-height: 1.6;
     margin: 0;
-    white-space: pre-line;
   }
+  .tratamiento-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tratamiento-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(212, 232, 73, 0.2);
+    border-radius: 6px;
+    border-left: 3px solid var(--color-limon);
+  }
+  .tratamiento-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .tratamiento-action { flex: 1; font-size: 0.9rem; }
 
   .btn-consejero {
     display: inline-block;
@@ -457,6 +494,24 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     color: #9a3412;
     cursor: pointer;
     transition: all 0.3s ease;
+  }
+  
+  .prediction-card.risk-bajo {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+  }
+  
+  .prediction-card.risk-medio {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #92400e;
+  }
+  
+  .prediction-card.risk-alto {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #991b1b;
   }
 
   .prediction-card:hover {
