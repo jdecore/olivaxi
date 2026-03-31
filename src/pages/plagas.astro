@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { apiUrlCandidates } from '../lib/api';
 import { PLAGAS_CATALOGO, CAMBIO_CLIMATICO_PLAGAS } from '../lib/catalogos';
 
 const plagas = PLAGAS_CATALOGO;
@@ -81,6 +80,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 </Layout>
 
 <script>
+  import { apiUrlCandidates } from '../lib/api';
   let expandedCard = null;
 
   const condicionesMap = {
@@ -438,7 +438,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   /* Prediction Card */
   .prediction-card {
-    background: #fed7aa;
+    background: #fff7ed;
     border: 3px solid #ea580c;
     border-radius: 12px;
     padding: 1rem;

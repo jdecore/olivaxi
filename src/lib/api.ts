@@ -20,12 +20,18 @@ export function getApiUrl(): string {
 export function apiUrl(path: string): string {
   const base = getApiUrl();
   const cleanPath = path.replace(/\/$/, '').replace(/^\/api/, '');
+  if (!base || base === '/') return `/api${cleanPath}`;
+  if (base.endsWith('/api')) return `${base}${cleanPath}`;
   return `${base}/api${cleanPath}`;
 }
 
 export function apiUrlCandidates(path: string): string[] {
   const cleanPath = path.replace(/\/$/, '').replace(/^\/api/, '');
-  const candidates = [apiUrl(path)];
+  const candidates = [];
+
+  // Prioriza same-origin para despliegues con reverse proxy (Dokploy/Nginx)
+  candidates.push(`/api${cleanPath}`);
+  candidates.push(apiUrl(path));
 
   if (typeof window !== 'undefined') {
     const { protocol, hostname } = window.location;

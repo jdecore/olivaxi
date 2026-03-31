@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ProvinciaSelect from '../components/ProvinciaSelect.astro';
 ---
 
 <Layout title="Agua y Suelos - olivaξ">
@@ -401,7 +400,19 @@ import ProvinciaSelect from '../components/ProvinciaSelect.astro';
     <h1>💧 Agua y Suelos</h1>
     <p>Gestión eficiente del agua y cuidado del suelo para olivares resilientes al cambio climático</p>
     <div class="provincia-bar-agua">
-      <ProvinciaSelect id="provincia-select-agua" placeholder="Selecciona provincia para ver datos en tiempo real..." />
+      <select id="provincia-select-agua" class="provincia-select">
+        <option value="">Selecciona provincia para ver datos en tiempo real...</option>
+        <option value="Jaén">Jaén</option>
+        <option value="Córdoba">Córdoba</option>
+        <option value="Sevilla">Sevilla</option>
+        <option value="Granada">Granada</option>
+        <option value="Málaga">Málaga</option>
+        <option value="Badajoz">Badajoz</option>
+        <option value="Toledo">Toledo</option>
+        <option value="Ciudad Real">Ciudad Real</option>
+        <option value="Almería">Almería</option>
+        <option value="Huelva">Huelva</option>
+      </select>
       <div class="suelo-datos hidden" id="suelo-datos">
         <div class="suelo-dato">
           <div class="icon">🌡️</div>

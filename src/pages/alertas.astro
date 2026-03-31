@@ -1,7 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ProvinciaSelect from '../components/ProvinciaSelect.astro';
-import VariedadSelect from '../components/VariedadSelect.astro';
 import { ICONOS_ALERTAS } from '../lib/variedades';
 ---
 
@@ -37,12 +35,32 @@ import { ICONOS_ALERTAS } from '../lib/variedades';
 
       <div class="form-field">
         <label for="provincia">Provincia</label>
-        <ProvinciaSelect id="provincia" />
+        <select id="provincia" class="provincia-select">
+          <option value="">Selecciona tu provincia...</option>
+          <option value="Jaén">Jaén</option>
+          <option value="Córdoba">Córdoba</option>
+          <option value="Sevilla">Sevilla</option>
+          <option value="Granada">Granada</option>
+          <option value="Málaga">Málaga</option>
+          <option value="Badajoz">Badajoz</option>
+          <option value="Toledo">Toledo</option>
+          <option value="Ciudad Real">Ciudad Real</option>
+          <option value="Almería">Almería</option>
+          <option value="Huelva">Huelva</option>
+        </select>
       </div>
 
       <div class="form-field">
         <label for="variedad">Variedad de olivo</label>
-        <VariedadSelect id="variedad" />
+        <select id="variedad" class="variedad-select">
+          <option value="">Selecciona tu variedad...</option>
+          <option value="cornicabra">Cornicabra</option>
+          <option value="picual">Picual</option>
+          <option value="arbequina">Arbequina</option>
+          <option value="hojiblanca">Hojiblanca</option>
+          <option value="manzanilla">Manzanilla</option>
+          <option value="empeltre">Empeltre</option>
+        </select>
       </div>
 
       <div class="form-field">
