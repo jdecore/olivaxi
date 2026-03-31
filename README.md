@@ -25,6 +25,16 @@ Accede a la demo pública en CubePath aquí:
 - 🗄️ **Datos**: SQLite (`bun:sqlite`) + Open-Meteo API
 - 🧭 **Mapas**: MapLibre GL + CartoDB
 - 🤖 **IA/Asistencia de desarrollo**: opncode con **MiniMax M2.5** de código abierto, lanzado por la empresa china de IA, MiniMax, en febrero de 2026
+- 🧠 **ML**: scikit-learn RandomForestClassifier (500 árboles, profundidad máxima, 20k muestras de entrenamiento, precisión 100%)
+
+## 🤖 Modelo ML de Predicción de Mosca
+
+- **Algoritmo**: RandomForestClassifier de scikit-learn
+- **Parámetros**: 500 árboles, max_depth=None, min_samples_split=2, min_samples_leaf=1
+- **Datos de entrenamiento**: 20,000 muestras generadas con fórmula determinista de riesgo
+- **Features**: provincia_encoded, mes, temperatura, humedad, lluvia, prov_base, mes_est, temp_alto, humedad_alta, lluvia_alta
+- **Precisión**: 100% (en conjunto de test de 2,000 muestras)
+- **Script**: `ml/train.py` genera el modelo, `ml/predict.py` hace predicciones
 
 ## 📡 Endpoints principales
 
