@@ -69,6 +69,24 @@ npm run build
 npm run preview
 ```
 
+## 🎬 Demo visual (GIF)
+
+Vista rápida de la plataforma en funcionamiento:
+
+![Demo de olivaξ](./demo.gif)
+
+## ☁️ Despliegue en CubePath (Docploy + Compose)
+
+Así se montó la infraestructura de `olivaxi`:
+
+1. 🖥️ Se utilizó una instancia `gp.micro`.
+2. 🐧 Se instaló **Ubuntu 22** por estabilidad del entorno.
+3. 🧱 Se instaló **Docploy** en el servidor.
+4. 📁 En Docploy se creó el proyecto **olivaxi**.
+5. 🐳 Se eligió **Create Service** con tipo **Compose**.
+6. 📤 Se subió el archivo `docker-compose.yml` con toda la configuración de backend y frontend.
+7. 🚀 Desde ese Compose se levantaron los servicios de la plataforma.
+
 ## 🌱 Nota
 
 Este proyecto prioriza rendimiento, mantenibilidad y resiliencia en la conexión frontend↔API para que los datos climáticos lleguen de forma consistente.
