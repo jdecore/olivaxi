@@ -7,6 +7,10 @@ const prediccion = new Hono();
 const ML_ENV_PYTHON = process.env.ML_ENV_PYTHON || "/app/ml_env/bin/python";
 const PREDICT_SCRIPT = "/app/ml/predict.py";
 
+prediccion.get("/test", (c) => {
+  return c.json({ test: "ok" });
+});
+
 prediccion.get("/", async (c) => {
   const provincia = c.req.query("provincia");
   
@@ -23,13 +27,17 @@ prediccion.get("/", async (c) => {
   console.error("CMD:", cmd);
   
   try {
-    console.error("About to execSync...");
+    const cmd = `${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`;
+    console.error("CMD:", cmd);
+    
     const output = execSync(cmd, {
       encoding: "utf-8",
       timeout: 15000,
-      maxBuffer: 1024 * 1024
+      maxBuffer: 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"]
     });
-    console.error("Output length:", output.length);
+    
+    console.error("Raw output:", output);
     
     const lines = output.trim().split("\n");
     console.error("Lines:", lines);

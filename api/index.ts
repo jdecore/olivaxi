@@ -98,6 +98,8 @@ app.route("/api/alertas", alertas);
 app.route("/api/analisis", analisis);
 app.route("/api/prediccion", prediccion);
 
+app.get("/xyz", (c) => c.json({ xyz: "ok" }));
+
 app.get("/api", (c) => c.json({
   nombre: "olivaξ API",
   version: "1.0.0",
