@@ -3,12 +3,6 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Agua y Suelos - olivaξ">
-  <script is:inline>
-    document.body.classList.add('page-agua-suelos');
-    document.addEventListener('astro:before-swap', () => {
-      document.body.classList.remove('page-agua-suelos');
-    }, { once: true });
-  </script>
   <style is:global>
     .agua-hero {
       background: var(--color-bg);
@@ -295,108 +289,6 @@ import Layout from '../layouts/Layout.astro';
       
       .agua-tip-icon { font-size: 0.9rem; }
       .agua-tip-value { font-size: 0.9rem; }
-    }
-
-    /* Navbar mobile-only tuning for Agua y Suelos - Override completo */
-    @media (max-width: 900px) {
-      body.page-agua-suelos {
-        overflow-x: hidden !important;
-      }
-      body.page-agua-suelos main {
-        padding-top: 50px !important;
-      }
-      body.page-agua-suelos .navbar {
-        top: 4px !important;
-        left: 4px !important;
-        right: 4px !important;
-        width: calc(100% - 8px) !important;
-        border-width: 1px !important;
-        border-radius: 8px !important;
-        position: fixed !important;
-        background: var(--color-white-surface) !important;
-        z-index: 99999 !important;
-      }
-      body.page-agua-suelos .navbar-inner {
-        height: 42px !important;
-        padding: 0 4px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-      }
-      body.page-agua-suelos .nav-left {
-        flex: 1 !important;
-        display: flex !important;
-        align-items: center !important;
-        min-width: 0 !important;
-      }
-      body.page-agua-suelos .nav-left .logo {
-        font-size: 0.8rem !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-      }
-      body.page-agua-suelos .nav-left .logo-svg-inline {
-        height: 26px !important;
-        width: auto !important;
-      }
-      body.page-agua-suelos .nav-center {
-        display: none !important;
-      }
-      body.page-agua-suelos .nav-right {
-        display: none !important;
-      }
-      body.page-agua-suelos .btn-alertas {
-        display: none !important;
-      }
-      body.page-agua-suelos .hamburger-btn {
-        display: inline-flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        width: 28px !important;
-        height: 28px !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        flex-direction: column !important;
-        gap: 3px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border: 1px solid var(--color-border) !important;
-        border-radius: 6px !important;
-        background: var(--color-white-surface) !important;
-        z-index: 100000 !important;
-        flex-shrink: 0 !important;
-        cursor: pointer !important;
-      }
-      body.page-agua-suelos .hamburger-btn span {
-        display: block !important;
-        visibility: visible !important;
-        width: 12px !important;
-        height: 2px !important;
-        background: var(--color-aceituna) !important;
-        opacity: 1 !important;
-        margin: 0 !important;
-      }
-      body.page-agua-suelos .nav-dropdown {
-        padding: 8px 12px !important;
-        max-height: calc(100dvh - 60px) !important;
-        overflow-y: auto !important;
-        display: none !important;
-      }
-      body.page-agua-suelos .nav-dropdown a {
-        padding: 11px 0 !important;
-        font-size: 14px !important;
-      }
-      body.page-agua-suelos .nav-dropdown.active {
-        display: flex !important;
-        position: fixed !important;
-        top: 50px !important;
-        left: 4px !important;
-        right: 4px !important;
-        background: var(--color-white-surface) !important;
-        border: 1px solid var(--color-border) !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-      }
     }
 
     .area-section {
