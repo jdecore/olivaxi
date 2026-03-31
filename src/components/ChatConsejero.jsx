@@ -63,14 +63,14 @@ export default function ChatConsejero() {
   const [input, setInput] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
   const [climaActual, setClimaActual] = createSignal(null);
-  const [activeSkill, setActiveSkill] = createSignal(null);
+  const [activeSkill, setActiveSkill] = createSignal('libre');
   const [titleText, setTitleText] = createSignal('');
   const [showContext, setShowContext] = createSignal(false);
   const [showLoading, setShowLoading] = createSignal(false);
   const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
-  const [showWelcome, setShowWelcome] = createSignal(true);
+  const [showWelcome, setShowWelcome] = createSignal(false);
   
   let messagesEndRef;
 
@@ -487,20 +487,6 @@ export default function ChatConsejero() {
       `}</style>
 
       <div class="chat-main">
-        {/* Skills Pills - solo visibles sin modo activo */}
-        <Show when={!activeSkill()}>
-          <div class="skills-row">
-            <For each={SKILLS}>{(skill) => (
-              <button 
-                class={`skill-pill ${activeSkill() === skill.id ? 'active' : ''}`}
-                onClick={() => selectSkill(skill.id)}
-              >
-                {skill.label}
-              </button>
-            )}</For>
-          </div>
-        </Show>
-
         {/* Context Strip */}
         <div 
           class={`context-strip ${contextStrip().level}`}
@@ -565,6 +551,18 @@ export default function ChatConsejero() {
           </Show>
           
           <div ref={messagesEndRef}></div>
+        </div>
+
+        {/* Skills Pills - siempre visible arriba del input */}
+        <div class="skills-row">
+          <For each={SKILLS}>{(skill) => (
+            <button 
+              class={`skill-pill ${activeSkill() === skill.id ? 'active' : ''}`}
+              onClick={() => selectSkill(skill.id)}
+            >
+              {skill.label}
+            </button>
+          )}</For>
         </div>
 
         {/* Input */}

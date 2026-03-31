@@ -76,24 +76,25 @@ const getPlaceholderColor = (id) => {
     <div class="var-grid" id="var-grid">
       {variedades.map((v) => (
         <div class="var-card" data-tags={v.tags} data-id={v.id} onclick={"toggleCard('" + v.id + "')"}>
-          {getOptimizedImage(v.id) ? (
-            <Image
-              src={getOptimizedImage(v.id)}
-              alt={v.nombre}
-              width={400}
-              height={140}
-              format="avif"
-              quality={80}
-              loading="lazy"
-              decoding="async"
-              style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;background:#eee;"
-            />
-          ) : null}
-          <div 
-            class="img-placeholder"
-            style={`display:${getOptimizedImage(v.id) ? 'none' : 'flex'};width:100%;height:140px;background:${getPlaceholderColor(v.id)};border-radius:8px 8px 0 0;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;`}
-          >
-            {v.nombre.charAt(0)}
+          <div class="img-wrapper">
+            {getOptimizedImage(v.id) ? (
+              <img
+                src={getOptimizedImage(v.id).src}
+                alt={v.nombre}
+                width="400"
+                height="140"
+                loading="lazy"
+                decoding="async"
+                onload="this.classList.add('loaded')"
+                style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;"
+              />
+            ) : null}
+            <div 
+              class="img-placeholder"
+              style={`display:${getOptimizedImage(v.id) ? 'none' : 'flex'};width:100%;height:140px;background:${getPlaceholderColor(v.id)};border-radius:8px 8px 0 0;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;`}
+            >
+              {v.nombre.charAt(0)}
+            </div>
           </div>
           <div class="card-body">
             <div class="card-header-row">
@@ -360,6 +361,24 @@ const getPlaceholderColor = (id) => {
   .var-card:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transform: translateY(-2px);
+  }
+
+  .img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    background: #f0f0f0;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+  }
+
+  .img-wrapper img {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+
+  .img-wrapper img.loaded {
+    opacity: 1;
   }
 
   .img-placeholder {

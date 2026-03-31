@@ -232,10 +232,15 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
       
       if (expandedCard && expandedCard !== card) {
         expandedCard.classList.remove('expanded');
+        expandedCard.querySelector('.plaga-tratamiento')?.classList.remove('visible');
       }
       
-      card.classList.toggle('expanded');
-      expandedCard = card.classList.contains('expanded') ? card : null;
+      const isExpanded = card.classList.toggle('expanded');
+      const tratamiento = card.querySelector('.plaga-tratamiento');
+      if (tratamiento) {
+        tratamiento.classList.toggle('visible', isExpanded);
+      }
+      expandedCard = isExpanded ? card : null;
     });
   });
 </script>

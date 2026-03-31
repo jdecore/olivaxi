@@ -13,7 +13,7 @@ export default defineConfig({
   },
   compressHTML: true,
   prefetch: {
-    prefetchAll: true,
+    prefetchAll: false,
     defaultStrategy: 'hover'
   },
   vite: {

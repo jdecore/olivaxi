@@ -6,12 +6,12 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
 <Layout title="Consejero | olivaξ">
   <main class="main-container">
     <div class="chat-wrapper">
-      <ChatConsejero client:visible />
+      <ChatConsejero client:load />
     </div>
   </main>
 </Layout>
 
-<style is:global>
+<style>
   .main-container {
     height: 100vh;
     display: flex;
@@ -38,16 +38,6 @@ import ChatConsejero from '../components/ChatConsejero.jsx';
 
   @media (max-width: 900px) {
     .main-container {
-      padding-top: 56px;
-    }
-  }
-
-  main.main-container {
-    padding-top: 48px;
-  }
-
-  @media (max-width: 900px) {
-    main.main-container {
       padding-top: 56px;
     }
   }

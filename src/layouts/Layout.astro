@@ -105,6 +105,11 @@ const { title = "olivaξ" } = Astro.props;
         var navbar = null;
         var scrollHandler = null;
         var transitionTimeout = null;
+        var hamburgerBtn = null;
+        var dropdown = null;
+        var onHamburgerClick = null;
+        var onDocumentClick = null;
+        var linkHandlers = [];
 
         function addTransition() {
           if (navbar) navbar.classList.add('nav-transitioning');
@@ -151,31 +156,49 @@ const { title = "olivaξ" } = Astro.props;
           window.addEventListener('scroll', scrollHandler, { passive: true });
         }
 
+        function cleanupNavListeners() {
+          if (hamburgerBtn && onHamburgerClick) {
+            hamburgerBtn.removeEventListener('click', onHamburgerClick);
+          }
+          if (onDocumentClick) {
+            document.removeEventListener('click', onDocumentClick);
+          }
+          linkHandlers.forEach(function(entry) {
+            entry.link.removeEventListener('click', entry.handler);
+          });
+          linkHandlers = [];
+        }
+
         function setupNavListeners() {
-          var hamburgerBtn = document.getElementById('hamburger-btn');
-          var dropdown = document.getElementById('nav-dropdown');
-          
-          hamburgerBtn?.addEventListener('click', function(e) {
+          cleanupNavListeners();
+
+          hamburgerBtn = document.getElementById('hamburger-btn');
+          dropdown = document.getElementById('nav-dropdown');
+          if (!hamburgerBtn || !dropdown) return;
+
+          onHamburgerClick = function(e) {
             e.stopPropagation();
             hamburgerBtn.classList.toggle('active');
             dropdown.classList.toggle('active');
-          });
+          };
+          hamburgerBtn.addEventListener('click', onHamburgerClick);
 
-          document.addEventListener('click', function(e) {
-            if (dropdown && hamburgerBtn && !dropdown.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+          onDocumentClick = function(e) {
+            if (!dropdown.contains(e.target) && !hamburgerBtn.contains(e.target)) {
               dropdown.classList.remove('active');
               hamburgerBtn.classList.remove('active');
             }
-          });
+          };
+          document.addEventListener('click', onDocumentClick);
 
-          if (dropdown) {
-            dropdown.querySelectorAll('a').forEach(function(link) {
-              link.addEventListener('click', function() {
-                dropdown.classList.remove('active');
-                hamburgerBtn?.classList.remove('active');
-              });
-            });
-          }
+          dropdown.querySelectorAll('a').forEach(function(link) {
+            var handler = function() {
+              dropdown.classList.remove('active');
+              hamburgerBtn.classList.remove('active');
+            };
+            link.addEventListener('click', handler);
+            linkHandlers.push({ link: link, handler: handler });
+          });
 
           var path = window.location.pathname.replace(/\/$/, '') || '/';
           document.querySelectorAll('.nav-center a, .nav-dropdown a').forEach(function(a) {
