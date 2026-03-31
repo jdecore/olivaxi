@@ -10,9 +10,13 @@ if len(sys.argv) < 2:
 
 provincia = sys.argv[1]
 
-model = joblib.load("/home/juan/Documentos/olivaxi/ml/modelo_mosca.joblib")
-le_prov = joblib.load("/home/juan/Documentos/olivaxi/ml/label_encoder_prov.joblib")
-le_nivel = joblib.load("/home/juan/Documentos/olivaxi/ml/label_encoder_nivel.joblib")
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+model = joblib.load(os.path.join(script_dir, "modelo_mosca.joblib"))
+le_prov = joblib.load(os.path.join(script_dir, "label_encoder_prov.joblib"))
+le_nivel = joblib.load(os.path.join(script_dir, "label_encoder_nivel.joblib"))
 
 provincia_coords = {
     "Jaén": (37.7, -3.5),

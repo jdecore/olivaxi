@@ -1,14 +1,13 @@
 import { Hono } from "hono";
 import { execSync } from "child_process";
-import db from "../db/sqlite";
 import { PROVINCIAS } from "../data/provincias";
 
-const app = new Hono();
+const prediccion = new Hono();
 
-const ML_ENV_PYTHON = "/home/juan/Documentos/olivaxi/ml_env/bin/python";
-const PREDICT_SCRIPT = "/home/juan/Documentos/olivaxi/ml/predict.py";
+const ML_ENV_PYTHON = process.env.ML_ENV_PYTHON || "/app/ml_env/bin/python";
+const PREDICT_SCRIPT = "/app/ml/predict.py";
 
-app.get("/", async (c) => {
+prediccion.get("/", async (c) => {
   const provincia = c.req.query("provincia");
   
   if (!provincia) {
@@ -20,13 +19,21 @@ app.get("/", async (c) => {
     return c.json({ error: "Provincia no válida" }, 400);
   }
   
+  const cmd = `${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`;
+  console.error("CMD:", cmd);
+  
   try {
-    const output = execSync(`${ML_ENV_PYTHON} ${PREDICT_SCRIPT} "${provincia}"`, {
+    console.error("About to execSync...");
+    const output = execSync(cmd, {
       encoding: "utf-8",
-      timeout: 10000
+      timeout: 15000,
+      maxBuffer: 1024 * 1024
     });
+    console.error("Output length:", output.length);
     
     const lines = output.trim().split("\n");
+    console.error("Lines:", lines);
+    
     const datos: Record<string, string> = {};
     
     for (const line of lines) {
@@ -65,13 +72,14 @@ app.get("/", async (c) => {
     });
     
   } catch (error: any) {
-    console.error("Error predicting:", error.message);
+    console.error("ERROR in prediction:", error);
+    const errMsg = error?.message || String(error) || 'Unknown error';
     return c.json({ 
       ok: false,
-      error: "Error al generar predicción",
+      error: "Error al generar predicción: " + errMsg,
       nivel: "bajo"
     }, 500);
   }
 });
 
-export default app;
+export default prediccion;

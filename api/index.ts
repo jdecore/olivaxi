@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { execSync } from "child_process";
 import clima from "./routes/clima";
 import chat from "./routes/chat";
 import alertas from "./routes/alertas";
@@ -46,8 +47,6 @@ app.use("*", rateLimitMiddleware);
 const defaultAllowedOrigins = [
   "http://localhost:4321",
   "http://127.0.0.1:4321",
-  "http://olivaxi.duckdns.org",
-  "https://olivaxi.duckdns.org",
   "http://45.90.237.135:4321",
 ];
 const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
@@ -61,7 +60,6 @@ function isOriginAllowed(origin: string): boolean {
   try {
     const u = new URL(origin);
     const h = u.hostname.toLowerCase();
-    if (h === "olivaxi.duckdns.org") return true;
     if (h === "localhost" || h === "127.0.0.1") return true;
     if (h === "45.90.237.135") return true;
     return false;
@@ -125,6 +123,5 @@ setInterval(async () => {
 Bun.serve({
   port: 3000,
   hostname: '0.0.0.0',
-  idleTimeout: 120,
-  fetch: app.fetch,
+  fetch: app.fetch
 });

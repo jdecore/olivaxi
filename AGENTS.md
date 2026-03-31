@@ -203,7 +203,7 @@ bun run api/index.ts   # Puerto 3000
 
 ### Test local con host específico
 ```bash
-bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.org
+bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts 45.90.237.135
 ```
 
 ---
@@ -232,9 +232,9 @@ bun x astro preview --host 0.0.0.0 --port 4321 --allowedHosts olivaxi.duckdns.or
 - El cache del clima dura 6 horas
 - Para ver datos nuevos: reiniciar API o esperar 6h
 
-### 2. allowedHosts para DuckDNS
+### 2. allowedHosts para IP de producción
 ```dockerfile
-CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "olivaxi.duckdns.org"]
+CMD ["bun", "x", "astro", "preview", "--host", "0.0.0.0", "--port", "4321", "--allowedHosts", "45.90.237.135"]
 ```
 
 ---
