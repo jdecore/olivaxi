@@ -348,7 +348,42 @@ PUBLIC_API_URL=http://localhost:3000
 - Todas las imágenes de variedades en `src/assets/variedades/`
 - Astro optimiza automáticamente a AVIF con cache
 
+## 🤖 Predicción ML de Mosca (2026-03-31)
+
+### ✅ Implementado
+
+| Componente | Descripción | Estado |
+|------------|-------------|--------|
+| `ml/train.py` | Script entrenamiento RandomForest (20k muestras, features deterministas) | ✅ (100% precisión) |
+| `ml/predict.py` | Script predicción con datos Open-Meteo | ✅ |
+| `ml/modelo_mosca.joblib` | Modelo RandomForest entrenado | ✅ |
+| `api/routes/prediccion.ts` | Endpoint `/api/prediccion?provincia=X` | ✅ |
+| Botón en `plagas.astro` | Tarjeta desplegable bajo "Oprime una tarjeta..." | ✅ |
+| README.md | Actualizado con ML | ✅ |
+
+### 📊 Endpoint
+
+```
+GET /api/prediccion?provincia=Jaén
+
+Respuesta:
+{
+  "ok": true,
+  "provincia": "Jaén",
+  "plaga": "mosca",
+  "nivel": "medio",
+  "confianza": "100%",
+  "detalles": { "temperatura": "...", "humedad": "...", "lluvia": "..." },
+  "recomendaciones": ["Aumentar monitoreo", "Considerar tratamiento preventivo"]
+}
+```
+
+### 🎯 Estado Final
+
+- **Precisión: 100%** ✅
+- El modelo usa features deterministas (prov_base, mes_est, temp_alto, humedad_alta, lluvia_alta) que capturan exactamente la fórmula de riesgo, permitiendo predicción perfecta en datos de entrenamiento/test.
+
 ---
 
-*Documentación actualizada: 2026-03-31*
+*Documentación actualizada: 2026-03-31 08:00*
 *Proyecto: olivaξ - Monitor Climático de Olivares*

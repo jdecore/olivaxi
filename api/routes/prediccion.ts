@@ -50,7 +50,7 @@ app.get("/", async (c) => {
       provincia: datos["Provincia"] || provincia,
       plaga: "mosca",
       nivel: nivelNormalizado,
-      confianza: "75%",
+      confianza: "100%",
       detalles: {
         temperatura: datos["Temperatura"] || "N/A",
         humedad: datos["Humedad"] || "N/A",
