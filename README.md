@@ -14,6 +14,7 @@ Accede a la demo pública en CubePath aquí:
 - 🧬 Catálogo de variedades con evaluación dinámica de riesgo
 - 🔔 Sistema de alertas por correo (confirmación + envío inmediato/periódico) con rotación de IA entre `Cerebras`, `Cerebras_2` y `Gemini`
 - 🦠 Seguimiento de plagas con contexto meteorológico
+- 🤖 **Predicción ML de riesgo de mosca** (48h) con modelo RandomForest (75% precisión)
 - 💧 Módulo de agua y suelos (temperatura, humedad y ETo)
 - 💬 Consejero IA con contexto agroclimático en streaming y rotación automática de 3 APIs gratuitas: `Groq`, `OpenRouter` y `Gemini`
 
@@ -30,10 +31,22 @@ Accede a la demo pública en CubePath aquí:
 - `GET /api/clima` → clima consolidado por provincias (con cache)
 - `GET /api/clima/dashboard?provincia=...&variedad=...` → clima + suelo + riesgos + consejos
 - `GET /api/alertas/tipos?provincia=...&variedad=...` → tipos de alerta sugeridos
-- `POST /api/chat` → chat del consejero con SSE
+- `GET /api/prediccion?provincia=...` → predicción ML de riesgo mosca (48h)
+- `POST /api/chat` → chat del compañero con SSE
 - `POST /api/alertas` y `POST /api/alertas/verify` → alta y confirmación de alertas
 
 ## 🚀 Ejecución local
+
+### Entorno Python ML
+
+Para el endpoint de predicción de mosca, se requiere un entorno virtual con las dependencias:
+
+```bash
+# Crear entorno virtual con uv
+uv venv ml_env
+source ml_env/bin/activate
+uv pip install scikit-learn pandas numpy joblib requests
+```
 
 ### Frontend
 
