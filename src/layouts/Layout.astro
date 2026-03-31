@@ -329,10 +329,48 @@ const { title = "olivaξ" } = Astro.props;
   }
 
   @media (max-width: 900px) {
+    body { overflow-x: hidden; }
+    main { padding-top: 64px; }
+    .navbar {
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      border-width: 1px;
+      border-radius: 10px;
+    }
+    .navbar-inner {
+      height: 48px;
+      padding: 0 8px;
+    }
+    .nav-left .logo-svg-inline {
+      height: 40px;
+    }
     .nav-center.desktop-nav { display: none; }
-    .hamburger-btn { display: flex !important; }
+    .hamburger-btn {
+      display: inline-flex !important;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      background: var(--color-white-surface);
+      z-index: 120;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--color-aceituna);
+      opacity: 1;
+    }
     .btn-alertas { display: none; }
-    .nav-dropdown a { padding: 14px 0; font-size: 15px; }
+    .nav-dropdown {
+      padding: 8px 12px;
+      max-height: calc(100dvh - 72px);
+      overflow-y: auto;
+    }
+    .nav-dropdown a { padding: 11px 0; font-size: 14px; }
   }
 
   .nav-dropdown {
