@@ -3,6 +3,7 @@ import clima from "./routes/clima";
 import chat from "./routes/chat";
 import alertas from "./routes/alertas";
 import analisis from "./routes/analisis";
+import prediccion from "./routes/prediccion";
 import { ejecutarCheckAlertas } from "./services/cronAlertas";
 
 const app = new Hono();
@@ -97,11 +98,12 @@ app.route("/api/clima", clima);
 app.route("/api/chat", chat);
 app.route("/api/alertas", alertas);
 app.route("/api/analisis", analisis);
+app.route("/api/prediccion", prediccion);
 
 app.get("/api", (c) => c.json({
   nombre: "olivaξ API",
   version: "1.0.0",
-  endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis"]
+  endpoints: ["/api/clima", "/api/chat", "/api/alertas", "/api/analisis", "/api/prediccion"]
 }));
 
 app.get("/", (c) => c.text("OK"));

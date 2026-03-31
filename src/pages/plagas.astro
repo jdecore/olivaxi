@@ -13,6 +13,17 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     <p class="hint-text">Oprime una tarjeta para ver el tratamiento</p>
   </div>
 
+  <div id="prediction-card" class="prediction-card">
+    <div class="prediction-header">
+      <span class="prediction-icon">🤖</span>
+      <span class="prediction-title">Predicción ML - Riesgo Mosca (48h)</span>
+      <span class="prediction-arrow">▼</span>
+    </div>
+    <div class="prediction-content">
+      <div class="prediction-loading">Cargando modelo...</div>
+    </div>
+  </div>
+
   <div class="tabs-container">
     <button class="tab active" data-tab="todas">Todas</button>
     <button class="tab" data-tab="temperatura">Temperatura</button>
@@ -90,6 +101,56 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
       expandedCard = card.classList.contains('expanded') ? card : null;
     });
   });
+
+  // --- Prediction Card ---
+  const predCard = document.getElementById('prediction-card');
+  const predContent = predCard?.querySelector('.prediction-content');
+  const predHeader = predCard?.querySelector('.prediction-header');
+  let predExpanded = false;
+  let provinciaActual = localStorage.getItem('olivaxi-provincia') || 'Jaén';
+
+  if (predCard) {
+    predCard.addEventListener('click', async () => {
+      predExpanded = !predExpanded;
+      predCard.classList.toggle('expanded', predExpanded);
+      
+      if (predExpanded && predContent) {
+        predContent.innerHTML = '<div class="prediction-loading">Consultando modelo...</div>';
+        
+        try {
+          const resp = await fetch(`/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`);
+          const data = await resp.json();
+          
+          if (data.ok && data.nivel) {
+            const nivelClass = data.nivel;
+            const recomendaciones = data.recomendaciones?.join('</li><li>') || 'Sin recomendaciones';
+            
+            predContent.innerHTML = `
+              <div class="prediction-result">
+                <div class="pred-nivel nivel-${nivelClass}">${data.nivel.toUpperCase()}</div>
+                <div class="pred-details">
+                  <p><strong>Plaga:</strong> Mosca del olivo</p>
+                  <p><strong>Provincia:</strong> ${data.provincia}</p>
+                  <p><strong>Confianza:</strong> ${data.confianza}</p>
+                  <p><strong>Temperatura:</strong> ${data.detalles?.temperatura || 'N/A'}</p>
+                  <p><strong>Humedad:</strong> ${data.detalles?.humedad || 'N/A'}</p>
+                  <p><strong>Lluvia:</strong> ${data.detalles?.lluvia || 'N/A'}</p>
+                </div>
+                <div class="pred-recomendaciones">
+                  <strong>Recomendaciones:</strong>
+                  <ul>${recomendaciones}</ul>
+                </div>
+              </div>
+            `;
+          } else {
+            predContent.innerHTML = '<div class="prediction-error">Error al obtener predicción</div>';
+          }
+        } catch (e) {
+          predContent.innerHTML = '<div class="prediction-error">Error de conexión</div>';
+        }
+      }
+    });
+  }
 
   // --- Tabs de filtrado ---
   document.querySelectorAll('.tab').forEach(tab => {
@@ -352,6 +413,76 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
   .badge-severidad.alta { background: #FEF3C7; color: #92400E; }
   .badge-severidad.critica { background: #FEE2E2; color: #991B1B; }
+
+  /* Prediction Card */
+  .prediction-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 800px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .prediction-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .prediction-card.expanded {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .prediction-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .prediction-icon { font-size: 1.5rem; }
+  .prediction-title { flex: 1; font-weight: 600; }
+  .prediction-arrow { transition: transform 0.3s; font-size: 0.8rem; }
+  .prediction-card.expanded .prediction-arrow { transform: rotate(180deg); }
+
+  .prediction-content {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.3);
+  }
+
+  .prediction-card.expanded .prediction-content { display: block; }
+
+  .prediction-loading, .prediction-error {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+  }
+
+  .prediction-result { text-align: left; }
+  .pred-nivel {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .pred-nivel.nivel-bajo { background: #10B981; color: white; }
+  .pred-nivel.nivel-medio { background: #F59E0B; color: white; }
+  .pred-nivel.nivel-alto { background: #EF4444; color: white; }
+
+  .pred-details p { margin: 0.25rem 0; font-size: 0.9rem; }
+  .pred-recomendaciones {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+  }
+  .pred-recomendaciones ul { margin: 0.5rem 0 0 1.25rem; font-size: 0.85rem; }
 
   @media (max-width: 640px) {
     .page-header { padding: 5rem 1rem 1rem; }
