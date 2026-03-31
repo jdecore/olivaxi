@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { apiUrl } from '../lib/api';
 import { PLAGAS_CATALOGO, CAMBIO_CLIMATICO_PLAGAS } from '../lib/catalogos';
 
 const plagas = PLAGAS_CATALOGO;
@@ -118,7 +119,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
         predContent.innerHTML = '<div class="prediction-loading">Consultando modelo...</div>';
         
         try {
-          const resp = await fetch(`/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`);
+          const resp = await fetch(apiUrl(`/api/prediccion?provincia=${encodeURIComponent(provinciaActual)}`));
           const data = await resp.json();
           
           if (data.ok && data.nivel) {
