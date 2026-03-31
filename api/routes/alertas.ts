@@ -58,13 +58,41 @@ function logAudit(ip: string, action: string, success: boolean, details?: string
 }
 
 // ============================================
-// Verificación de Email (Double Opt-in)
+// Verificación de Email (Double Opt-in) - Persistido en DB
 // ============================================
-const pendingVerifications = new Map<string, { email: string; nombre: string; provincia: string; variedad: string; tipo: string; fenologia: string; expires: number }>();
 
 function generateVerificationToken(): string {
   return crypto.randomUUID() + '-' + Date.now();
 }
+
+// Guardar token en DB (sobrevive a reinicios)
+function savePendingVerification(token: string, data: { email: string; nombre: string; provincia: string; variedad: string; tipo: string; fenologia: string; expires: number }) {
+  db.query("INSERT OR REPLACE INTO pending_verifications (token, data, expires) VALUES (?, ?, ?)").run(
+    token,
+    JSON.stringify(data),
+    data.expires
+  );
+}
+
+// Leer token desde DB
+function getPendingVerification(token: string): { email: string; nombre: string; provincia: string; variedad: string; tipo: string; fenologia: string; expires: number } | null {
+  const row = db.query("SELECT data, expires FROM pending_verifications WHERE token = ?").get(token) as { data: string; expires: number } | undefined;
+  if (!row || Date.now() > row.expires) {
+    db.query("DELETE FROM pending_verifications WHERE token = ?").run(token);
+    return null;
+  }
+  return JSON.parse(row.data);
+}
+
+// Eliminar token de DB
+function deletePendingVerification(token: string) {
+  db.query("DELETE FROM pending_verifications WHERE token = ?").run(token);
+}
+
+// Crear tabla si no existe (se ejecuta una vez al inicio)
+try {
+  db.query("CREATE TABLE IF NOT EXISTS pending_verifications (token TEXT PRIMARY KEY, data TEXT, expires INTEGER)").run();
+} catch (e) {}
 
 const getGmailUser = () => (process.env.GMAIL_USER || "").trim();
 const getGmailPass = () => (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "").trim();
@@ -614,7 +642,7 @@ alertas.post("/verify", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const token = sanitizeStr(body.token || '', 100);
   
-  const verification = pendingVerifications.get(token);
+  const verification = getPendingVerification(token);
   if (!verification || Date.now() > verification.expires) {
     logAudit(ip, 'VERIFY_INVALID', false, 'Token inválido o expirado');
     return c.json({ error: "Token inválido o expirado" }, 400);
@@ -627,7 +655,7 @@ alertas.post("/verify", async (c) => {
   const alertasExistentes = db.query("SELECT COUNT(*) as count FROM alertas WHERE email = ? AND activa = 1").get(email) as { count: number };
   if (alertasExistentes.count >= 3) {
     logAudit(ip, 'VERIFY_LIMIT', false, 'Máximo 3 alertas');
-    pendingVerifications.delete(token);
+    deletePendingVerification(token);
     return c.json({ error: "Máximo 3 alertas por email" }, 400);
   }
   
@@ -637,7 +665,7 @@ alertas.post("/verify", async (c) => {
   
   if (alertaDuplicada) {
     logAudit(ip, 'VERIFY_DUPLICATE', false, 'Alerta duplicada');
-    pendingVerifications.delete(token);
+    deletePendingVerification(token);
     return c.json({ error: "Ya tienes una alerta activa para esta combinación" }, 400);
   }
   
@@ -646,7 +674,7 @@ alertas.post("/verify", async (c) => {
   ).get(email, provincia) as { count: number };
   if (alertasProvincia.count >= 2) {
     logAudit(ip, 'VERIFY_PROVINCIA_LIMIT', false, 'Máximo 2 por provincia');
-    pendingVerifications.delete(token);
+    deletePendingVerification(token);
     return c.json({ error: "Máximo 2 alertas por provincia" }, 400);
   }
   
@@ -657,7 +685,7 @@ alertas.post("/verify", async (c) => {
   );
   insert.run(nombre, email, provincia, variedad || '', tipo, fenologia, createdAt);
   
-  pendingVerifications.delete(token);
+  deletePendingVerification(token);
   logAudit(ip, 'VERIFY_SUCCESS', true, `Alerta creada para ${email}`);
   
   // Enviar email de confirmación
@@ -775,7 +803,7 @@ alertas.post("/", async (c) => {
   const verifyToken = generateVerificationToken();
   const VERIFY_EXPIRES = 24 * 60 * 60 * 1000; // 24 horas
   
-  pendingVerifications.set(verifyToken, {
+  savePendingVerification(verifyToken, {
     email, nombre, provincia, variedad, tipo, fenologia,
     expires: Date.now() + VERIFY_EXPIRES
   });
@@ -820,6 +848,24 @@ alertas.post("/", async (c) => {
   }
 
   return c.json({ ok: true, message: "Revisa tu email para confirmar la alerta" });
+});
+
+// Endpoint de estado del sistema de alertas
+alertas.get("/status", async (c) => {
+  const emailState = getEmailConfigState();
+  const pendientesRow = db.query("SELECT COUNT(*) as count FROM pending_verifications").get() as { count: number };
+  const pendientes = pendientesRow.count;
+  
+  return c.json({ 
+    ok: true, 
+    email: emailState,
+    verificacionesPendientes: pendientes,
+    message: emailState === 'ready' 
+      ? 'Sistema de alertas operativo' 
+      : emailState === 'disabled' 
+        ? 'Email no configurado (modo desarrollo)' 
+        : 'Configuración de email incompleta'
+  });
 });
 
 // Endpoint de auditoría (protegido)
