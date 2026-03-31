@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, Show } from 'solid-js';
+import { createSignal, createEffect, onMount, onCleanup, For, Show } from 'solid-js';
 import { apiUrl } from '../lib/api';
 import OlivaxiEcosistema, { PROVINCIAS } from '../lib/ecosistema';
 
@@ -21,6 +21,36 @@ const SKILL_PROMPTS = {
   fenologia: 'Eres un experto en fenología del olivo. Enfoca tus respuestas en las fases del ciclo: brotación, floración, cuaje, endurecimiento del hueso, envero, recolección.',
 };
 
+const modoColores = {
+  libre:     { border: '#97c459', dot: '#639922' },
+  calor:     { border: '#ef9f27', dot: '#ba7517' },
+  drought:   { border: '#d85a30', dot: '#993c1d' },
+  frio:      { border: '#378add', dot: '#185fa5' },
+  humedad:   { border: '#5dcaa5', dot: '#0f6e56' },
+  plagas:    { border: '#e24b4a', dot: '#a32d2d' },
+  fenologia: { border: '#7f77dd', dot: '#534ab7' }
+};
+
+const modoAvatares = {
+  libre:     '🌿',
+  calor:     '🌡️',
+  drought:   '🏜️',
+  frio:      '❄️',
+  humedad:   '💧',
+  plagas:    '🦟',
+  fenologia: '🌸'
+};
+
+const modoIntro = {
+  libre:     'Puedo ayudarte con cualquier aspecto de tu olivar.',
+  calor:     'Estoy enfocado en proteger tu olivar del calor.',
+  drought:   'Estoy enfocado en gestionar el estrés hídrico.',
+  frio:      'Estoy enfocado en proteger tus olivos del frío.',
+  humedad:   'Estoy enfocado en el control de humedad y riego.',
+  plagas:    'Estoy enfocado en el estado fitosanitario de tu zona.',
+  fenologia: 'Estoy enfocado en el ciclo fenológico actual.'
+};
+
 const formatText = (text) => {
   if (!text) return '';
   return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -40,8 +70,63 @@ export default function ChatConsejero() {
   const [showProvinceDropdown, setShowProvinceDropdown] = createSignal(false);
   const [showModeDropdown, setShowModeDropdown] = createSignal(false);
   const [showCleanMenu, setShowCleanMenu] = createSignal(false);
+  const [showWelcome, setShowWelcome] = createSignal(true);
   
   let messagesEndRef;
+
+  const generateWelcomeMessage = () => {
+    const prov = provincia();
+    const clima = climaActual();
+    
+    if (!prov) {
+      return 'Selecciona tu provincia arriba para que pueda darte consejos personalizados.';
+    }
+    
+    const temp = clima?.temperatura ?? '—';
+    const tipoSuelo = clima?.tipoSuelo || 'suelo';
+    const riesgos = clima?.riesgosActivos || [];
+    const riesgoNivel = clima?.riesgo || 'bajo';
+    
+    let pestInfo = '';
+    if (clima?.plagas) {
+      const entries = Object.entries(clima.plagas);
+      const alta = entries.find(([k, v]) => v?.nivel === 'alto');
+      if (alta) pestInfo = `, ${alta[0]} en nivel alto`;
+      else {
+        const media = entries.find(([k, v]) => v?.nivel === 'medio');
+        if (media) pestInfo = `, ${media[0]} en nivel medio`;
+      }
+    }
+    
+    let sueloInfo = '';
+    if (clima?.suelo_humedad !== undefined) {
+      const hum = clima.suelo_humedad <= 1 ? Math.round(clima.suelo_humedad * 100) : clima.suelo_humedad;
+      if (hum < 30) sueloInfo = 'suelo seco';
+      else if (hum > 70) sueloInfo = 'suelo húmedo';
+      else sueloInfo = tipoSuelo;
+    } else {
+      sueloInfo = tipoSuelo;
+    }
+    
+    let msg = `He cargado los datos de ${prov}: ${temp}°C, ${sueloInfo}`;
+    if (pestInfo) msg += pestInfo;
+    if (riesgoNivel === 'alto') msg += ', riesgo alto';
+    else if (riesgoNivel === 'medio') msg += ', riesgo medio';
+    msg += '.';
+    
+    return msg;
+  };
+
+  const quickQuestions = [
+    '¿Debo regar hoy?',
+    '¿Qué plagas vigilar?',
+    'Consejos para este clima'
+  ];
+
+  const sendQuickQuestion = (question) => {
+    setShowWelcome(false);
+    enviarPregunta(question);
+  };
 
   const getContextStrip = () => {
     const clima = climaActual();
@@ -171,6 +256,14 @@ export default function ChatConsejero() {
     });
   });
 
+  createEffect(() => {
+    provincia();
+    climaActual();
+    if (messages().length === 0) {
+      setShowWelcome(true);
+    }
+  });
+
   const handleProvinciaInput = async (text) => {
     const provMatch = PROVINCIAS.find(p => text.toLowerCase().includes(p.toLowerCase()));
     if (provMatch) {
@@ -212,6 +305,7 @@ export default function ChatConsejero() {
     const text = (forcedText || input()).trim();
     if (!text || isLoading() || isAtLimit()) return;
 
+    setShowWelcome(false);
     const pregunta = text;
     const botId = Date.now();
 
@@ -369,6 +463,19 @@ export default function ChatConsejero() {
         .limit-message { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px; text-align: center; color: #666; font-size: 13px; }
         .limit-btn { background: #3b6d11; border: none; border-radius: 6px; padding: 8px 16px; color: #eaf3de; font-size: 13px; cursor: pointer; margin-top: 10px; }
 
+        /* Welcome message */
+        .welcome-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; margin-bottom: 12px; }
+        .welcome-avatar { width: 32px; height: 32px; background: #3b6d11; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #eaf3de; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+        .welcome-content { flex: 1; }
+        .welcome-bubble { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 12px 12px 12px 2px; padding: 14px 16px; font-size: 14px; line-height: 1.5; color: #1C1C1C; margin-bottom: 10px; }
+        .welcome-bubble p { margin: 0 0 8px 0; }
+        .welcome-bubble p:last-child { margin-bottom: 0; }
+        
+        /* Quick questions */
+        .quick-questions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .quick-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #3b6d11; background: transparent; color: #3b6d11; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+        .quick-btn:hover { background: #3b6d11; color: #eaf3de; }
+
         @media (max-width: 640px) {
           .context-strip { font-size: 12px; padding: 8px 12px; flex-wrap: wrap; }
           .skills-row { gap: 6px; }
@@ -376,12 +483,17 @@ export default function ChatConsejero() {
           .msg-bubble { max-width: 90%; padding: 10px 12px; font-size: 13px; }
           .input-row { padding: 8px; gap: 8px; }
           .mode-select { min-width: 90px; font-size: 12px; padding: 8px; }
+          .quick-questions { gap: 6px; }
+          .quick-btn { padding: 6px 12px; font-size: 12px; }
         }
       `}</style>
 
       <div class="chat-main">
         {/* Context Strip */}
-        <div class={`context-strip ${contextStrip().level}`}>
+        <div 
+          class={`context-strip ${contextStrip().level}`}
+          style={activeSkill() ? `border-left: 4px solid ${modoColores[activeSkill()]?.border || '#97c459'}` : ''}
+        >
           <span class="context-strip-text">{contextStrip().text}</span>
           <div class="prov-dropdown-wrap">
             <button class="prov-change-btn" onClick={() => setShowProvinceDropdown(!showProvinceDropdown())}>
@@ -411,6 +523,25 @@ export default function ChatConsejero() {
 
         {/* Messages */}
         <div class="chat-messages">
+          <Show when={showWelcome() && messages().length === 0}>
+            <div class="welcome-row">
+              <div class="welcome-avatar">{modoAvatares[activeSkill()] || modoAvatares.libre}</div>
+              <div class="welcome-content">
+                <div class="welcome-bubble">
+                  <p>Hola 👋 Soy tu counsellor de olivaξ.</p>
+                  <p>{modoIntro[activeSkill()] || modoIntro.libre}</p>
+                  <p>{generateWelcomeMessage()}</p>
+                  <p>¿Qué necesitas hoy?</p>
+                </div>
+                <div class="quick-questions">
+                  <For each={quickQuestions}>{(q) => (
+                    <button class="quick-btn" onClick={() => sendQuickQuestion(q)}>{q}</button>
+                  )}</For>
+                </div>
+              </div>
+            </div>
+          </Show>
+          
           <For each={messages()}>{(msg) => (
             <div class="msg-row">
               <Show when={msg.role === 'bot'} fallback={<div class="msg-bubble user">{msg.text}</div>}>
