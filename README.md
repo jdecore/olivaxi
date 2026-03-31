@@ -141,7 +141,7 @@ Vista rápida de la plataforma en funcionamiento:
 
 Así se montó la infraestructura de `olivaxi`:
 
-1. 🖥️ Se utilizó una instancia `gp.micro`.
+1. 🖥️ Se utilizó una instancia `gp.micro` (Barcelona, Spain).
 2. 🐧 Se instaló **Ubuntu 22** por estabilidad del entorno.
 3. 🧱 Se instaló **Docploy** en el servidor.
 4. 📁 En Docploy se creó el proyecto **olivaxi**.
