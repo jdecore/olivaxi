@@ -353,12 +353,14 @@ export function getClimaByProvincia(provincia: string) {
 }
 
 // Obtener datos climáticos sin hacer llamadas API (usa cache interno)
-function getClimaDataCached() {
+function getClimaDataCached(): DatosClima[] {
   const cacheRow = db.query("SELECT datos FROM clima_cache WHERE id = 1").get() as { datos: string } | undefined;
   if (cacheRow) {
     try {
-      return JSON.parse(cacheRow.datos);
-    } catch {}
+      return JSON.parse(cacheRow.datos) as DatosClima[];
+    } catch (error) {
+      console.warn("[clima] Cache JSON inválido, ignorando cache:", error);
+    }
   }
   return [];
 }

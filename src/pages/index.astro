@@ -250,6 +250,7 @@ import MapaCalor from '../components/MapaCalor.astro';
 
 <script>
 import OlivaxiEcosistema, { getRiesgoClass } from '../lib/ecosistema';
+import { PLAGAS_IDS } from '../lib/plagas';
 
 // --- DOM refs ---
 const $ = (id) => document.getElementById(id);
@@ -559,8 +560,7 @@ function renderNarrativeSection(d) {
   const tempClass = (riesgoGlobal === 'alto' || riesgoGlobal === 'crítico') ? 'positivo' : '';
   const deficitRiego = d.sueloAnalitica?.deficitRiego || 0;
   const necesidadRiego = d.sueloAnalitica?.necesidadRiego || 0;
-  const todasPlagas = ['mosca', 'polilla', 'repilo', 'xylella', 'tuberculosis', 'barrenillo', 'cochinilla', 'phytophthora', 'lepra', 'verticillium'];
-  const plagasAltas = todasPlagas.filter(k => d.plagas?.[k]?.nivel === 'alto').length;
+  const plagasAltas = PLAGAS_IDS.filter(k => d.plagas?.[k]?.nivel === 'alto').length;
   const hongosActivos = riesgosActivos.filter(r => r.categoria === 'hongos').length;
   const resumenRiesgo = top ? `${top.icono} ${top.titulo}` : '✅ Sin riesgo activo';
   const aguaTexto = deficitRiego > 0 ? `Déficit ${deficitRiego.toFixed(1)} mm/día` : 'Balance hídrico estable';

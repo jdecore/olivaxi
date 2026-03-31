@@ -18,6 +18,8 @@ class OlivaxiMapa extends HTMLElement {
     this.markers = [];
     this.inited = false;
     this.provinciaSeleccionada = '';
+    this._flyToHandler = null;
+    this._offEcosistema = null;
   }
 
   connectedCallback() {
@@ -176,20 +178,25 @@ class OlivaxiMapa extends HTMLElement {
     });
 
     // Escuchar flyTo desde index
-    window.addEventListener('flyToProvincia', (e) => {
+    this._flyToHandler = (e) => {
       const { provincia } = e.detail || {};
       if (!provincia) return;
       const datos = this.datos.find(d => d.provincia === provincia);
       if (datos && this.map) {
         this.flyToProvince(datos.lat, datos.lon);
       }
-    });
+    };
+    window.addEventListener('flyToProvincia', this._flyToHandler);
   }
 
   disconnectedCallback() {
     if (typeof this._offEcosistema === 'function') {
       this._offEcosistema();
       this._offEcosistema = null;
+    }
+    if (this._flyToHandler) {
+      window.removeEventListener('flyToProvincia', this._flyToHandler);
+      this._flyToHandler = null;
     }
   }
 
@@ -366,7 +373,7 @@ customElements.define('olivaxi-mapa', OlivaxiMapa);
   };
   
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadMapLibre);
+    document.addEventListener('DOMContentLoaded', loadMapLibre, { once: true });
   } else {
     loadMapLibre();
   }

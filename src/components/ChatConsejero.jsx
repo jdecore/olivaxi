@@ -136,8 +136,6 @@ export default function ChatConsejero() {
     }
     
     const temp = clima?.temperatura ?? '—';
-    const tipoSuelo = clima?.tipoSuelo ? `${clima.tipoSuelo}` : '';
-    const riesgos = clima?.riesgosActivos || [];
     const riesgoNivel = clima?.riesgo || 'bajo';
     
     let pest = '';
@@ -431,7 +429,7 @@ export default function ChatConsejero() {
         .prov-option:last-child { border-bottom: none; }
 
         /* Skills Pills */
-        .skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
+        .skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; flex-shrink: 0; justify-content: center; padding: 12px 0; border-bottom: 1px solid #eee; }
         .skill-pill { padding: 8px 16px; border-radius: 20px; border: 0.5px solid #ccc; background: #f5f0e8; color: #666; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
         .skill-pill:hover { border-color: #3b6d11; color: #3b6d11; }
         .skill-pill.active { background: #3b6d11; border-color: #3b6d11; color: #eaf3de; }
@@ -489,6 +487,20 @@ export default function ChatConsejero() {
       `}</style>
 
       <div class="chat-main">
+        {/* Skills Pills - solo visibles sin modo activo */}
+        <Show when={!activeSkill()}>
+          <div class="skills-row">
+            <For each={SKILLS}>{(skill) => (
+              <button 
+                class={`skill-pill ${activeSkill() === skill.id ? 'active' : ''}`}
+                onClick={() => selectSkill(skill.id)}
+              >
+                {skill.label}
+              </button>
+            )}</For>
+          </div>
+        </Show>
+
         {/* Context Strip */}
         <div 
           class={`context-strip ${contextStrip().level}`}
@@ -507,18 +519,6 @@ export default function ChatConsejero() {
               )}</For>
             </div>
           </div>
-        </div>
-
-        {/* Skills Pills */}
-        <div class="skills-row">
-          <For each={SKILLS}>{(skill) => (
-            <button 
-              class={`skill-pill ${activeSkill() === skill.id ? 'active' : ''}`}
-              onClick={() => selectSkill(skill.id)}
-            >
-              {skill.label}
-            </button>
-          )}</For>
         </div>
 
         {/* Messages */}

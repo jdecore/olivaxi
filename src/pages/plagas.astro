@@ -78,6 +78,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
 
 <script>
   import OlivaxiEcosistema from '../lib/ecosistema';
+  import { PLAGAS_IDS, PLAGAS_ID_POR_NOMBRE, PLAGAS_NOMBRE_POR_ID } from '../lib/plagas';
 
   const summaryEl = document.getElementById('plagas-summary');
   const alertStrip = document.getElementById('alert-strip');
@@ -97,7 +98,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     const tieneProvincia = !!provincia;
     
     // Update summary
-    const allPlagas = ['mosca', 'polilla', 'repilo', 'xylella', 'tuberculosis', 'barrenillo', 'cochinilla', 'phytophthora', 'lepra', 'verticillium'];
+    const allPlagas = PLAGAS_IDS;
     let altos = 0, medios = 0;
     
     allPlagas.forEach(key => {
@@ -118,19 +119,7 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     const plagaAlta = allPlagas.find(key => d.plagas?.[key]?.nivel === 'alto');
     if (alertStrip && alertPlaga && alertProvincia) {
       if (plagaAlta && tieneProvincia) {
-        const nombresPlaga: Record<string, string> = {
-          mosca: 'Mosca del olivo',
-          polilla: 'Polilla del olivo',
-          repilo: 'Repilo',
-          xylella: 'Xylella fastidiosa',
-          tuberculosis: 'Tuberculosis del olivo',
-          barrenillo: 'Barrenillo',
-          cochinilla: 'Cochinilla',
-          phytophthora: 'Phytophthora',
-          lepra: 'Lepra',
-          verticillium: 'Verticillium'
-        };
-        alertPlaga.textContent = nombresPlaga[plagaAlta] || plagaAlta;
+        alertPlaga.textContent = PLAGAS_NOMBRE_POR_ID[plagaAlta] || plagaAlta;
         alertProvincia.textContent = provincia;
         alertStrip.style.display = 'flex';
       } else {
@@ -139,22 +128,9 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
     }
 
     // Update cards
-    const nombresPlagaMap: Record<string, string> = {
-      'Mosca del olivo': 'mosca',
-      'Polilla del olivo (Prays)': 'polilla',
-      'Repilo': 'repilo',
-      'Xylella fastidiosa': 'xylella',
-      'Tuberculosis del olivo': 'tuberculosis',
-      'Barrenillo': 'barrenillo',
-      'Cochinilla': 'cochinilla',
-      'Phytophthora': 'phytophthora',
-      'Lepra': 'lepra',
-      'Verticillium': 'verticillium'
-    };
-
     document.querySelectorAll('.plaga-card').forEach(card => {
       const nombre = card.dataset.nombre;
-      const plagaKey = nombresPlagaMap[nombre];
+      const plagaKey = PLAGAS_ID_POR_NOMBRE[nombre];
       if (!plagaKey) return;
 
       const nivel = tieneProvincia ? (d.plagas?.[plagaKey]?.nivel || 'bajo') : 'sin-provincia';
@@ -168,16 +144,6 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
           badge.classList.add('nivel-sin-datos');
         } else {
           badge.textContent = nivel.toUpperCase();
-        }
-      }
-
-      // Update tratamiento visibility based on level
-      const tratamiento = card.querySelector('.plaga-tratamiento');
-      if (tratamiento) {
-        if (nivel === 'alto') {
-          tratamiento.classList.add('visible');
-        } else {
-          tratamiento.classList.remove('visible');
         }
       }
 
@@ -261,8 +227,8 @@ const cambioClimatico = CAMBIO_CLIMATICO_PLAGAS;
   // --- Toggle cards (expand/collapse) ---
   document.querySelectorAll('.plaga-card').forEach(card => {
     card.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.classList.contains('btn-consejero')) return;
+      const target = e.target;
+      if (target.classList.contains('btn-consejero') || target.closest('.btn-consejero')) return;
       
       if (expandedCard && expandedCard !== card) {
         expandedCard.classList.remove('expanded');
