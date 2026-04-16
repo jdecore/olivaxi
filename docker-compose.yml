@@ -1,30 +1,28 @@
+version: '3.8'
+
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        PUBLIC_API_URL: http://45.90.237.135:3001
     ports:
       - "4321:4321"
-    depends_on:
-      - api
     restart: unless-stopped
 
   api:
     build:
       context: .
-      dockerfile: api/Dockerfile
+      dockerfile: Dockerfile.python
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
-      - ./api/olivaxi.db:/app/olivaxi.db
+      - ./olivaxi.db:/app/olivaxi.db
     environment:
       - GROQ_KEY=${GROQ_KEY}
       - GEMINI_KEY=${GEMINI_KEY}
       - OPENROUTER_KEY=${OPENROUTER_KEY}
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
-      - ML_ENV_PYTHON=/app/ml_env/bin/python
-      - ML_PREDICT_SCRIPT=/app/ml/predict.py
+      - ALERTAS_AUDIT_KEY=${ALERTAS_AUDIT_KEY:-changeme}
+      - ALERTAS_CHECK_KEY=${ALERTAS_CHECK_KEY:-changeme}
     restart: unless-stopped

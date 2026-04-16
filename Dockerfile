@@ -3,11 +3,11 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json ./
-COPY bun.lock ./
+COPY package-lock.json ./
 RUN bun install --frozen-lockfile
 
 FROM base AS builder
-ARG PUBLIC_API_URL
+ARG PUBLIC_API_URL=http://45.90.237.135:3000
 ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -15,10 +15,11 @@ RUN bun run build
 
 FROM base AS runner
 ENV NODE_ENV=production
-ARG PUBLIC_API_URL
+ARG PUBLIC_API_URL=http://45.90.237.135:3000
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.astro ./node_modules/.astro
+COPY --from=builder /app/public ./public
 
 EXPOSE 4321
 

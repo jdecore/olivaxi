@@ -2,16 +2,17 @@
 // All API calls should use these helpers
 
 export function getApiUrl(): string {
-  // Use relative path - Vite proxy will forward to Python API on localhost:3000
   if (typeof window !== 'undefined') {
     const { protocol, hostname } = window.location;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    
+    // Local development - use proxy
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) {
       return '';
     }
   }
 
-  // In production, use empty string (proxy handles it)
-  return '';
+  // Production - use external API URL
+  return 'http://45.90.237.135:3000';
 }
 
 export function apiUrl(path: string): string {
@@ -24,18 +25,13 @@ export function apiUrl(path: string): string {
 
 export function apiUrlCandidates(path: string): string[] {
   const cleanPath = path.replace(/\/$/, '').replace(/^\/api/, '');
-  const candidates = [];
-
-  // Prioriza same-origin para despliegues con reverse proxy (Dokploy/Nginx)
-  candidates.push(`/api${cleanPath}`);
-  candidates.push(apiUrl(path));
-
+  const candidates = ['/api' + cleanPath];
+  
   if (typeof window !== 'undefined') {
     const { protocol, hostname } = window.location;
-    candidates.push(`${protocol}//${hostname}:3001/api${cleanPath}`);
-    candidates.push(`${protocol}//${hostname}:3000/api${cleanPath}`);
-    candidates.push(`/api${cleanPath}`);
+    candidates.push(protocol + '//' + hostname + ':3000/api' + cleanPath);
+    candidates.push('http://localhost:3000/api' + cleanPath);
   }
 
-  return [...new Set(candidates)];
+  return candidates.map(c => c.replace(/\/+/g, '/'));
 }
