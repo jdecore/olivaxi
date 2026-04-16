@@ -150,8 +150,8 @@ Así se montó la infraestructura de `olivaxi`:
 3. 🧱 Se instaló **Docploy** en el servidor.
 4. 📁 En Docploy se creó el proyecto **olivaxi**.
 5. 🐳 Se eligió **Create Service** con tipo **Compose**.
-6. 📤 Se subió el archivo `docker-compose.yml` con la configuración del backend FastAPI.
-7. 🚀 Desde ese Compose se levantó el servicio API de la plataforma.
+6. 📤 Se subió el archivo `docker-compose.yml` con la configuración de frontend (`web`) y backend (`api`) en FastAPI.
+7. 🚀 Desde ese Compose se levantaron ambos servicios de la plataforma.
 
 ## 🌱 Nota
 
