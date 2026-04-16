@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build:
@@ -16,7 +14,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./olivaxi.db:/app/olivaxi.db
+      - ./oliva-api/olivaxi.db:/app/olivaxi.db
     environment:
       - GROQ_KEY=${GROQ_KEY}
       - GEMINI_KEY=${GEMINI_KEY}

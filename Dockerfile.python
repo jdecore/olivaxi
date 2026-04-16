@@ -2,12 +2,23 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY oliva-api/app /app/app
-COPY oliva-api/.env.example /app/.env
-COPY oliva-api/pyproject.toml /app/
+# Copy full API directory (includes app, .env, etc)
+COPY oliva-api /app
 
-RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic pydantic-settings sqlalchemy aiosqlite aiohttp python-dotenv aiosmtplib
+# Install Python dependencies globally
+RUN pip install --no-cache-dir \
+    fastapi \
+    "uvicorn[standard]" \
+    pydantic \
+    pydantic-settings \
+    sqlalchemy \
+    aiosqlite \
+    aiohttp \
+    python-dotenv \
+    aiosmtplib
 
+# Expose port
 EXPOSE 3000
 
+# Run the API
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]

@@ -4,7 +4,7 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json ./
 COPY package-lock.json ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 FROM base AS builder
 ARG PUBLIC_API_URL=http://45.90.237.135:3000
