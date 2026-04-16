@@ -251,4 +251,4 @@ curl http://localhost:3000/api/analisis/Jaén
 
 *Documentación actualizada: 2026-04-16*
 *Proyecto: olivaξ - Monitor Climático de Olivares*
-*Backend migrado de Bun+Hono a Python+FastAPI*
+*Backend actual: Python+FastAPI*

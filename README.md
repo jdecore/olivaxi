@@ -22,8 +22,8 @@ Accede a la demo pública en CubePath aquí:
 ## 🧰 Stack tecnológico
 
 - 🌌 **Frontend**: Astro 6 + SolidJS
-- ⚙️ **Backend**: Bun + Hono
-- 🗄️ **Datos**: SQLite (`bun:sqlite`) + Open-Meteo API
+- ⚙️ **Backend**: Python + FastAPI
+- 🗄️ **Datos**: SQLite (`aiosqlite`) + Open-Meteo API
 - 🧭 **Mapas**: MapLibre GL + CartoDB
 - 💬 **APIs IA (chat)**: `Groq` + `Gemini` + `OpenRouter` (rotación automática con fallback)
 - 🔔 **APIs IA (alertas email)**: `Gemini` + `Cerebras` + `Cerebras_2` (rotación automática)
@@ -71,7 +71,10 @@ npm run dev
 ### Backend
 
 ```bash
-bun run api/index.ts
+cd oliva-api
+python3 -m venv .venv
+.venv/bin/pip install fastapi uvicorn pydantic pydantic-settings sqlalchemy aiosqlite aiohttp python-dotenv aiosmtplib
+.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 3000
 ```
 
 En contenedor de producción, el endpoint ML usa estas rutas explícitas:
@@ -99,7 +102,8 @@ CEREBRAS_KEY_2=
 GEMINI_ALERTAS_KEY=
 GMAIL_USER=
 GMAIL_APP_PASSWORD=
-PUBLIC_API_URL=/api
+PUBLIC_API_URL=
+API_PUBLIC_PORT=3001
 RATE_LIMIT=3000
 RATE_LIMIT_WINDOW_MS=3600000
 CHAT_RATE_LIMIT=600
@@ -146,8 +150,8 @@ Así se montó la infraestructura de `olivaxi`:
 3. 🧱 Se instaló **Docploy** en el servidor.
 4. 📁 En Docploy se creó el proyecto **olivaxi**.
 5. 🐳 Se eligió **Create Service** con tipo **Compose**.
-6. 📤 Se subió el archivo `docker-compose.yml` con toda la configuración de backend y frontend.
-7. 🚀 Desde ese Compose se levantaron los servicios de la plataforma.
+6. 📤 Se subió el archivo `docker-compose.yml` con la configuración del backend FastAPI.
+7. 🚀 Desde ese Compose se levantó el servicio API de la plataforma.
 
 ## 🌱 Nota
 
