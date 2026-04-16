@@ -30,7 +30,7 @@ Accede a la demo pública en CubePath aquí:
 - 🤖 **IA/Asistencia de desarrollo**: opncode con **MiniMax M2.5** de código abierto, lanzado por la empresa china de IA, MiniMax, en febrero de 2026
 - 🧠 **ML**: scikit-learn RandomForestClassifier (500 árboles, profundidad máxima, 20k muestras de entrenamiento, precisión 100%)
 
-**## Nota:** Anteriormente, el backend se estaba desarrollando con Hono y Bun. Sin embargo, durante la creación del proyecto me di cuenta de que tenía limitaciones para futuros proyectos, por eso decidí migrarlo a Python y FastAPI. Esto encaja mejor con mi perfil de datos y, además, me gustaría aprender a desarrollar RAG, ya que los mejores frameworks para ello están en Python.
+## **Nota:** Anteriormente, el backend se estaba desarrollando con Hono y Bun. Sin embargo, durante la creación del proyecto me di cuenta de que tenía limitaciones para futuros proyectos, por eso decidí migrarlo a Python y FastAPI. Esto encaja mejor con mi perfil de datos y, además, me gustaría aprender a desarrollar RAG, ya que los mejores frameworks para ello están en Python.
 
 ## 🤖 Modelo ML de Predicción de Mosca
 
